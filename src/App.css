@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+:root {
+    --border: 1px solid rgba(64, 64, 64, 0.3);
+    --border-radius: 8px;
+
+    --bg-primary: rgba(255, 255, 255, 1.0);
+    --bg-secondary: rgba(220, 220, 220, 1.0);
+
+    --button-default: rgba(220, 220, 220, 1.0);
+    --button-hover: rgba(150, 150, 150, 1.0);
+    --button-active: rgba(100, 100, 100, 1.0);
+
+    --fg: rgba(0, 0, 0, 1.0);
+    --fg-inverted: rgba(255, 255, 255, 1.0);
+}
+
+html,
+body #root {
+    /* Disable scrolling */
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Text Button class */
+.text-button {
+    padding: 4px 8px 4px 8px;
+    border-radius: 7px;
+    transition: all 0.3s ease-in-out;
+    transition: filter 0.1s ease-in-out;
+    border: var(--border);
+    cursor: pointer;
+    background-color: rgba(150, 150, 150, 0.2);
+}
+
+.text-button.highlighted {
+    background-color: rgba(0, 130, 220, 0.7);
+}
+
+.text-button:hover {
+    filter: brightness(0.8);
+}
+
+.text-button:active {
+    filter: brightness(0.5);
+}
+
+.text-button:disabled {
+    cursor: default;
+    filter: opacity(0.5);
+}

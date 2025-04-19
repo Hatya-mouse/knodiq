@@ -1,0 +1,15 @@
+.editor-header {
+    display: flex;
+    justify-content: flex-start;
+    padding: 8px 12px 8px 12px;
+    border-bottom: var(--border);
+}
+
+.header-button-group {
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    display: flex;
+    flex-flow: row;
+    overflow: hidden;
+    padding: 0px;
+}
