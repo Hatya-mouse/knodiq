@@ -1,7 +1,6 @@
 import { LucidePlay, LucidePause, LucideSkipBack } from "lucide-react";
 import PlaybackControlButton from "@/components/PlaybackControlButton";
 import "@/App.css";
-import "@features/editor_header/editor_header.css";
 
 export default function EditorHeader({
     isPlaying,
@@ -23,8 +22,8 @@ export default function EditorHeader({
     };
 
     return (
-        <div className="editor-header">
-            <div className="header-button-group">
+        <div className="bg-[var(--bg-secondary)] bottom-border flex justify-start px-3 py-2">
+            <div className="border-rounded flex flex-row overflow-hidden p-0">
                 <PlaybackControlButton
                     icon={isPlaying ? <LucidePause size={16} /> : <LucidePlay size={16} />}
                     onClick={handlePlayPause}

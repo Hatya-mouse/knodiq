@@ -1,19 +1,11 @@
-use segment_engine::Mixer;
-use std::sync::Mutex;
-
 pub struct APIState {
-    pub mixer: Mutex<Mixer>,
-    pub sample_rate: usize,
-    pub channels: usize,
+    pub audio_player: Option<segment_engine::AudioPlayer>,
 }
 
 impl APIState {
-    pub fn new(sample_rate: usize, channels: usize) -> Self {
-        let mixer = Mixer::new(sample_rate, channels);
-        APIState {
-            mixer: Mutex::new(mixer),
-            sample_rate,
-            channels,
-        }
+    pub fn new() -> Self {
+        APIState { audio_player: None }
     }
 }
+
+unsafe impl Send for APIState {}

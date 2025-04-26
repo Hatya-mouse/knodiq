@@ -5,7 +5,7 @@ import "./App.css";
 
 import EditorHeader from "@/features/editor_header/EditorHeader";
 import TracksArea from "@features/tracks_area/TracksArea";
-import Track from "@lib/audio_api/track";
+import { Track } from "@lib/audio_api/track";
 
 export default function App() {
     const [filePath, setFilePath] = useState<string | null>(null);
@@ -25,12 +25,11 @@ export default function App() {
         // Get the opened file path
         if (typeof selected == "string") {
             setFilePath(selected);
-            console.log("Selected file:", selected);
-        }
 
-        // Add the loaded file to the tracks list
-        const newTrack = new Track(0, selected as string, 1.0);
-        setTracks([...tracks, newTrack]);
+            // Add the loaded file to the tracks list
+            const newTrack = new Track(0, selected as string, 1.0);
+            setTracks([...tracks, newTrack]);
+        }
     }
 
     const handlePlayAudio = async () => {
@@ -46,8 +45,13 @@ export default function App() {
         setIsPlaying(true);
     }
 
+    const handleRemoveTrack = (index: number) => {
+        // Remove the track at the specified index
+        setTracks(tracks.filter((_, i) => i !== index));
+    }
+
     return <>
-        <div className="App">
+        <div className="App w-screen h-screen flex flex-col">
             {/*
                 <h1>Audio File Selector</h1>
                 <button className="text-button" onClick={handleFileSelect}>Select Audio File</button>
@@ -55,7 +59,7 @@ export default function App() {
                 <button className="text-button" onClick={handlePlayAudio}>Play</button>
             */}
             <EditorHeader isPlaying={isPlaying} onPlay={handlePlayAudio} />
-            <TracksArea tracks={tracks} onAddTrack={handleFileSelect} />
+            <TracksArea tracks={tracks} onAddTrack={handleFileSelect} onRemoveTrack={handleRemoveTrack} />
         </div>
     </>;
 }
