@@ -20,4 +20,16 @@ impl AppState {
             audio_player: None,
         }
     }
+
+    pub fn set_audio_player(&mut self, player: AudioPlayer) {
+        self.audio_player = Some(player);
+    }
+
+    pub fn get_audio_player(&mut self) -> Option<&mut AudioPlayer> {
+        self.audio_player.as_mut()
+    }
+
+    pub fn clear_audio_player(&mut self) {
+        self.audio_player = None;
+    }
 }
