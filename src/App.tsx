@@ -26,9 +26,50 @@ export default function App() {
         if (typeof selected == "string") {
             setFilePath(selected);
 
+            console.log("Selected file: ", selected);
+
+            await invoke("add_track", {
+                trackData: {
+                    id: 0,
+                    name: selected,
+                    channels: 2,
+                    track_type: "BufferTrack"
+                }
+            });
+
             // Add the loaded file to the tracks list
             const newTrack = new Track(0, selected as string, 1.0);
             setTracks([...tracks, newTrack]);
+
+            let source = await invoke("source_from_path", { path: selected, trackNumber: 0 }) as { Some: any };
+            console.log("Source: ", source);
+
+            await invoke("add_region", {
+                regionData: {
+                    id: 0,
+                    name: "New Region",
+                    start_time: 0,
+                    duration: 10,
+                    samples_per_beat: 22550,
+                    region_type: {
+                        BufferRegion: source,
+                    },
+                },
+                trackId: 0,
+            });
+
+            let input_nodes = await invoke("get_input_nodes", { trackId: 0 }) as any[];
+            let output_node = await invoke("get_output_node", { trackId: 0 }) as String;
+            console.log("Output node: ", output_node);
+            await invoke("connect_graph", {
+                trackId: 0,
+                from: input_nodes[0],
+                fromParam: "output",
+                to: output_node,
+                toParam: "input",
+            });
+
+            console.log("Track added successfully.");
         }
     }
 
@@ -40,7 +81,7 @@ export default function App() {
         }
 
         // Call the Rust function to play the audio file
-        await invoke("play_audio", { path: filePath });
+        await invoke("play_audio");
 
         setIsPlaying(true);
     }

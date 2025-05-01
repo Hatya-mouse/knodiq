@@ -1,8 +1,9 @@
-mod app_state;
-mod audio_api;
+mod api;
 
-use app_state::AppState;
-use audio_api::{pause_audio, play_audio, start_mixer_thread};
+use api::graph::graph;
+use api::mixing::{region, track};
+use api::AppState;
+use api::{playback, setup};
 
 use std::sync::Mutex;
 
@@ -13,10 +14,16 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .manage(Mutex::new(AppState::new()))
+        .setup(setup::setup)
         .invoke_handler(tauri::generate_handler![
-            play_audio,
-            pause_audio,
-            start_mixer_thread
+            playback::pause_audio,
+            playback::play_audio,
+            graph::connect_graph,
+            graph::get_input_nodes,
+            graph::get_output_node,
+            region::buffer_region::source_from_path,
+            region::region::add_region,
+            track::track::add_track,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

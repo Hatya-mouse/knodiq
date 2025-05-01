@@ -1,14 +1,13 @@
-use segment_engine::{AudioPlayer, Sample};
+use super::mixing::mixer::MixerResult;
+use crate::api::mixing::MixerCommand;
+use segment_engine::AudioPlayer;
 use std::sync::mpsc;
-
-pub enum MixerCommand {
-    /// Command to set the sample callback function for the mixer.
-    Mix(Box<dyn FnMut(Sample) + Send>),
-}
 
 pub struct AppState {
     /// Mixer mspc sender to communicate with the mixer.
-    pub mixer_sender: Option<mpsc::Sender<MixerCommand>>,
+    pub mixer_command_sender: Option<mpsc::Sender<MixerCommand>>,
+    /// Mixer mspc receiver to receive results from the mixer.
+    pub mixer_result_receiver: Option<mpsc::Receiver<MixerResult>>,
     /// Audio player to handle audio playback.
     pub audio_player: Option<AudioPlayer>,
 }
@@ -16,7 +15,8 @@ pub struct AppState {
 impl AppState {
     pub fn new() -> Self {
         AppState {
-            mixer_sender: None,
+            mixer_command_sender: None,
+            mixer_result_receiver: None,
             audio_player: None,
         }
     }

@@ -21,14 +21,14 @@ export default function TracksArea({
             <SplitView className="w-full min-h-full" doesStrech={true} left={(
                 <div>
                     {(tracks ?? []).map((track, index) => (
-                        <TrackListItem height={trackHeight} track={track} index={index} onRemoveTrack={onRemoveTrack} />
+                        <TrackListItem key={index} height={trackHeight} track={track} index={index} onRemoveTrack={onRemoveTrack} />
                     ))}
                     <button className="bottom-border w-full cursor-pointer track-list-item" style={{ height: trackHeight }} onClick={onAddTrack}>Add Track</button>
                 </div>
             )} right={(
                 <div className="h-full overflow-x-scroll overflow-y-hidden">
                     {(tracks ?? []).map((track, index) => (
-                        <TrackListContent height={trackHeight} track={track} index={index} />
+                        <TrackListContent key={index} height={trackHeight} track={track} index={index} />
                     ))}
                 </div>
             )} initialLeftWidth={300} minLeftWidth={250} minRightWidth={250} />

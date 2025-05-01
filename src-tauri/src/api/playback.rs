@@ -1,12 +1,15 @@
-use crate::app_state::{AppState, MixerCommand};
-use segment_engine::{AudioPlayer, Mixer};
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{mpsc, Arc, Mutex};
+use crate::api::mixing::MixerCommand;
+use crate::api::AppState;
+use segment_engine::AudioPlayer;
+use std::sync::Mutex;
 use tauri::{command, State};
 
 #[command]
 pub fn play_audio(state: State<'_, Mutex<AppState>>) {
     let mut state = state.lock().unwrap();
+
+    // Clear the old audio player if it exists
+    state.clear_audio_player();
 
     let sample_rate = 48000;
     let channels = 2;
@@ -33,7 +36,7 @@ pub fn play_audio(state: State<'_, Mutex<AppState>>) {
     };
 
     // Start mixing the audio
-    match &state.mixer_sender {
+    match &state.mixer_command_sender {
         Some(sender) => {
             let mix_command = MixerCommand::Mix(Box::new(move |sample| {
                 // Send the mixed sample to the audio player
@@ -63,45 +66,5 @@ pub fn pause_audio(state: State<'_, Mutex<AppState>>) {
             .unwrap_or_else(|e| eprintln!("Error pausing audio player: {}", e));
     } else {
         eprintln!("Audio player not initialized.");
-    }
-}
-
-#[command]
-pub fn start_mixer_thread(state: State<'_, Mutex<AppState>>) {
-    // Create a channel to communicate with the mixer
-    let (sender, receiver) = mpsc::channel();
-    let running = Arc::new(AtomicBool::new(true));
-
-    // Set the sender in the app state
-    let mut state = state.lock().unwrap();
-    state.mixer_sender = Some(sender);
-
-    // Create a new thread for the mixer
-    let running_clone = Arc::clone(&running);
-    std::thread::spawn(move || {
-        let tempo = 120.0;
-        let sample_rate = 48000;
-        let channels = 2;
-        let mut mixer = Mixer::new(tempo, sample_rate, channels);
-
-        while running_clone.load(Ordering::SeqCst) {
-            process_mixer(&mut mixer, &receiver);
-        }
-    });
-
-    // Quitting the app will stop the mixer thread
-    std::thread::spawn(move || {
-        running.store(false, Ordering::SeqCst);
-    });
-}
-
-fn process_mixer(mixer: &mut Mixer, receiver: &mpsc::Receiver<MixerCommand>) {
-    // Process the mixer commands here
-    while let Ok(command) = receiver.recv() {
-        match command {
-            MixerCommand::Mix(callback) => {
-                mixer.mix(callback);
-            }
-        }
     }
 }
