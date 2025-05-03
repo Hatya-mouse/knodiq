@@ -1,4 +1,4 @@
-import { Track, BufferTrack } from "@lib/audio_api/track";
+import { Track, BufferTrack } from "@/lib/audio_api/track_state";
 import RegionView from "@features/tracks_area/RegionView";
 
 export default function TrackListContent({

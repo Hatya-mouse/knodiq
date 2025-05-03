@@ -1,9 +1,9 @@
-use crate::api::mixing::MixerCommand;
+use crate::api::mixing::{emit_mixer_state, MixerCommand};
 use crate::api::AppState;
 use segment_engine::{audio_utils::Beats, AudioSource};
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
-use tauri::{command, State};
+use tauri::{command, AppHandle, State};
 
 #[derive(Serialize, Deserialize)]
 pub enum RegionType {
@@ -21,13 +21,19 @@ pub struct RegionData {
 }
 
 #[command]
-pub fn add_region(region_data: RegionData, track_id: u32, state: State<'_, Mutex<AppState>>) {
+pub fn add_region(
+    region_data: RegionData,
+    track_id: u32,
+    state: State<'_, Mutex<AppState>>,
+    app: AppHandle,
+) {
     println!("add_region invoked");
-    let state = state.lock().unwrap();
-    if let Some(mixer_command_sender) = state.mixer_command_sender.as_ref() {
+    let locked_state = state.lock().unwrap();
+    if let Some(mixer_command_sender) = locked_state.mixer_command_sender.as_ref() {
         mixer_command_sender
             .send(MixerCommand::AddRegion(track_id, region_data))
             .unwrap();
+        emit_mixer_state(&state, app);
     } else {
         eprintln!("Mixer thread not initialized.");
     }

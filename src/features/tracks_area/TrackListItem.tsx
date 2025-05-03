@@ -1,4 +1,4 @@
-import { Track } from "@lib/audio_api/track";
+import { Track } from "@/lib/audio_api/track_state";
 
 export default function TrackListItem({
     track,

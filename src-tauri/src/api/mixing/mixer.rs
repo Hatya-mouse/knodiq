@@ -1,4 +1,4 @@
-use crate::api::mixing::{RegionData, RegionType, TrackData};
+use crate::api::mixing::{MixerState, RegionData, RegionType, TrackData};
 use crate::api::AppState;
 use crate::track::TrackType;
 use segment_engine::mixing::region::BufferRegion;
@@ -11,6 +11,8 @@ use std::sync::{
 use tauri::State;
 
 pub enum MixerCommand {
+    /// Command to get the current state of the mixer, in serializable form.
+    GetMixerState,
     /// Command to set the sample callback function for the mixer.
     Mix(Box<dyn FnMut(Sample) + Send>),
     /// Add a track to the mixer.
@@ -43,6 +45,8 @@ pub enum MixerResult {
     InputNodes(Vec<NodeId>),
     /// Result of the `GetOutputNode` command.
     OutputNode(NodeId),
+    /// Result of the `GetMixerState` command.
+    MixerState(MixerState),
 }
 
 pub fn start_mixer_thread(state: State<Mutex<AppState>>) {
@@ -83,6 +87,12 @@ fn process_mixer(
     // Process the mixer commands here
     while let Ok(command) = receiver.recv() {
         match command {
+            MixerCommand::GetMixerState => {
+                // Get the current state of the mixer
+                let state = get_state();
+                // Send the state back to the main thread
+                let _ = result_sender.send(MixerResult::MixerState(state));
+            }
             MixerCommand::Mix(callback) => {
                 mixer.prepare();
                 mixer.mix(callback);

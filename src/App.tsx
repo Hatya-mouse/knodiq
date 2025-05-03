@@ -1,16 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import "./App.css";
 
 import EditorHeader from "@/features/editor_header/EditorHeader";
 import TracksArea from "@features/tracks_area/TracksArea";
-import { Track } from "@lib/audio_api/track";
+import { MixerState } from "@/lib/audio_api/mixer_state";
 
 export default function App() {
     const [filePath, setFilePath] = useState<string | null>(null);
-    const [tracks, setTracks] = useState<Track[]>([]);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [mixerState, setMixerState] = useState<MixerState | null>(null);
+
+    useEffect(() => {
+        listen<MixerState>("mixer_state", (event) => {
+            let state = event.payload;
+            setMixerState(state);
+        });
+    }, []);
 
     /// Called when the file selection button is pressed.
     const handleFileSelect = async () => {
@@ -37,14 +45,10 @@ export default function App() {
                 }
             });
 
-            // Add the loaded file to the tracks list
-            const newTrack = new Track(0, selected as string, 1.0);
-            setTracks([...tracks, newTrack]);
-
             let source = await invoke("source_from_path", { path: selected, trackNumber: 0 }) as { Some: any };
             console.log("Source: ", source);
 
-            await invoke("add_region", {
+            invoke("add_region", {
                 regionData: {
                     id: 0,
                     name: "New Region",
@@ -61,7 +65,7 @@ export default function App() {
             let input_nodes = await invoke("get_input_nodes", { trackId: 0 }) as any[];
             let output_node = await invoke("get_output_node", { trackId: 0 }) as String;
             console.log("Output node: ", output_node);
-            await invoke("connect_graph", {
+            invoke("connect_graph", {
                 trackId: 0,
                 from: input_nodes[0],
                 fromParam: "output",
@@ -88,7 +92,7 @@ export default function App() {
 
     const handleRemoveTrack = (index: number) => {
         // Remove the track at the specified index
-        setTracks(tracks.filter((_, i) => i !== index));
+        invoke("remove_track", { trackId: index });
     }
 
     return <>
@@ -100,7 +104,7 @@ export default function App() {
                 <button className="text-button" onClick={handlePlayAudio}>Play</button>
             */}
             <EditorHeader isPlaying={isPlaying} onPlay={handlePlayAudio} />
-            <TracksArea tracks={tracks} onAddTrack={handleFileSelect} onRemoveTrack={handleRemoveTrack} />
+            <TracksArea tracks={mixerState?.tracks || []} onAddTrack={handleFileSelect} onRemoveTrack={handleRemoveTrack} />
         </div>
     </>;
 }

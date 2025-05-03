@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Track } from "@lib/audio_api/track";
+import { Track } from "@/lib/audio_api/track_state";
 import TrackListItem from "@features/tracks_area/TrackListItem";
 import TrackListContent from "@features/tracks_area/TrackListContent";
 import SplitView from "@components/SplitView";
