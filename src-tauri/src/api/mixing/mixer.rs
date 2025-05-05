@@ -89,7 +89,7 @@ fn process_mixer(
         match command {
             MixerCommand::GetMixerState => {
                 // Get the current state of the mixer
-                let state = get_state();
+                let state = MixerState::from_mixer(mixer);
                 // Send the state back to the main thread
                 let _ = result_sender.send(MixerResult::MixerState(state));
             }

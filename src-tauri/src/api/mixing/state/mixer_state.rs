@@ -12,11 +12,11 @@ pub struct MixerState {
 impl MixerState {
     pub fn from_mixer(mixer: &Mixer) -> Self {
         let tracks = mixer
-            .tracks()
+            .tracks
             .iter()
             .map(|track| TrackState::from_track(track))
             .collect::<Vec<_>>();
-        let bpm = mixer.bpm();
+        let bpm = mixer.tempo;
         let samples_per_beat = mixer.samples_per_beat();
         MixerState {
             tracks,

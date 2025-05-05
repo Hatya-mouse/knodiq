@@ -20,7 +20,7 @@ impl TrackState {
         let regions = track
             .regions()
             .iter()
-            .map(|region| RegionState::from_region(region))
+            .map(|region| RegionState::from_region(Box::new(region)))
             .collect::<Vec<_>>();
 
         TrackState {
