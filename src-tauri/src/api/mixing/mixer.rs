@@ -8,19 +8,23 @@ use std::sync::{
     atomic::{AtomicBool, Ordering},
     mpsc, Arc, Mutex,
 };
-use tauri::State;
+use tauri::{AppHandle, Emitter, State};
 
 pub enum MixerCommand {
     /// Command to get the current state of the mixer, in serializable form.
     GetMixerState,
+
     /// Command to set the sample callback function for the mixer.
     Mix(Box<dyn FnMut(Sample) + Send>),
+
     /// Add a track to the mixer.
     AddTrack(TrackData),
+
     /// Add a region to the specified track.
     /// - track_id: `usize`,
     /// - region_data: `RegionData,
     AddRegion(u32, RegionData),
+
     /// Connect two nodes in the graph.
     /// - track_id: `u32`,
     /// - from: `knodiq_engine::NodeId`,
@@ -34,8 +38,10 @@ pub enum MixerCommand {
         knodiq_engine::NodeId,
         String,
     ),
+
     /// Get the input nodes of a track.
     GetInputNodes(u32),
+
     /// Get the output node of a track.
     GetOutputNode(u32),
 }
@@ -49,7 +55,7 @@ pub enum MixerResult {
     MixerState(MixerState),
 }
 
-pub fn start_mixer_thread(state: State<Mutex<AppState>>) {
+pub fn start_mixer_thread(state: State<Mutex<AppState>>, app: AppHandle) {
     // Create a channel to communicate with the mixer
     let (command_sender, command_receiver) = mpsc::channel();
     let (result_sender, result_receiver) = mpsc::channel();
@@ -62,6 +68,8 @@ pub fn start_mixer_thread(state: State<Mutex<AppState>>) {
 
     // Create a new thread for the mixer
     let running_clone = Arc::clone(&running);
+    let app_handle = app.clone();
+
     std::thread::spawn(move || {
         let tempo = 120.0;
         let sample_rate = 48000;
@@ -69,7 +77,7 @@ pub fn start_mixer_thread(state: State<Mutex<AppState>>) {
         let mut mixer = Mixer::new(tempo, sample_rate, channels);
 
         while running_clone.load(Ordering::SeqCst) {
-            process_mixer(&mut mixer, &command_receiver, &result_sender);
+            process_mixer(&mut mixer, &command_receiver, &result_sender, &app_handle);
         }
     });
 
@@ -83,6 +91,7 @@ fn process_mixer(
     mixer: &mut Mixer,
     receiver: &mpsc::Receiver<MixerCommand>,
     result_sender: &mpsc::Sender<MixerResult>,
+    app: &AppHandle,
 ) {
     // Process the mixer commands here
     while let Ok(command) = receiver.recv() {
@@ -93,10 +102,12 @@ fn process_mixer(
                 // Send the state back to the main thread
                 let _ = result_sender.send(MixerResult::MixerState(state));
             }
+
             MixerCommand::Mix(callback) => {
                 mixer.prepare();
                 mixer.mix(callback);
             }
+
             MixerCommand::AddTrack(track_data) => {
                 let mut track = match track_data.track_type {
                     TrackType::BufferTrack => BufferTrack::new(
@@ -120,6 +131,7 @@ fn process_mixer(
                 // Add the track to the mixer
                 mixer.add_track(Box::new(track));
             }
+
             MixerCommand::AddRegion(track_id, region_data) => {
                 println!("Adding region: {:?}", region_data.name);
                 let region = match region_data.region_type {
@@ -154,6 +166,7 @@ fn process_mixer(
                 }
                 println!("Region added: {:?}", region_data.name);
             }
+
             MixerCommand::ConnectGraph(track_id, from, from_param, to, to_param) => {
                 // Connect the two nodes in the graph
                 if let Some(track) = mixer.get_track_by_id_mut(track_id) {
@@ -162,6 +175,7 @@ fn process_mixer(
                     eprintln!("Track with ID {} not found.", track_id);
                 }
             }
+
             MixerCommand::GetInputNodes(track_id) => {
                 // Get the input nodes of the track
                 if let Some(track) = mixer.get_track_by_id_mut(track_id) {
@@ -171,6 +185,7 @@ fn process_mixer(
                     eprintln!("Track with ID {} not found.", track_id);
                 }
             }
+
             MixerCommand::GetOutputNode(track_id) => {
                 // Get the output node of the track
                 if let Some(track) = mixer.get_track_by_id_mut(track_id) {
@@ -181,5 +196,7 @@ fn process_mixer(
                 }
             }
         }
+        let state = MixerState::from_mixer(mixer);
+        app.emit("mixer_state", state).ok();
     }
 }

@@ -6,6 +6,6 @@ use tauri::{App, Manager, State};
 
 pub fn setup(app: &mut App) -> Result<(), Box<(dyn StdError + 'static)>> {
     let state: State<Mutex<AppState>> = app.state();
-    start_mixer_thread(state);
+    start_mixer_thread(state, app.handle().clone());
     Ok(())
 }

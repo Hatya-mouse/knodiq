@@ -32,7 +32,6 @@ pub fn add_track(track_data: TrackData, state: State<'_, Mutex<AppState>>, app: 
         mixer_command_sender
             .send(MixerCommand::AddTrack(track_data))
             .ok();
-        emit_mixer_state(locked_state, app);
     } else {
         eprintln!("Audio player not initialized.");
     }

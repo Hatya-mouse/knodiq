@@ -35,7 +35,6 @@ pub fn add_region(
         mixer_command_sender
             .send(MixerCommand::AddRegion(track_id, region_data))
             .unwrap();
-        emit_mixer_state(locked_state, app);
     } else {
         eprintln!("Mixer thread not initialized.");
     }
