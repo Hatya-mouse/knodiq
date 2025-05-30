@@ -2,7 +2,7 @@ use crate::api::{
     mixing::{MixerCommand, MixerResult},
     AppState,
 };
-use segment_engine::NodeId;
+use knodiq_engine::NodeId;
 use std::sync::Mutex;
 use tauri::{command, State};
 

@@ -1,4 +1,4 @@
-use segment_engine::Region;
+use knodiq_engine::Region;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -10,7 +10,7 @@ pub struct RegionState {
 }
 
 impl RegionState {
-    pub fn from_region(region: Box<dyn Region>) -> Self {
+    pub fn from_region(region: Box<&dyn Region>) -> Self {
         RegionState {
             id: *region.id(),
             name: region.name().to_string(),

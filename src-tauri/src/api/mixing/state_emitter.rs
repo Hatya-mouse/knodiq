@@ -2,11 +2,10 @@ use crate::api::{
     mixing::{MixerCommand, MixerResult},
     AppState,
 };
-use std::sync::Mutex;
-use tauri::{AppHandle, Emitter, State};
+use std::sync::MutexGuard;
+use tauri::{AppHandle, Emitter};
 
-pub fn emit_mixer_state(state: &State<'_, Mutex<AppState>>, app: AppHandle) {
-    let state = state.lock().unwrap();
+pub fn emit_mixer_state(state: MutexGuard<'_, AppState>, app: AppHandle) {
     if let Some(mixer_command_sender) = state.mixer_command_sender.as_ref() {
         mixer_command_sender.send(MixerCommand::GetMixerState).ok();
         if let Some(mixer_result_receiver) = state.mixer_result_receiver.as_ref() {

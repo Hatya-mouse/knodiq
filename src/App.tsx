@@ -4,9 +4,10 @@ import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import "./App.css";
 
-import EditorHeader from "@/features/editor_header/EditorHeader";
-import TracksArea from "@features/tracks_area/TracksArea";
-import { MixerState } from "@/lib/audio_api/mixer_state";
+import EditorHeader from "@features/editor_header/EditorHeader";
+import TrackArea from "@features/track_area/TrackArea";
+import { MixerState } from "@lib/audio_api/mixer_state";
+import PaneView from "@components/pane/PaneView";
 
 export default function App() {
     const [filePath, setFilePath] = useState<string | null>(null);
@@ -36,7 +37,7 @@ export default function App() {
 
             console.log("Selected file: ", selected);
 
-            await invoke("add_track", {
+            invoke("add_track", {
                 trackData: {
                     id: 0,
                     name: selected,
@@ -44,9 +45,6 @@ export default function App() {
                     track_type: "BufferTrack"
                 }
             });
-
-            let source = await invoke("source_from_path", { path: selected, trackNumber: 0 }) as { Some: any };
-            console.log("Source: ", source);
 
             invoke("add_region", {
                 regionData: {
@@ -56,24 +54,11 @@ export default function App() {
                     duration: 10,
                     samples_per_beat: 22550,
                     region_type: {
-                        BufferRegion: source,
+                        BufferRegion: [selected, 0],
                     },
                 },
                 trackId: 0,
             });
-
-            let input_nodes = await invoke("get_input_nodes", { trackId: 0 }) as any[];
-            let output_node = await invoke("get_output_node", { trackId: 0 }) as String;
-            console.log("Output node: ", output_node);
-            invoke("connect_graph", {
-                trackId: 0,
-                from: input_nodes[0],
-                fromParam: "output",
-                to: output_node,
-                toParam: "input",
-            });
-
-            console.log("Track added successfully.");
         }
     }
 
@@ -96,7 +81,7 @@ export default function App() {
     }
 
     return <>
-        <div className="App w-screen h-screen flex flex-col">
+        <div className="App w-screen h-screen flex flex-col font-(family-name:--base-font)">
             {/*
                 <h1>Audio File Selector</h1>
                 <button className="text-button" onClick={handleFileSelect}>Select Audio File</button>
@@ -104,7 +89,10 @@ export default function App() {
                 <button className="text-button" onClick={handlePlayAudio}>Play</button>
             */}
             <EditorHeader isPlaying={isPlaying} onPlay={handlePlayAudio} />
-            <TracksArea tracks={mixerState?.tracks || []} onAddTrack={handleFileSelect} onRemoveTrack={handleRemoveTrack} />
+            <PaneView
+                title={"Track View"}
+                children={<TrackArea tracks={mixerState?.tracks || []} onAddTrack={handleFileSelect} onRemoveTrack={handleRemoveTrack} />}
+            />
         </div>
     </>;
 }

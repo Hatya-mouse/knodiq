@@ -1,6 +1,6 @@
 use crate::api::mixing::MixerCommand;
 use crate::api::AppState;
-use segment_engine::AudioPlayer;
+use knodiq_engine::AudioPlayer;
 use std::sync::Mutex;
 use tauri::{command, State};
 

@@ -1,9 +1,9 @@
 use crate::api::mixing::{MixerState, RegionData, RegionType, TrackData};
 use crate::api::AppState;
 use crate::track::TrackType;
-use segment_engine::mixing::region::BufferRegion;
-use segment_engine::mixing::track::BufferTrack;
-use segment_engine::{Mixer, NodeId, Sample};
+use knodiq_engine::mixing::region::BufferRegion;
+use knodiq_engine::mixing::track::BufferTrack;
+use knodiq_engine::{Mixer, NodeId, Sample};
 use std::sync::{
     atomic::{AtomicBool, Ordering},
     mpsc, Arc, Mutex,
@@ -23,15 +23,15 @@ pub enum MixerCommand {
     AddRegion(u32, RegionData),
     /// Connect two nodes in the graph.
     /// - track_id: `u32`,
-    /// - from: `segment_engine::NodeId`,
+    /// - from: `knodiq_engine::NodeId`,
     /// - from_param: `String`,
-    /// - to: `segment_engine::NodeId`,
+    /// - to: `knodiq_engine::NodeId`,
     /// - to_param: `String`,
     ConnectGraph(
         u32,
-        segment_engine::NodeId,
+        knodiq_engine::NodeId,
         String,
-        segment_engine::NodeId,
+        knodiq_engine::NodeId,
         String,
     ),
     /// Get the input nodes of a track.
@@ -98,25 +98,47 @@ fn process_mixer(
                 mixer.mix(callback);
             }
             MixerCommand::AddTrack(track_data) => {
-                let track = match track_data.track_type {
+                let mut track = match track_data.track_type {
                     TrackType::BufferTrack => BufferTrack::new(
                         track_data.id,
                         track_data.name.as_str(),
                         track_data.channels,
                     ),
                 };
+
+                // Connect the input and output nodes of the track
+                let input_node = track.graph.input_nodes[0];
+                let output_node = track.graph.output_node;
+
+                track.graph.connect(
+                    input_node,
+                    "output".to_string(),
+                    output_node,
+                    "input".to_string(),
+                );
+
                 // Add the track to the mixer
                 mixer.add_track(Box::new(track));
             }
             MixerCommand::AddRegion(track_id, region_data) => {
                 println!("Adding region: {:?}", region_data.name);
                 let region = match region_data.region_type {
-                    RegionType::BufferRegion(source) => BufferRegion::new(
-                        region_data.id,
-                        region_data.name.as_str().to_string(),
-                        source,
-                        region_data.samples_per_beat,
-                    ),
+                    RegionType::BufferRegion(path, track_index) => {
+                        let source = match knodiq_engine::AudioSource::from_path(&path, track_index)
+                        {
+                            Ok(source) => source,
+                            Err(e) => {
+                                eprintln!("Error loading audio source: {}", e);
+                                continue; // Skip adding this region if the source cannot be loaded
+                            }
+                        };
+                        BufferRegion::new(
+                            region_data.id,
+                            region_data.name.as_str().to_string(),
+                            source,
+                            region_data.samples_per_beat,
+                        )
+                    }
                 };
                 // Add the region to the specified track
                 if let Some(track) = mixer.get_track_by_id_mut(track_id) {

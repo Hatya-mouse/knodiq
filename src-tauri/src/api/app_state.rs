@@ -1,6 +1,6 @@
 use super::mixing::mixer::MixerResult;
 use crate::api::mixing::MixerCommand;
-use segment_engine::AudioPlayer;
+use knodiq_engine::AudioPlayer;
 use std::sync::mpsc;
 
 pub struct AppState {

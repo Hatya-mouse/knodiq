@@ -1,20 +1,31 @@
 @import "tailwindcss";
 
 :root {
-    --border: 1px solid rgba(64, 64, 64, 0.3);
+    --border: 1px solid rgba(100, 100, 100, 0.3);
     --border-radius: 8px;
+
+    --base-font: "Geist", sans-serif;
 
     --region-border-radius: 4px;
 
     --bg-primary: rgba(255, 255, 255, 1.0);
-    --bg-secondary: rgba(230, 230, 230, 1.0);
+    --bg-secondary: rgb(238, 242, 249);
+    --bg-tertiary: rgb(216, 220, 231);
 
-    --button-default: rgba(200, 200, 200, 1.0);
-    --button-hover: rgba(150, 150, 150, 1.0);
-    --button-active: rgba(100, 100, 100, 1.0);
+    --button-default: rgba(220, 220, 220, 1.0);
+    --button-hover: rgb(200, 200, 200);
+    --button-active: rgb(180, 180, 180);
 
-    --fg: rgba(0, 0, 0, 1.0);
+    --fg: rgba(50, 50, 50, 1.0);
     --fg-inverted: rgba(255, 255, 255, 1.0);
+
+    --accent-color: rgb(0, 130, 220);
+}
+
+@font-face {
+    font-family: "Geist";
+    src: url("/fonts/Geist-VariableFont_wght.ttf") format("truetype");
+    font-display: swap;
 }
 
 html,
@@ -52,6 +63,7 @@ body #root {
     transition: all 0.3s ease-in-out;
     transition: filter 0.1s ease-in-out;
     border: var(--border);
+    color: var(--fg);
     cursor: pointer;
     background-color: rgba(150, 150, 150, 0.2);
 }

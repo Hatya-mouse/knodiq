@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "segment",
+  "productName": "knodiq",
   "version": "0.1.0",
-  "identifier": "com.hatya.segment",
+  "identifier": "com.hatya.knodiq",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "segment",
+        "title": "knodiq",
         "width": 1280,
         "height": 720
       }

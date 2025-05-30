@@ -1,13 +1,15 @@
 use crate::api::mixing::{emit_mixer_state, MixerCommand};
 use crate::api::AppState;
-use segment_engine::{audio_utils::Beats, AudioSource};
+use knodiq_engine::{audio_utils::Beats, AudioSource};
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
 use tauri::{command, AppHandle, State};
 
 #[derive(Serialize, Deserialize)]
 pub enum RegionType {
-    BufferRegion(AudioSource),
+    /// A region that contains audio data.
+    /// String is the path to the audio file, and usize is the track index.
+    BufferRegion(String, usize),
 }
 
 #[derive(Serialize, Deserialize)]
@@ -33,7 +35,7 @@ pub fn add_region(
         mixer_command_sender
             .send(MixerCommand::AddRegion(track_id, region_data))
             .unwrap();
-        emit_mixer_state(&state, app);
+        emit_mixer_state(locked_state, app);
     } else {
         eprintln!("Mixer thread not initialized.");
     }

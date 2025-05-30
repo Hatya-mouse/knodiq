@@ -1,5 +1,5 @@
 use crate::api::mixing::{RegionState, TrackType};
-use segment_engine::Track;
+use knodiq_engine::Track;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -16,11 +16,14 @@ impl TrackState {
         let id = track.id();
         let name = track.name().to_string();
         let channels = track.channels();
-        let track_type = track.track_type().clone();
+        let track_type = match track.track_type().as_str() {
+            "BufferTrack" => TrackType::BufferTrack,
+            _ => panic!("Unexpected track type"),
+        };
         let regions = track
             .regions()
             .iter()
-            .map(|region| RegionState::from_region(Box::new(region)))
+            .map(|&region| RegionState::from_region(Box::new(region)))
             .collect::<Vec<_>>();
 
         TrackState {

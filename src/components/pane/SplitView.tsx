@@ -40,23 +40,46 @@ export default function SplitView({
             document.addEventListener("mouseup", stopResize);
         };
 
-        const handle = document.getElementById("split-handle");
-        handle?.addEventListener("mousedown", startResize);
+        const hitArea = document.getElementById("split-handle-hit");
+        hitArea?.addEventListener("mousedown", startResize);
 
         return () => {
-            handle?.removeEventListener("mousedown", startResize);
+            hitArea?.removeEventListener("mousedown", startResize);
         };
     }, [minLeftWidth, minRightWidth]);
 
     return (
-        <div ref={containerRef} className={`flex ${doesStrech ? "items-strech" : ""} ${className}`}>
+        <div ref={containerRef} className={`flex relative ${doesStrech ? "items-strech" : ""} ${className}`}>
             <div style={{ width: leftWidth }} className="shrink-0 overflow-hidden">
                 {left}
             </div>
+            {/* Absolutely positioned invisible hit area for the handle */}
             <div
-                id="split-handle"
-                className=" w-1 cursor-ew-resize bg-gray-400 hover:bg-gray-500 shrink-0"
-            />
+                style={{
+                    width: 16,
+                    cursor: "ew-resize",
+                    position: "absolute",
+                    left: leftWidth - 8, // Center the hit area on the split
+                    top: 0,
+                    bottom: 0,
+                    zIndex: 10,
+                    background: "transparent", // invisible
+                }}
+                id="split-handle-hit"
+            >
+                <div
+                    id="split-handle"
+                    className="w-0.5 cursor-ew-resize bg-gray-400 hover:bg-[var(--accent-color)] shrink-0 transition-all"
+                    style={{
+                        position: "absolute",
+                        left: "50%",
+                        top: 0,
+                        bottom: 0,
+                        transform: "translateX(-50%)",
+                        pointerEvents: "auto",
+                    }}
+                />
+            </div>
             <div className="min-h-full flex-1 overflow-hidden min-w-0">
                 {right}
             </div>
