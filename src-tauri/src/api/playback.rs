@@ -1,13 +1,13 @@
 use crate::api::mixing::MixerCommand;
 use crate::api::AppState;
-use knodiq_engine::{AudioPlayer, AudioSource};
+use knodiq_engine::{audio_utils::Beats, AudioPlayer};
 use std::sync::Mutex;
 use tauri::{command, State};
 
 use super::mixing::{mixer_command::send_mixer_command_locked, send_mixer_command, MixerResult};
 
 #[command]
-pub fn play_audio(state: State<'_, Mutex<AppState>>) {
+pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>) {
     let mut locked_state = state.lock().unwrap();
 
     // Clear the old audio player if it exists
@@ -67,13 +67,19 @@ pub fn play_audio(state: State<'_, Mutex<AppState>>) {
         // TODO: --- Add a cache processing here!!! ---
 
         // If mixing is needed, send the mix command to the mixer
-        let mix_command = MixerCommand::Mix(Box::new(move |sample| {
-            // Send the mixed sample to the audio player
-            sample_sender.send(sample).unwrap_or_else(|e| {
-                eprintln!("Error sending sample to audio player: {}", e);
-            });
-            true
-        }));
+        let mix_command = MixerCommand::Mix(
+            at,
+            Box::new(move |sample| {
+                // Send the mixed sample to the audio player
+                match sample_sender.send(sample) {
+                    Ok(_) => true,
+                    Err(e) => {
+                        eprintln!("Error sending sample to audio player: {}", e);
+                        false
+                    }
+                }
+            }),
+        );
 
         // Send the mix command to the mixer thread
         sender.send(mix_command).unwrap_or_else(|e| {

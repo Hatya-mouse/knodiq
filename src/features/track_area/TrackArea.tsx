@@ -7,10 +7,12 @@ import { MixerState } from "@/lib/audio_api/mixer_state";
 
 export default function TrackArea({
     mixerState,
+    currentTime = 0,
     onAddTrack,
     onRemoveTrack,
 }: {
     mixerState?: MixerState,
+    currentTime?: number,
     onAddTrack?: () => void,
     onRemoveTrack?: (index: number) => void,
 }) {
@@ -91,6 +93,12 @@ export default function TrackArea({
                                 `repeating-linear-gradient(to right, rgba(128,128,128,0.2) 0px, rgba(128,128,128,0.2) 1px, transparent 1px, transparent ${beatWidth * 4}px)`,
                         }}
                     />
+                    {/* Vertical line for current time */}
+                    <div className="absolute top-0 left-0 h-full" style={{
+                        left: `${(currentTime / (mixerState?.duration ?? 1)) * 100}%`,
+                        zIndex: 20,
+                        borderLeft: `2px solid red`,
+                    }}></div>
                 </div>
             )} initialLeftWidth={300} minLeftWidth={250} minRightWidth={250} />
         </div>

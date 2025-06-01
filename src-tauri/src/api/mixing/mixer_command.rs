@@ -1,12 +1,13 @@
 use crate::api::mixing::{RegionData, TrackData};
 use crate::api::AppState;
+use knodiq_engine::audio_utils::Beats;
 use knodiq_engine::{NodeId, Sample};
 use std::sync::{Mutex, MutexGuard};
 use tauri::State;
 
 pub enum MixerCommand {
     /// Command to set the sample callback function for the mixer.
-    Mix(Box<dyn Fn(Sample) -> bool + Send>),
+    Mix(Beats, Box<dyn Fn(Sample) -> bool + Send>),
 
     /// Add a track to the mixer.
     AddTrack(TrackData),

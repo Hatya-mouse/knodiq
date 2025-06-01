@@ -55,7 +55,7 @@ fn process_mixer(
 
     while let Ok(command) = receiver.recv() {
         match command {
-            MixerCommand::Mix(callback) => {
+            MixerCommand::Mix(at, callback) => {
                 let mut mixer_clone = mixer.clone();
                 thread::spawn(move || {
                     mixer_clone.prepare();

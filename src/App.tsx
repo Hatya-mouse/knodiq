@@ -10,15 +10,20 @@ import { MixerState } from "@lib/audio_api/mixer_state";
 import PaneView from "@components/pane/PaneView";
 
 export default function App() {
-    const [filePath, setFilePath] = useState<string | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [mixerState, setMixerState] = useState<MixerState | null>(null);
     const [trackId, setTrackId] = useState<number>(0);
+    const [currentTime, setCurrentTime] = useState<number>(0);
 
     useEffect(() => {
         listen<MixerState>("mixer_state", (event) => {
             let state = event.payload;
             setMixerState(state);
+        });
+
+        listen<number>("current_time", (event) => {
+            let time = event.payload;
+            setCurrentTime(time);
         });
     }, []);
 
@@ -34,8 +39,6 @@ export default function App() {
 
         // Get the opened file path
         if (typeof selected == "string") {
-            setFilePath(selected);
-
             console.log("Selected file: ", selected);
 
             invoke("add_track", {
@@ -66,16 +69,13 @@ export default function App() {
     }
 
     const handlePlayAudio = async () => {
-        // Check if a file is selected
-        if (!filePath) {
-            console.error("No file selected");
-            return;
-        }
-
-        // Call the Rust function to play the audio file
         await invoke("play_audio");
-
         setIsPlaying(true);
+    }
+
+    const handlePauseAudio = async () => {
+        await invoke("pause_audio");
+        setIsPlaying(false);
     }
 
     const handleRemoveTrack = (index: number) => {
@@ -91,12 +91,13 @@ export default function App() {
                 {filePath && <p>Selected file: {filePath}</p>}
                 <button className="text-button" onClick={handlePlayAudio}>Play</button>
             */}
-            <EditorHeader isPlaying={isPlaying} onPlay={handlePlayAudio} />
+            <EditorHeader isPlaying={isPlaying} onPlay={handlePlayAudio} onPause={handlePauseAudio} />
             <PaneView
                 title={"Track View"}
                 children={
                     <TrackArea
                         mixerState={mixerState ?? undefined}
+                        currentTime={currentTime}
                         onAddTrack={handleFileSelect}
                         onRemoveTrack={handleRemoveTrack}
                     />
