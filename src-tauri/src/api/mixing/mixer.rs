@@ -1,59 +1,15 @@
-use crate::api::mixing::{MixerState, RegionData, RegionType, TrackData};
+use crate::api::mixing::{MixerCommand, MixerResult, MixerState, RegionData, RegionType};
 use crate::api::AppState;
 use crate::track::TrackType;
 use knodiq_engine::mixing::region::BufferRegion;
 use knodiq_engine::mixing::track::BufferTrack;
-use knodiq_engine::{Mixer, NodeId, Sample};
+use knodiq_engine::{AudioSource, Mixer, Track};
 use std::sync::{
     atomic::{AtomicBool, Ordering},
     mpsc, Arc, Mutex,
 };
+use std::thread;
 use tauri::{AppHandle, Emitter, State};
-
-pub enum MixerCommand {
-    /// Command to get the current state of the mixer, in serializable form.
-    GetMixerState,
-
-    /// Command to set the sample callback function for the mixer.
-    Mix(Box<dyn FnMut(Sample) + Send>),
-
-    /// Add a track to the mixer.
-    AddTrack(TrackData),
-
-    /// Add a region to the specified track.
-    /// - track_id: `usize`,
-    /// - region_data: `RegionData,
-    AddRegion(u32, RegionData),
-
-    /// Connect two nodes in the graph.
-    /// - track_id: `u32`,
-    /// - from: `knodiq_engine::NodeId`,
-    /// - from_param: `String`,
-    /// - to: `knodiq_engine::NodeId`,
-    /// - to_param: `String`,
-    ConnectGraph(
-        u32,
-        knodiq_engine::NodeId,
-        String,
-        knodiq_engine::NodeId,
-        String,
-    ),
-
-    /// Get the input nodes of a track.
-    GetInputNodes(u32),
-
-    /// Get the output node of a track.
-    GetOutputNode(u32),
-}
-
-pub enum MixerResult {
-    /// Result of the `GetInputNodes` command.
-    InputNodes(Vec<NodeId>),
-    /// Result of the `GetOutputNode` command.
-    OutputNode(NodeId),
-    /// Result of the `GetMixerState` command.
-    MixerState(MixerState),
-}
 
 pub fn start_mixer_thread(state: State<Mutex<AppState>>, app: AppHandle) {
     // Create a channel to communicate with the mixer
@@ -93,19 +49,18 @@ fn process_mixer(
     result_sender: &mpsc::Sender<MixerResult>,
     app: &AppHandle,
 ) {
-    // Process the mixer commands here
+    // Check if the mixer needs to mix
+    // Mixing is needed if any changes have been made to the mixer)
+    let mut needs_mix = false;
+
     while let Ok(command) = receiver.recv() {
         match command {
-            MixerCommand::GetMixerState => {
-                // Get the current state of the mixer
-                let state = MixerState::from_mixer(mixer);
-                // Send the state back to the main thread
-                let _ = result_sender.send(MixerResult::MixerState(state));
-            }
-
             MixerCommand::Mix(callback) => {
-                mixer.prepare();
-                mixer.mix(callback);
+                let mut mixer_clone = mixer.clone();
+                thread::spawn(move || {
+                    mixer_clone.prepare();
+                    mixer_clone.mix(callback);
+                });
             }
 
             MixerCommand::AddTrack(track_data) => {
@@ -130,41 +85,31 @@ fn process_mixer(
 
                 // Add the track to the mixer
                 mixer.add_track(Box::new(track));
+
+                emit_state(mixer, app);
+                needs_mix = true;
             }
 
             MixerCommand::AddRegion(track_id, region_data) => {
-                println!("Adding region: {:?}", region_data.name);
-                let region = match region_data.region_type {
-                    RegionType::BufferRegion(path, track_index) => {
-                        let source = match knodiq_engine::AudioSource::from_path(&path, track_index)
-                        {
-                            Ok(source) => source,
-                            Err(e) => {
-                                eprintln!("Error loading audio source: {}", e);
-                                continue; // Skip adding this region if the source cannot be loaded
-                            }
-                        };
-                        BufferRegion::new(
-                            region_data.id,
-                            region_data.name.as_str().to_string(),
-                            source,
-                            region_data.samples_per_beat,
-                        )
-                    }
-                };
-                // Add the region to the specified track
+                handle_add_region(mixer, track_id, region_data, app);
+            }
+
+            MixerCommand::RemoveTrack(track_id) => {
+                // Remove the track from the mixer
+                mixer.remove_track(track_id);
+                emit_state(mixer, app);
+                needs_mix = true;
+            }
+
+            MixerCommand::RemoveRegion(track_id, region_id) => {
+                // Remove the region from the specified track
                 if let Some(track) = mixer.get_track_by_id_mut(track_id) {
-                    if let Some(buffer_track) = track.as_any_mut().downcast_mut::<BufferTrack>() {
-                        buffer_track.add_region(
-                            region,
-                            region_data.start_time,
-                            region_data.duration,
-                        );
-                    }
+                    track.remove_region(region_id);
                 } else {
                     eprintln!("Track with ID {} not found.", track_id);
                 }
-                println!("Region added: {:?}", region_data.name);
+                emit_state(mixer, app);
+                needs_mix = true;
             }
 
             MixerCommand::ConnectGraph(track_id, from, from_param, to, to_param) => {
@@ -174,6 +119,8 @@ fn process_mixer(
                 } else {
                     eprintln!("Track with ID {} not found.", track_id);
                 }
+                emit_state(mixer, app);
+                needs_mix = true;
             }
 
             MixerCommand::GetInputNodes(track_id) => {
@@ -195,8 +142,64 @@ fn process_mixer(
                     eprintln!("Track with ID {} not found.", track_id);
                 }
             }
+
+            MixerCommand::DoesNeedMix => {
+                // Check if the mixer needs to mix again
+                let _ = result_sender.send(MixerResult::NeedsMix(needs_mix));
+            }
         }
-        let state = MixerState::from_mixer(mixer);
-        app.emit("mixer_state", state).ok();
     }
+}
+
+fn emit_state(mixer: &Mixer, app: &AppHandle) {
+    let state = MixerState::from_mixer(mixer);
+    app.emit("mixer_state", state).ok();
+}
+
+fn handle_add_region(mixer: &mut Mixer, track_id: u32, region_data: RegionData, app: &AppHandle) {
+    let RegionType::BufferRegion(path, track_index) = &region_data.region_type;
+    let duration_secs = match AudioSource::get_duration_from_path(path, *track_index) {
+        Ok(duration) => duration,
+        Err(e) => {
+            eprintln!("Error getting duration from path: {}", e);
+            return;
+        }
+    };
+
+    let duration = duration_secs / (60.0 / mixer.tempo);
+
+    // Add region
+    if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+        if let Some(buffer_track) = track.as_any_mut().downcast_mut::<BufferTrack>() {
+            let region = BufferRegion::empty(
+                region_data.id,
+                region_data.name.clone(),
+                region_data.samples_per_beat,
+                duration,
+            );
+            buffer_track.add_region(region.clone(), region_data.start_time, region_data.duration);
+            println!("Region added: {:?}", region_data.name);
+        }
+    }
+    emit_state(mixer, app);
+
+    // Set audio source
+    let source = match AudioSource::from_path(path, *track_index) {
+        Ok(source) => Some(source),
+        Err(e) => {
+            eprintln!("Error loading audio source: {}", e);
+            None
+        }
+    };
+    if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+        if let Some(buffer_track) = track.as_any_mut().downcast_mut::<BufferTrack>() {
+            if let Some(region) = buffer_track.get_region_mut(region_data.id) {
+                if let Some(region) = region.as_any_mut().downcast_mut::<BufferRegion>() {
+                    region.set_audio_source(source);
+                }
+            }
+        }
+    }
+    println!("Audio source set for region: {:?}", region_data.name);
+    emit_state(mixer, app);
 }

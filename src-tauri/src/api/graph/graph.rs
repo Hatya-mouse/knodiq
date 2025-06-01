@@ -1,5 +1,5 @@
 use crate::api::{
-    mixing::{MixerCommand, MixerResult},
+    mixing::{send_mixer_command, MixerCommand, MixerResult},
     AppState,
 };
 use knodiq_engine::NodeId;
@@ -15,18 +15,10 @@ pub fn connect_graph(
     to_param: String,
     state: State<'_, Mutex<AppState>>,
 ) {
-    let state = state.lock().unwrap();
-
-    // Crate a connect command and send it to the mixer thread
-    if let Some(mixer_command_sender) = state.mixer_command_sender.as_ref() {
-        mixer_command_sender
-            .send(MixerCommand::ConnectGraph(
-                track_id, from, from_param, to, to_param,
-            ))
-            .unwrap();
-    } else {
-        eprintln!("Mixer thread not initialized.");
-    }
+    send_mixer_command(
+        MixerCommand::ConnectGraph(track_id, from, from_param, to, to_param),
+        state,
+    );
 }
 
 #[command]

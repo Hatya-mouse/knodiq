@@ -13,6 +13,7 @@ export default function App() {
     const [filePath, setFilePath] = useState<string | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [mixerState, setMixerState] = useState<MixerState | null>(null);
+    const [trackId, setTrackId] = useState<number>(0);
 
     useEffect(() => {
         listen<MixerState>("mixer_state", (event) => {
@@ -39,7 +40,7 @@ export default function App() {
 
             invoke("add_track", {
                 trackData: {
-                    id: 0,
+                    id: trackId,
                     name: selected,
                     channels: 2,
                     track_type: "BufferTrack"
@@ -57,8 +58,10 @@ export default function App() {
                         BufferRegion: [selected, 0],
                     },
                 },
-                trackId: 0,
+                trackId: trackId,
             });
+
+            setTrackId(trackId + 1);
         }
     }
 
@@ -91,7 +94,13 @@ export default function App() {
             <EditorHeader isPlaying={isPlaying} onPlay={handlePlayAudio} />
             <PaneView
                 title={"Track View"}
-                children={<TrackArea tracks={mixerState?.tracks || []} onAddTrack={handleFileSelect} onRemoveTrack={handleRemoveTrack} />}
+                children={
+                    <TrackArea
+                        mixerState={mixerState ?? undefined}
+                        onAddTrack={handleFileSelect}
+                        onRemoveTrack={handleRemoveTrack}
+                    />
+                }
             />
         </div>
     </>;

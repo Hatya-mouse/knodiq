@@ -1,8 +1,8 @@
-use crate::api::mixing::{emit_mixer_state, MixerCommand};
+use crate::api::mixing::{send_mixer_command, MixerCommand};
 use crate::api::AppState;
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
-use tauri::{command, AppHandle, State};
+use tauri::{command, State};
 
 #[derive(Serialize, Deserialize)]
 pub enum TrackType {
@@ -26,13 +26,11 @@ pub struct TrackData {
 }
 
 #[command]
-pub fn add_track(track_data: TrackData, state: State<'_, Mutex<AppState>>, app: AppHandle) {
-    let locked_state = state.lock().unwrap();
-    if let Some(mixer_command_sender) = locked_state.mixer_command_sender.as_ref() {
-        mixer_command_sender
-            .send(MixerCommand::AddTrack(track_data))
-            .ok();
-    } else {
-        eprintln!("Audio player not initialized.");
-    }
+pub fn add_track(track_data: TrackData, state: State<'_, Mutex<AppState>>) {
+    send_mixer_command(MixerCommand::AddTrack(track_data), state);
+}
+
+#[command]
+pub fn remove_track(track_id: u32, state: State<'_, Mutex<AppState>>) {
+    send_mixer_command(MixerCommand::RemoveTrack(track_id), state);
 }

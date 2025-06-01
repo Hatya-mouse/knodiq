@@ -1,6 +1,5 @@
-use super::mixing::mixer::MixerResult;
-use crate::api::mixing::MixerCommand;
-use knodiq_engine::AudioPlayer;
+use super::mixing::{MixerCommand, MixerResult};
+use knodiq_engine::{AudioPlayer, AudioSource};
 use std::sync::mpsc;
 
 pub struct AppState {
@@ -10,6 +9,8 @@ pub struct AppState {
     pub mixer_result_receiver: Option<mpsc::Receiver<MixerResult>>,
     /// Audio player to handle audio playback.
     pub audio_player: Option<AudioPlayer>,
+    /// Cached mixed buffers to avoid unnecessary mixing.
+    pub mixer_result_cache: Option<AudioSource>,
 }
 
 impl AppState {
@@ -18,6 +19,7 @@ impl AppState {
             mixer_command_sender: None,
             mixer_result_receiver: None,
             audio_player: None,
+            mixer_result_cache: None,
         }
     }
 
@@ -31,5 +33,9 @@ impl AppState {
 
     pub fn clear_audio_player(&mut self) {
         self.audio_player = None;
+    }
+
+    pub fn set_mixer_result_cache(&mut self, cache: AudioSource) {
+        self.mixer_result_cache = Some(cache);
     }
 }

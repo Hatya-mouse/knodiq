@@ -48,39 +48,52 @@ body #root {
 }
 
 .scrollbar-hidden::-webkit-scrollbar {
-  display: none;
+    display: none;
 }
 
 .scrollbar-hidden {
-  -ms-overflow-style: none;  /* IE/Edge */
-  scrollbar-width: none;     /* Firefox */
+    -ms-overflow-style: none;
+    /* IE/Edge */
+    scrollbar-width: none;
+    /* Firefox */
 }
 
-/* Text Button class */
-.text-button {
+.basic-button {
     padding: 4px 8px 4px 8px;
     border-radius: var(--border-radius);
     transition: all 0.3s ease-in-out;
     transition: filter 0.1s ease-in-out;
-    border: var(--border);
     color: var(--fg);
     cursor: pointer;
     background-color: rgba(150, 150, 150, 0.2);
 }
 
-.text-button.highlighted {
+.basic-button.icon {
+    padding: 6px;
+    aspect-ratio: 1 / 1 !important;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+
+.basic-button.highlighted {
     background-color: rgba(0, 130, 220, 0.7);
 }
 
-.text-button:hover {
+.basic-button.destructive {
+    background-color: rgba(220, 50, 50, 0.7);
+    color: var(--fg-inverted);
+}
+
+.basic-button:hover {
     filter: brightness(0.8);
 }
 
-.text-button:active {
+.basic-button:active {
     filter: brightness(0.5);
 }
 
-.text-button:disabled {
+.basic-button:disabled {
     cursor: default;
     filter: opacity(0.5);
 }

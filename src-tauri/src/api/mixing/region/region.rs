@@ -1,9 +1,9 @@
-use crate::api::mixing::{emit_mixer_state, MixerCommand};
+use crate::api::mixing::{send_mixer_command, MixerCommand};
 use crate::api::AppState;
-use knodiq_engine::{audio_utils::Beats, AudioSource};
+use knodiq_engine::audio_utils::Beats;
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
-use tauri::{command, AppHandle, State};
+use tauri::{command, State};
 
 #[derive(Serialize, Deserialize)]
 pub enum RegionType {
@@ -23,19 +23,11 @@ pub struct RegionData {
 }
 
 #[command]
-pub fn add_region(
-    region_data: RegionData,
-    track_id: u32,
-    state: State<'_, Mutex<AppState>>,
-    app: AppHandle,
-) {
-    println!("add_region invoked");
-    let locked_state = state.lock().unwrap();
-    if let Some(mixer_command_sender) = locked_state.mixer_command_sender.as_ref() {
-        mixer_command_sender
-            .send(MixerCommand::AddRegion(track_id, region_data))
-            .unwrap();
-    } else {
-        eprintln!("Mixer thread not initialized.");
-    }
+pub fn add_region(region_data: RegionData, track_id: u32, state: State<'_, Mutex<AppState>>) {
+    send_mixer_command(MixerCommand::AddRegion(track_id, region_data), state);
+}
+
+#[command]
+pub fn remove_region(track_id: u32, region_id: u32, state: State<'_, Mutex<AppState>>) {
+    send_mixer_command(MixerCommand::RemoveRegion(track_id, region_id), state);
 }
