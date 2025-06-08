@@ -7,17 +7,34 @@ export default function TrackListContent({
     width = 0,
     height = 50,
     className = "",
+    onMoveRegion,
 }: {
     track: TrackState,
     beatWidth: number,
     width?: number,
     height?: number,
     className?: string,
+    onMoveRegion?: (trackId: number, regionId: number, newBeats: number) => void,
 }) {
+    const moveRegion = (id: number, newBeats: number) => {
+        if (onMoveRegion) onMoveRegion(track.id, id, newBeats);
+    };
+
     return (
-        <div className={`bottom-border pr-16 py-2 min-w-full w-fit ${className}`} style={{ height: height, width: width }}>
+        <div
+            className={`bottom-border pr-16 py-2 flex items-center relative ${className}`}
+            style={{
+                width: width,
+                height: height,
+            }}
+        >
             {track.regions.map((region, i) =>
-                <RegionView region={region} className="" key={i} beatWidth={beatWidth} />
+                <RegionView
+                    region={region}
+                    key={i}
+                    beatWidth={beatWidth}
+                    onMoveRegion={moveRegion}
+                />
             )}
         </div>
     );

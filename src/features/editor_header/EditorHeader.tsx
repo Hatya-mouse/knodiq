@@ -7,11 +7,13 @@ export default function EditorHeader({
     onPlay,
     onPause,
     onSkipBack,
+    onSkipForward,
 }: {
     isPlaying: boolean;
     onPlay?: () => void;
     onPause?: () => void;
     onSkipBack?: () => void;
+    onSkipForward?: () => void;
 }) {
     const handlePlayPause = () => {
         if (isPlaying) {
@@ -38,7 +40,7 @@ export default function EditorHeader({
                 />
                 <PlaybackControlButton
                     icon={<LucideSkipForward size={16} />}
-                    onClick={onSkipBack}
+                    onClick={onSkipForward}
                 />
             </div>
         </div>

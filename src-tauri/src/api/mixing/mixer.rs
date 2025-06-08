@@ -49,6 +49,8 @@ fn process_mixer(
     result_sender: &mpsc::Sender<MixerResult>,
     app: &AppHandle,
 ) {
+    println!("Mixer thread started.");
+
     // Check if the mixer needs to mix
     // Mixing is needed if any changes have been made to the mixer)
     let mut needs_mix = false;
@@ -59,7 +61,8 @@ fn process_mixer(
                 let mut mixer_clone = mixer.clone();
                 thread::spawn(move || {
                     mixer_clone.prepare();
-                    mixer_clone.mix(callback);
+                    println!("Mixing starting at: {}", at);
+                    mixer_clone.mix(at, callback);
                 });
             }
 
@@ -105,6 +108,24 @@ fn process_mixer(
                 // Remove the region from the specified track
                 if let Some(track) = mixer.get_track_by_id_mut(track_id) {
                     track.remove_region(region_id);
+                } else {
+                    eprintln!("Track with ID {} not found.", track_id);
+                }
+                emit_state(mixer, app);
+                needs_mix = true;
+            }
+
+            MixerCommand::MoveRegion(track_id, region_id, new_beats) => {
+                // Move the region to the new beats position
+                if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+                    if let Some(region) = track.get_region_mut(region_id) {
+                        region.set_start_time(new_beats);
+                    } else {
+                        eprintln!(
+                            "Region with ID {} not found in track {}.",
+                            region_id, track_id
+                        );
+                    }
                 } else {
                     eprintln!("Track with ID {} not found.", track_id);
                 }

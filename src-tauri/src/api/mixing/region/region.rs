@@ -31,3 +31,16 @@ pub fn add_region(region_data: RegionData, track_id: u32, state: State<'_, Mutex
 pub fn remove_region(track_id: u32, region_id: u32, state: State<'_, Mutex<AppState>>) {
     send_mixer_command(MixerCommand::RemoveRegion(track_id, region_id), state);
 }
+
+#[command]
+pub fn move_region(
+    track_id: u32,
+    region_id: u32,
+    new_beats: Beats,
+    state: State<'_, Mutex<AppState>>,
+) {
+    send_mixer_command(
+        MixerCommand::MoveRegion(track_id, region_id, new_beats),
+        state,
+    );
+}

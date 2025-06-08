@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
@@ -13,19 +13,38 @@ export default function App() {
     const [isPlaying, setIsPlaying] = useState(false);
     const [mixerState, setMixerState] = useState<MixerState | null>(null);
     const [trackId, setTrackId] = useState<number>(0);
-    const [currentTime, setCurrentTime] = useState<number>(0);
+    const [currentBeats, setCurrentBeats] = useState<number>(0);
+    const intervalRef = useRef<number | null>(null);
 
     useEffect(() => {
         listen<MixerState>("mixer_state", (event) => {
             let state = event.payload;
             setMixerState(state);
-        });
 
-        listen<number>("current_time", (event) => {
-            let time = event.payload;
-            setCurrentTime(time);
+            console.log(`Received mixer state: ${state}`);
+
+            if (currentBeats > state.duration) {
+                setCurrentBeats(state.duration);
+            }
         });
     }, []);
+
+    useEffect(() => {
+        if (isPlaying && mixerState) {
+            // Calculate interval in ms for each beat
+            const msPerBeat = 60000 / mixerState.bpm;
+
+            intervalRef.current = setInterval(() => {
+                setCurrentBeats(prev => prev + 1);
+            }, msPerBeat);
+
+            return () => {
+                if (intervalRef.current) clearInterval(intervalRef.current);
+            };
+        } else {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+        }
+    }, [isPlaying, mixerState?.bpm]);
 
     /// Called when the file selection button is pressed.
     const handleFileSelect = async () => {
@@ -39,12 +58,18 @@ export default function App() {
 
         // Get the opened file path
         if (typeof selected == "string") {
-            console.log("Selected file: ", selected);
+            console.log("Selected file & Track ID: ", selected, trackId);
+            setTrackId(prev => prev + 1);
+
+            // Get the file name from the path
+            // Windows paths may contain backslashes, so we use split("/") to ensure we get the last part of the path
+            var fileName = selected.split("/").pop() || "Unknown File";
+            fileName = fileName.split("\\").pop() || "Unknown File";
 
             invoke("add_track", {
                 trackData: {
                     id: trackId,
-                    name: selected,
+                    name: fileName,
                     channels: 2,
                     track_type: "BufferTrack"
                 }
@@ -53,7 +78,7 @@ export default function App() {
             invoke("add_region", {
                 regionData: {
                     id: 0,
-                    name: "New Region",
+                    name: fileName,
                     start_time: 0,
                     duration: 10,
                     samples_per_beat: 22550,
@@ -64,12 +89,11 @@ export default function App() {
                 trackId: trackId,
             });
 
-            setTrackId(trackId + 1);
         }
     }
 
     const handlePlayAudio = async () => {
-        await invoke("play_audio");
+        await invoke("play_audio", { at: currentBeats });
         setIsPlaying(true);
     }
 
@@ -79,30 +103,48 @@ export default function App() {
     }
 
     const handleRemoveTrack = (index: number) => {
-        // Remove the track at the specified index
         invoke("remove_track", { trackId: index });
     }
 
-    return <>
-        <div className="App w-screen h-screen flex flex-col font-(family-name:--base-font)">
-            {/*
+    const handleMoveRegion = (trackId: number, regionId: number, newBeats: number) => {
+        invoke("move_region", {
+            trackId: trackId,
+            regionId: regionId,
+            newBeats: newBeats
+        });
+    }
+
+    const seek = async (beats: number) => {
+        setCurrentBeats(beats);
+        handlePauseAudio();
+    }
+
+    return <div className="App w-screen h-screen flex flex-col font-(family-name:--base-font)">
+        {/*
                 <h1>Audio File Selector</h1>
                 <button className="text-button" onClick={handleFileSelect}>Select Audio File</button>
                 {filePath && <p>Selected file: {filePath}</p>}
                 <button className="text-button" onClick={handlePlayAudio}>Play</button>
             */}
-            <EditorHeader isPlaying={isPlaying} onPlay={handlePlayAudio} onPause={handlePauseAudio} />
-            <PaneView
-                title={"Track View"}
-                children={
-                    <TrackArea
-                        mixerState={mixerState ?? undefined}
-                        currentTime={currentTime}
-                        onAddTrack={handleFileSelect}
-                        onRemoveTrack={handleRemoveTrack}
-                    />
-                }
-            />
-        </div>
-    </>;
+        <EditorHeader
+            isPlaying={isPlaying}
+            onPlay={handlePlayAudio}
+            onPause={handlePauseAudio}
+            onSkipBack={() => seek(0)}
+            onSkipForward={() => seek(mixerState?.duration || 0)}
+        />
+        <PaneView
+            title={"Track View"}
+            children={
+                <TrackArea
+                    mixerState={mixerState ?? undefined}
+                    currentTime={currentBeats}
+                    onAddTrack={handleFileSelect}
+                    onRemoveTrack={handleRemoveTrack}
+                    onMoveRegion={handleMoveRegion}
+                    seek={seek}
+                />
+            }
+        />
+    </div>;
 }

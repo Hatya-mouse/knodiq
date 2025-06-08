@@ -19,6 +19,7 @@ export default function SplitView({
 }) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [leftWidth, setLeftWidth] = useState(initialLeftWidth);
+    const [isHovered, setIsHovered] = useState(false);
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
@@ -53,23 +54,24 @@ export default function SplitView({
             <div style={{ width: leftWidth }} className="shrink-0 overflow-hidden">
                 {left}
             </div>
-            {/* Absolutely positioned invisible hit area for the handle */}
             <div
                 style={{
                     width: 16,
                     cursor: "ew-resize",
                     position: "absolute",
-                    left: leftWidth - 8, // Center the hit area on the split
+                    left: leftWidth - 8,
                     top: 0,
                     bottom: 0,
                     zIndex: 10,
-                    background: "transparent", // invisible
+                    background: "transparent",
                 }}
                 id="split-handle-hit"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
             >
                 <div
                     id="split-handle"
-                    className="w-0.5 cursor-ew-resize bg-gray-400 hover:bg-[var(--accent-color)] shrink-0 transition-all"
+                    className={`w-0.5 cursor-ew-resize ${isHovered ? "bg-[var(--accent-color)]" : "bg-gray-400"} shrink-0 transition-all`}
                     style={{
                         position: "absolute",
                         left: "50%",

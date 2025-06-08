@@ -27,6 +27,7 @@ pub fn run() {
             track::track::remove_track,
             region::region::add_region,
             region::region::remove_region,
+            region::region::move_region,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

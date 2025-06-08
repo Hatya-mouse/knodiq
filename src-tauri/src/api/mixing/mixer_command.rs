@@ -7,7 +7,7 @@ use tauri::State;
 
 pub enum MixerCommand {
     /// Command to set the sample callback function for the mixer.
-    Mix(Beats, Box<dyn Fn(Sample) -> bool + Send>),
+    Mix(Beats, Box<dyn Fn(Sample, Beats) -> bool + Send>),
 
     /// Add a track to the mixer.
     AddTrack(TrackData),
@@ -25,6 +25,12 @@ pub enum MixerCommand {
     /// - track_id: `u32`,
     /// - region_id: `u32`,
     RemoveRegion(u32, u32),
+
+    /// Move a region to a new position in the specified track.
+    /// - track_id: `u32`,
+    /// - region_id: `u32`,
+    /// - new_beats: `Beats`,
+    MoveRegion(u32, u32, Beats),
 
     /// Connect two nodes in the graph.
     /// - track_id: `u32`,

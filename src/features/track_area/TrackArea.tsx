@@ -10,11 +10,15 @@ export default function TrackArea({
     currentTime = 0,
     onAddTrack,
     onRemoveTrack,
+    onMoveRegion,
+    seek,
 }: {
     mixerState?: MixerState,
     currentTime?: number,
     onAddTrack?: () => void,
     onRemoveTrack?: (index: number) => void,
+    onMoveRegion?: (trackId: number, regionId: number, newBeats: number) => void,
+    seek?: (beats: number) => void,
 }) {
     const [trackHeight, _] = useState(60);
     const [beatWidth, setBeatWidth] = useState(10);
@@ -40,7 +44,7 @@ export default function TrackArea({
 
             // Calculate the new content width based on the current beat width
             if (!mixerState) return;
-            const newContentWidth = beatWidth * mixerState.duration;
+            const newContentWidth = (beatWidth * mixerState.duration) + 500;
             setContentWidth(newContentWidth);
         };
 
@@ -51,28 +55,67 @@ export default function TrackArea({
         };
     }, [beatWidth, mixerState]);
 
+    // Seek to the clicked time marker.
+    const timeMarkerClicked = (event: React.MouseEvent<HTMLDivElement>) => {
+        if (!seek) return;
+        const rect = event.currentTarget.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const clickedBeat = x / beatWidth;
+        seek(clickedBeat);
+    };
+
     return (
-        <div className="h-full flex-1 overflow-x-hidden overflow-y-scroll scrollbar-hidden">
+        <div
+            className="h-full flex-1 overflow-x-hidden overflow-y-scroll scrollbar-hidden"
+        >
             <SplitView className="w-full min-h-full" doesStrech={true} left={(
                 <div>
                     {/* Track list */}
-                    {(mixerState?.tracks ?? []).map((track, index) => (
+                    <button
+                        className="text-[var(--fg)] bottom-border w-full h-8 cursor-pointer track-list-item"
+                        onClick={onAddTrack}
+                    >
+                        Add Track
+                    </button>
+                    {(mixerState?.tracks ?? []).map((track) => (
                         <TrackListItem
-                            key={index}
+                            key={track.id}
                             height={trackHeight}
                             track={track}
-                            index={index}
                             onRemoveTrack={onRemoveTrack}
                         />
                     ))}
-                    <button className="text-[var(--fg)] bottom-border w-full cursor-pointer track-list-item" style={{ height: trackHeight }} onClick={onAddTrack}>Add Track</button>
                 </div>
             )} right={(
                 <div
                     ref={rightPaneRef}
                     className="bg-[var(--bg-tertiary)] h-full overflow-x-scroll overflow-y-hidden relative"
-                    style={{ position: "relative" }}
+                    style={{
+                        position: "relative",
+                    }}
                 >
+                    {/* Top time markers */}
+                    <div
+                        className="top-0 left-0 w-full h-8 flex select-none bottom-border"
+                        style={{ width: contentWidth || "100%" }}
+                        onClick={timeMarkerClicked}
+                    >
+                        {Array.from({ length: Math.ceil((mixerState?.duration ?? 0) / 4) }).map((_, index) => (
+                            <div
+                                key={index}
+                                className="px-1"
+                                style={{
+                                    position: "absolute",
+                                    left: `${index * 4 * beatWidth}px`,
+                                }}
+                            >
+                                <div className="text-left text-[var(--fg)] text-sm">
+                                    {index * 4}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
                     {/* Track contents */}
                     {(mixerState?.tracks ?? []).map((track, index) => (
                         <TrackListContent
@@ -81,26 +124,32 @@ export default function TrackArea({
                             width={contentWidth}
                             height={trackHeight}
                             track={track}
+                            onMoveRegion={onMoveRegion}
                         />
                     ))}
+
                     {/* Grid overlay */}
                     <div
                         className="pointer-events-none absolute top-0 left-0 h-full"
                         style={{
                             width: contentWidth || "100%",
+                            minWidth: "100%",
                             zIndex: 10,
                             backgroundImage:
                                 `repeating-linear-gradient(to right, rgba(128,128,128,0.2) 0px, rgba(128,128,128,0.2) 1px, transparent 1px, transparent ${beatWidth * 4}px)`,
                         }}
                     />
-                    {/* Vertical line for current time */}
-                    <div className="absolute top-0 left-0 h-full" style={{
-                        left: `${(currentTime / (mixerState?.duration ?? 1)) * 100}%`,
+
+                    {/* Playback head */}
+                    <div className="absolute top-0 h-full bg-black" style={{
+                        left: `${beatWidth * currentTime}px`,
+                        width: '1px',
                         zIndex: 20,
-                        borderLeft: `2px solid red`,
-                    }}></div>
+                        pointerEvents: 'none',
+                    }} />
                 </div>
-            )} initialLeftWidth={300} minLeftWidth={250} minRightWidth={250} />
-        </div>
+            )
+            } initialLeftWidth={300} minLeftWidth={250} minRightWidth={250} />
+        </div >
     );
 }

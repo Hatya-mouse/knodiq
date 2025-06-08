@@ -1,13 +1,12 @@
+use super::mixing::{mixer_command::send_mixer_command_locked, MixerResult};
 use crate::api::mixing::MixerCommand;
 use crate::api::AppState;
 use knodiq_engine::{audio_utils::Beats, AudioPlayer};
 use std::sync::Mutex;
-use tauri::{command, State};
-
-use super::mixing::{mixer_command::send_mixer_command_locked, send_mixer_command, MixerResult};
+use tauri::{command, AppHandle, Emitter, State};
 
 #[command]
-pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>) {
+pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>, app: AppHandle) {
     let mut locked_state = state.lock().unwrap();
 
     // Clear the old audio player if it exists
@@ -15,7 +14,7 @@ pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>) {
 
     let sample_rate = 48000;
     let channels = 2;
-    let completion_handler = || { /* Handle completion */ };
+    let completion_handler = || {};
 
     // Initialize the audio player with the given sample rate and channels
     let audio_player = AudioPlayer::new(sample_rate);
@@ -66,17 +65,16 @@ pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>) {
     if needs_mix {
         // TODO: --- Add a cache processing here!!! ---
 
+        let app_handle = app.clone();
+
         // If mixing is needed, send the mix command to the mixer
         let mix_command = MixerCommand::Mix(
             at,
-            Box::new(move |sample| {
+            Box::new(move |sample, current_beats| {
                 // Send the mixed sample to the audio player
                 match sample_sender.send(sample) {
                     Ok(_) => true,
-                    Err(e) => {
-                        eprintln!("Error sending sample to audio player: {}", e);
-                        false
-                    }
+                    Err(_) => false,
                 }
             }),
         );
