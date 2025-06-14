@@ -27,10 +27,10 @@ pub struct TrackData {
 
 #[command]
 pub fn add_track(track_data: TrackData, state: State<'_, Mutex<AppState>>) {
-    send_mixer_command(MixerCommand::AddTrack(track_data), state);
+    send_mixer_command(MixerCommand::AddTrack(track_data), &state);
 }
 
 #[command]
 pub fn remove_track(track_id: u32, state: State<'_, Mutex<AppState>>) {
-    send_mixer_command(MixerCommand::RemoveTrack(track_id), state);
+    send_mixer_command(MixerCommand::RemoveTrack(track_id), &state);
 }

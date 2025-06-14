@@ -12,6 +12,7 @@ use tauri_plugin_log;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_log::Builder::new().build())
@@ -23,6 +24,8 @@ pub fn run() {
             graph::connect_graph,
             graph::get_input_nodes,
             graph::get_output_node,
+            graph::disconnect_graph,
+            graph::add_node,
             track::track::add_track,
             track::track::remove_track,
             region::region::add_region,

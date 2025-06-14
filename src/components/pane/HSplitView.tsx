@@ -1,24 +1,21 @@
 import React, { useRef, useState, useEffect } from "react";
 
-export default function SplitView({
+export default function HSplitView({
     left,
     right,
     className = "",
     doesStrech = false,
-    initialLeftWidth = 200,
-    minLeftWidth = 100,
-    minRightWidth = 100,
+    leftWidth = 200,
+    setLeftWidth = () => { },
 }: {
     left: React.ReactNode,
     right: React.ReactNode,
     className?: string,
-    doesStrech?: boolean
-    initialLeftWidth?: number,
-    minLeftWidth?: number,
-    minRightWidth?: number,
+    doesStrech?: boolean,
+    leftWidth?: number,
+    setLeftWidth?: (width: number) => void,
 }) {
     const containerRef = useRef<HTMLDivElement>(null);
-    const [leftWidth, setLeftWidth] = useState(initialLeftWidth);
     const [isHovered, setIsHovered] = useState(false);
 
     useEffect(() => {
@@ -26,9 +23,7 @@ export default function SplitView({
             if (!containerRef.current) return;
             const rect = containerRef.current.getBoundingClientRect();
             const newLeftWidth = e.clientX - rect.left;
-            const maxLeft = rect.width - minRightWidth;
-            const clamped = Math.max(minLeftWidth, Math.min(maxLeft, newLeftWidth));
-            setLeftWidth(clamped);
+            setLeftWidth(newLeftWidth);
         };
 
         const stopResize = () => {
@@ -47,7 +42,7 @@ export default function SplitView({
         return () => {
             hitArea?.removeEventListener("mousedown", startResize);
         };
-    }, [minLeftWidth, minRightWidth]);
+    }, []);
 
     return (
         <div ref={containerRef} className={`flex relative ${doesStrech ? "items-strech" : ""} ${className}`}>

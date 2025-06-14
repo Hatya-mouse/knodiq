@@ -1,6 +1,7 @@
 use crate::api::mixing::{MixerCommand, MixerResult, MixerState, RegionData, RegionType};
 use crate::api::AppState;
 use crate::track::TrackType;
+use knodiq_audio_shader::AudioShaderNode;
 use knodiq_engine::mixing::region::BufferRegion;
 use knodiq_engine::mixing::track::BufferTrack;
 use knodiq_engine::{AudioSource, Mixer, Track};
@@ -79,9 +80,32 @@ fn process_mixer(
                 let input_node = track.graph.input_nodes[0];
                 let output_node = track.graph.output_node;
 
+                let mut shader_node = AudioShaderNode::new();
+                match shader_node.set_shader(
+                    "input buffer in_buffer
+                    output buffer out_buffer
+                    out_buffer = sin(time() * 440.0 * pi() + time() * 10.0)
+                "
+                    .to_string(),
+                ) {
+                    Ok(_) => (),
+                    Err(e) => {
+                        eprintln!("Error setting shader: {}", e.join(", "));
+                        continue; // Skip adding this track if shader fails
+                    }
+                };
+                let shader_node_id = track.graph.add_node(Box::new(shader_node));
+
                 track.graph.connect(
                     input_node,
                     "output".to_string(),
+                    shader_node_id,
+                    "in_buffer".to_string(),
+                );
+
+                track.graph.connect(
+                    shader_node_id,
+                    "out_buffer".to_string(),
                     output_node,
                     "input".to_string(),
                 );
@@ -144,6 +168,17 @@ fn process_mixer(
                 needs_mix = true;
             }
 
+            MixerCommand::DisconnectGraph(track_id, from, from_param, to, to_param) => {
+                // Disconnect the two nodes in the graph
+                if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+                    track.graph().disconnect(from, from_param, to, to_param);
+                } else {
+                    eprintln!("Track with ID {} not found.", track_id);
+                }
+                emit_state(mixer, app);
+                needs_mix = true;
+            }
+
             MixerCommand::GetInputNodes(track_id) => {
                 // Get the input nodes of the track
                 if let Some(track) = mixer.get_track_by_id_mut(track_id) {
@@ -162,6 +197,18 @@ fn process_mixer(
                 } else {
                     eprintln!("Track with ID {} not found.", track_id);
                 }
+            }
+
+            MixerCommand::AddNode(track_id, node) => {
+                // Add a node to the track's graph
+                if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+                    let _ = result_sender.send(MixerResult::NodeId(track.graph().add_node(node)));
+                } else {
+                    eprintln!("Track with ID {} not found.", track_id);
+                    let _ = result_sender.send(MixerResult::Error("Track not found".to_string()));
+                }
+                emit_state(mixer, app);
+                needs_mix = true;
             }
 
             MixerCommand::DoesNeedMix => {

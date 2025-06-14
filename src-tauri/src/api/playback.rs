@@ -3,7 +3,7 @@ use crate::api::mixing::MixerCommand;
 use crate::api::AppState;
 use knodiq_engine::{audio_utils::Beats, AudioPlayer};
 use std::sync::Mutex;
-use tauri::{command, AppHandle, Emitter, State};
+use tauri::{command, AppHandle, State};
 
 #[command]
 pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>, app: AppHandle) {
@@ -70,11 +70,14 @@ pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>, app: AppHandle) 
         // If mixing is needed, send the mix command to the mixer
         let mix_command = MixerCommand::Mix(
             at,
-            Box::new(move |sample, current_beats| {
+            Box::new(move |sample, _current_beats| {
                 // Send the mixed sample to the audio player
                 match sample_sender.send(sample) {
                     Ok(_) => true,
-                    Err(_) => false,
+                    Err(_) => {
+                        eprintln!("Paused.");
+                        false
+                    }
                 }
             }),
         );

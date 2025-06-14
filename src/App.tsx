@@ -4,16 +4,22 @@ import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import "./App.css";
 
-import EditorHeader from "@features/editor_header/EditorHeader";
-import TrackArea from "@features/track_area/TrackArea";
+import WindowHeader from "@/features/editor_header/WindowHeader";
 import { MixerState } from "@lib/audio_api/mixer_state";
 import PaneView from "@components/pane/PaneView";
+import { PaneNode } from "@components/pane/PaneView";
+import { PaneContentType } from "./components/pane/PaneData";
 
 export default function App() {
     const [isPlaying, setIsPlaying] = useState(false);
     const [mixerState, setMixerState] = useState<MixerState | null>(null);
     const [trackId, setTrackId] = useState<number>(0);
     const [currentBeats, setCurrentBeats] = useState<number>(0);
+    const [paneNode, setPaneNode] = useState<PaneNode>({
+        id: "0",
+        type: 'leaf',
+        contentType: PaneContentType.TrackView,
+    });
     const intervalRef = useRef<number | null>(null);
 
     useEffect(() => {
@@ -27,6 +33,8 @@ export default function App() {
                 setCurrentBeats(state.duration);
             }
         });
+
+        document.addEventListener('contextmenu', event => event.preventDefault());
     }, []);
 
     useEffect(() => {
@@ -119,14 +127,13 @@ export default function App() {
         handlePauseAudio();
     }
 
+    const handleSetPaneNode = (_id: string, newNode: PaneNode) => {
+        setPaneNode(newNode);
+        console.log("Setting pane node:", newNode);
+    }
+
     return <div className="App w-screen h-screen flex flex-col font-(family-name:--base-font)">
-        {/*
-                <h1>Audio File Selector</h1>
-                <button className="text-button" onClick={handleFileSelect}>Select Audio File</button>
-                {filePath && <p>Selected file: {filePath}</p>}
-                <button className="text-button" onClick={handlePlayAudio}>Play</button>
-            */}
-        <EditorHeader
+        <WindowHeader
             isPlaying={isPlaying}
             onPlay={handlePlayAudio}
             onPause={handlePauseAudio}
@@ -134,17 +141,18 @@ export default function App() {
             onSkipForward={() => seek(mixerState?.duration || 0)}
         />
         <PaneView
-            title={"Track View"}
-            children={
-                <TrackArea
-                    mixerState={mixerState ?? undefined}
-                    currentTime={currentBeats}
-                    onAddTrack={handleFileSelect}
-                    onRemoveTrack={handleRemoveTrack}
-                    onMoveRegion={handleMoveRegion}
-                    seek={seek}
-                />
-            }
+            paneNode={paneNode}
+            onSetPaneNode={handleSetPaneNode}
+            paneData={{
+                trackViewData: {
+                    mixerState: mixerState || undefined,
+                    currentTime: currentBeats,
+                    onAddTrack: handleFileSelect,
+                    onRemoveTrack: handleRemoveTrack,
+                    onMoveRegion: handleMoveRegion,
+                    seek: seek,
+                }
+            }}
         />
     </div>;
 }

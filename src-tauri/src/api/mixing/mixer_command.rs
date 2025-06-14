@@ -13,31 +13,31 @@ pub enum MixerCommand {
     AddTrack(TrackData),
 
     /// Add a region to the specified track.
-    /// - track_id: `usize`,
+    /// - track_id: `usize`
     /// - region_data: `RegionData,
     AddRegion(u32, RegionData),
 
     /// Remove a track from the mixer.
-    /// - track_id: `u32`,
+    /// - track_id: `u32`
     RemoveTrack(u32),
 
     /// Remove a region from the specified track.
-    /// - track_id: `u32`,
-    /// - region_id: `u32`,
+    /// - track_id: `u32`
+    /// - region_id: `u32`
     RemoveRegion(u32, u32),
 
     /// Move a region to a new position in the specified track.
-    /// - track_id: `u32`,
-    /// - region_id: `u32`,
-    /// - new_beats: `Beats`,
+    /// - track_id: `u32`
+    /// - region_id: `u32`
+    /// - new_beats: `Beats`
     MoveRegion(u32, u32, Beats),
 
     /// Connect two nodes in the graph.
-    /// - track_id: `u32`,
-    /// - from: `knodiq_engine::NodeId`,
-    /// - from_param: `String`,
-    /// - to: `knodiq_engine::NodeId`,
-    /// - to_param: `String`,
+    /// - track_id: `u32`
+    /// - from: `knodiq_engine::NodeId`
+    /// - from_param: `String`
+    /// - to: `knodiq_engine::NodeId`
+    /// - to_param: `String`
     ConnectGraph(
         u32,
         knodiq_engine::NodeId,
@@ -45,6 +45,25 @@ pub enum MixerCommand {
         knodiq_engine::NodeId,
         String,
     ),
+
+    /// Disconnect two nodes in the graph.
+    /// - track_id: `u32`
+    /// - from: `knodiq_engine::NodeId`
+    /// - from_param: `String`
+    /// - to: `knodiq_engine::NodeId`
+    /// - to_param: `String`
+    DisconnectGraph(
+        u32,
+        knodiq_engine::NodeId,
+        String,
+        knodiq_engine::NodeId,
+        String,
+    ),
+
+    /// Add a node to a track.
+    /// - track_id: `u32`
+    /// - node: `Box<dyn knodiq_engine::Node + Send>`
+    AddNode(u32, Box<dyn knodiq_engine::Node + Send>),
 
     /// Get the input nodes of a track.
     GetInputNodes(u32),
@@ -63,9 +82,14 @@ pub enum MixerResult {
     OutputNode(NodeId),
     /// Result of the `DoesNeedMix` command.
     NeedsMix(bool),
+    /// Result of the `AddNode` command.
+    NodeId(NodeId),
+
+    /// Error result.
+    Error(String),
 }
 
-pub fn send_mixer_command(command: MixerCommand, state: State<'_, Mutex<AppState>>) {
+pub fn send_mixer_command(command: MixerCommand, state: &State<'_, Mutex<AppState>>) {
     match state.lock().map_err(|e| e.to_string()) {
         Ok(locked_state) => {
             send_mixer_command_locked(command, &locked_state);

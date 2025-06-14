@@ -24,12 +24,12 @@ pub struct RegionData {
 
 #[command]
 pub fn add_region(region_data: RegionData, track_id: u32, state: State<'_, Mutex<AppState>>) {
-    send_mixer_command(MixerCommand::AddRegion(track_id, region_data), state);
+    send_mixer_command(MixerCommand::AddRegion(track_id, region_data), &state);
 }
 
 #[command]
 pub fn remove_region(track_id: u32, region_id: u32, state: State<'_, Mutex<AppState>>) {
-    send_mixer_command(MixerCommand::RemoveRegion(track_id, region_id), state);
+    send_mixer_command(MixerCommand::RemoveRegion(track_id, region_id), &state);
 }
 
 #[command]
@@ -41,6 +41,6 @@ pub fn move_region(
 ) {
     send_mixer_command(
         MixerCommand::MoveRegion(track_id, region_id, new_beats),
-        state,
+        &state,
     );
 }

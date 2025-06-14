@@ -20,6 +20,8 @@
     --fg-inverted: rgba(255, 255, 255, 1.0);
 
     --accent-color: rgb(0, 130, 220);
+
+    --destructive-color: rgba(220, 50, 50, 0.7);
 }
 
 @font-face {
@@ -81,7 +83,7 @@ body #root {
 }
 
 .basic-button.destructive {
-    background-color: rgba(220, 50, 50, 0.7);
+    background-color: var(--destructive-color);
     color: var(--fg-inverted);
 }
 
