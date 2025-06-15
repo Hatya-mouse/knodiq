@@ -2,24 +2,17 @@ import { useState, useEffect, useRef } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
-import "./App.css";
 
-import WindowHeader from "@/features/window_header/WindowHeader";
 import { MixerState } from "@lib/audio_api/mixer_state";
-import PaneView from "@components/pane/PaneView";
-import { PaneNode } from "@components/pane/PaneView";
-import { PaneContentType } from "./components/pane/PaneData";
+import WindowHeader from "@/features/window_header/WindowHeader";
+import PaneViewRoot from "./components/pane/PaneViewRoot";
+import "./App.css";
 
 export default function App() {
     const [isPlaying, setIsPlaying] = useState(false);
     const [mixerState, setMixerState] = useState<MixerState | null>(null);
     const [trackId, setTrackId] = useState<number>(0);
     const [currentBeats, setCurrentBeats] = useState<number>(0);
-    const [paneNode, setPaneNode] = useState<PaneNode>({
-        id: "0",
-        type: 'leaf',
-        contentType: PaneContentType.TrackView,
-    });
     const intervalRef = useRef<number | null>(null);
 
     useEffect(() => {
@@ -127,10 +120,6 @@ export default function App() {
         handlePauseAudio();
     }
 
-    const handleSetPaneNode = (newNode: PaneNode) => {
-        setPaneNode(newNode);
-    }
-
     return <div className="App w-screen h-screen flex flex-col font-(family-name:--base-font)">
         <WindowHeader
             isPlaying={isPlaying}
@@ -139,19 +128,15 @@ export default function App() {
             onSkipBack={() => seek(0)}
             onSkipForward={() => seek(mixerState?.duration || 0)}
         />
-        <PaneView
-            paneNode={paneNode}
-            onSetPaneNode={handleSetPaneNode}
-            paneData={{
-                trackViewData: {
-                    mixerState: mixerState || undefined,
-                    currentTime: currentBeats,
-                    onAddTrack: handleFileSelect,
-                    onRemoveTrack: handleRemoveTrack,
-                    onMoveRegion: handleMoveRegion,
-                    seek: seek,
-                }
-            }}
-        />
+        <PaneViewRoot editorData={{
+            trackViewData: {
+                mixerState: mixerState || undefined,
+                currentTime: currentBeats,
+                onAddTrack: handleFileSelect,
+                onRemoveTrack: handleRemoveTrack,
+                onMoveRegion: handleMoveRegion,
+                seek: seek,
+            }
+        }} />
     </div>;
 }

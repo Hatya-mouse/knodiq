@@ -1,5 +1,5 @@
 import { ChevronDown } from "lucide-react";
-import { PaneContentType } from "./PaneData";
+import { PaneContentType } from "./type/PaneNode";
 import DropdownMenu from "../button/DropdownMenu";
 import { useEffect, useRef, useState } from "react";
 

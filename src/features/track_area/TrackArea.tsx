@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 
 import TrackListItem from "@/features/track_area/TrackListItem";
 import TrackListContent from "@/features/track_area/TrackListContent";
-import HSplitView from "@/components/pane/HSplitView";
+import HSplitView from "@/components/split_view/HSplitView";
 import { MixerState } from "@/lib/audio_api/mixer_state";
 
 export default function TrackArea({
