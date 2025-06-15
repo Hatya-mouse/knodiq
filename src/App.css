@@ -11,6 +11,7 @@
     --bg-primary: rgba(255, 255, 255, 1.0);
     --bg-secondary: rgb(238, 242, 249);
     --bg-tertiary: rgb(216, 220, 231);
+    --bg-quaternary: rgb(200, 204, 214);
 
     --button-default: rgba(220, 220, 220, 1.0);
     --button-hover: rgb(200, 200, 200);

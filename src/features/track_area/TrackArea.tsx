@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 
 import TrackListItem from "@/features/track_area/TrackListItem";
 import TrackListContent from "@/features/track_area/TrackListContent";
-import SplitView from "@/components/pane/HSplitView";
+import HSplitView from "@/components/pane/HSplitView";
 import { MixerState } from "@/lib/audio_api/mixer_state";
 
 export default function TrackArea({
@@ -24,7 +24,7 @@ export default function TrackArea({
     const [beatWidth, setBeatWidth] = useState(10);
     const rightPaneRef = useRef<HTMLDivElement>(null);
     const [contentWidth, setContentWidth] = useState(0);
-    const [splitLeftWidth, setSplitLeftWidth] = useState(300);
+    const [splitLeftWidth, setSplitLeftWidth] = useState(200);
 
     useEffect(() => {
         const rightPaneElement = rightPaneRef.current;
@@ -65,15 +65,11 @@ export default function TrackArea({
         seek(clickedBeat);
     };
 
-    const handleSetLeftWidth = (width: number) => {
-        setSplitLeftWidth(width);
-    };
-
     return (
         <div
             className="h-full flex-1 overflow-x-hidden overflow-y-scroll scrollbar-hidden"
         >
-            <SplitView className="w-full min-h-full" doesStrech={true} left={(
+            <HSplitView className="w-full min-h-full" doesStrech={true} left={(
                 <div>
                     {/* Track list */}
                     <button
@@ -154,7 +150,7 @@ export default function TrackArea({
                     }} />
                 </div>
             )
-            } leftWidth={splitLeftWidth} setLeftWidth={handleSetLeftWidth} />
+            } leftWidth={splitLeftWidth} setLeftWidth={setSplitLeftWidth} />
         </div >
     );
 }

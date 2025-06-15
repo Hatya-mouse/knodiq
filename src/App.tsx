@@ -4,7 +4,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import "./App.css";
 
-import WindowHeader from "@/features/editor_header/WindowHeader";
+import WindowHeader from "@/features/window_header/WindowHeader";
 import { MixerState } from "@lib/audio_api/mixer_state";
 import PaneView from "@components/pane/PaneView";
 import { PaneNode } from "@components/pane/PaneView";
@@ -127,9 +127,8 @@ export default function App() {
         handlePauseAudio();
     }
 
-    const handleSetPaneNode = (_id: string, newNode: PaneNode) => {
+    const handleSetPaneNode = (newNode: PaneNode) => {
         setPaneNode(newNode);
-        console.log("Setting pane node:", newNode);
     }
 
     return <div className="App w-screen h-screen flex flex-col font-(family-name:--base-font)">

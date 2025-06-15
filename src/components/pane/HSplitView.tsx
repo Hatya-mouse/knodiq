@@ -16,31 +16,40 @@ export default function HSplitView({
     setLeftWidth?: (width: number) => void,
 }) {
     const containerRef = useRef<HTMLDivElement>(null);
+    const splitHandleRef = useRef<HTMLDivElement>(null);
     const [isHovered, setIsHovered] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             if (!containerRef.current) return;
             const rect = containerRef.current.getBoundingClientRect();
-            const newLeftWidth = e.clientX - rect.left;
+            const newLeftWidth = Math.min(Math.max(e.clientX - rect.left, 0), rect.width);
             setLeftWidth(newLeftWidth);
+
+            e.preventDefault();
         };
 
-        const stopResize = () => {
+        const stopResize = (e: MouseEvent) => {
             document.removeEventListener("mousemove", handleMouseMove);
             document.removeEventListener("mouseup", stopResize);
+            setIsDragging(false);
+
+            e.preventDefault();
         };
 
-        const startResize = () => {
+        const startResize = (e: MouseEvent) => {
             document.addEventListener("mousemove", handleMouseMove);
             document.addEventListener("mouseup", stopResize);
+            setIsDragging(true);
+
+            e.preventDefault();
         };
 
-        const hitArea = document.getElementById("split-handle-hit");
-        hitArea?.addEventListener("mousedown", startResize);
+        splitHandleRef.current?.addEventListener("mousedown", startResize);
 
         return () => {
-            hitArea?.removeEventListener("mousedown", startResize);
+            splitHandleRef.current?.removeEventListener("mousedown", startResize);
         };
     }, []);
 
@@ -50,6 +59,7 @@ export default function HSplitView({
                 {left}
             </div>
             <div
+                ref={splitHandleRef}
                 style={{
                     width: 16,
                     cursor: "ew-resize",
@@ -60,13 +70,11 @@ export default function HSplitView({
                     zIndex: 10,
                     background: "transparent",
                 }}
-                id="split-handle-hit"
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
                 <div
-                    id="split-handle"
-                    className={`w-0.5 cursor-ew-resize ${isHovered ? "bg-[var(--accent-color)]" : "bg-gray-400"} shrink-0 transition-all`}
+                    className={`cursor-ew-resize ${isHovered || isDragging ? "bg-[var(--accent-color)] w-1.5 z-100" : "bg-gray-400 w-0.5 z-50"} shrink-0 transition-all`}
                     style={{
                         position: "absolute",
                         left: "50%",
@@ -77,7 +85,7 @@ export default function HSplitView({
                     }}
                 />
             </div>
-            <div className="min-h-full flex-1 overflow-hidden min-w-0">
+            <div className="min-h-full flex-1 overflow-hidden min-w-full">
                 {right}
             </div>
         </div>
