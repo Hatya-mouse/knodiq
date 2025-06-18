@@ -20,8 +20,6 @@ export default function App() {
             let state = event.payload;
             setMixerState(state);
 
-            console.log(`Received mixer state: ${state}`);
-
             if (currentBeats > state.duration) {
                 setCurrentBeats(state.duration);
             }
@@ -59,7 +57,6 @@ export default function App() {
 
         // Get the opened file path
         if (typeof selected == "string") {
-            console.log("Selected file & Track ID: ", selected, trackId);
             setTrackId(prev => prev + 1);
 
             // Get the file name from the path

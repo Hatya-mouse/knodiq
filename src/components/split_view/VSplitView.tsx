@@ -6,32 +6,38 @@ export default function VSplitView({
     className = "",
     doesStrech = false,
     topHeight = 200,
-    setTopHeight = () => { },
+    onDragMove = () => { },
+    onDragEnd = () => { },
 }: {
     top: React.ReactNode,
     bottom: React.ReactNode,
     className?: string,
     doesStrech?: boolean,
     topHeight?: number,
-    setTopHeight?: (height: number) => void,
+    onDragMove?: (height: number) => void,
+    onDragEnd?: () => void,
 }) {
     const containerRef = useRef<HTMLDivElement>(null);
     const splitHandleRef = useRef<HTMLDivElement>(null);
     const [isHovered, setIsHovered] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             if (!containerRef.current) return;
             const rect = containerRef.current.getBoundingClientRect();
             const newTopHeight = Math.min(Math.max(e.clientY - rect.top, 0), rect.height);
-            setTopHeight(newTopHeight);
+            onDragMove(newTopHeight);
 
             e.preventDefault();
         };
 
         const stopResize = (e: MouseEvent) => {
+            onDragEnd();
+
             document.removeEventListener("mousemove", handleMouseMove);
             document.removeEventListener("mouseup", stopResize);
+            setIsDragging(false);
 
             e.preventDefault();
         };
@@ -39,6 +45,7 @@ export default function VSplitView({
         const startResize = (e: MouseEvent) => {
             document.addEventListener("mousemove", handleMouseMove);
             document.addEventListener("mouseup", stopResize);
+            setIsDragging(true);
 
             e.preventDefault();
         };
@@ -64,14 +71,14 @@ export default function VSplitView({
                     top: topHeight - 8,
                     left: 0,
                     right: 0,
-                    zIndex: 10,
+                    zIndex: 5,
                     background: "transparent",
                 }}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
                 <div
-                    className={`cursor-ns-resize ${isHovered ? "bg-[var(--accent-color)] h-1.5 z-100" : "bg-gray-400 h-0.5 z-50"} shrink-0 transition-all`}
+                    className={`cursor-ns-resize ${isHovered || isDragging ? "bg-[var(--accent-color)] h-1.5 z-100" : "bg-gray-400 h-0.5 z-50"} shrink-0 transition-all`}
                     style={{
                         position: "absolute",
                         top: "50%",

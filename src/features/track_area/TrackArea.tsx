@@ -135,7 +135,7 @@ export default function TrackArea({
                         style={{
                             width: contentWidth || "100%",
                             minWidth: "100%",
-                            zIndex: 10,
+                            zIndex: 2,
                             backgroundImage:
                                 `repeating-linear-gradient(to right, rgba(128,128,128,0.2) 0px, rgba(128,128,128,0.2) 1px, transparent 1px, transparent ${beatWidth * 4}px)`,
                         }}
@@ -145,7 +145,7 @@ export default function TrackArea({
                     <div className="absolute top-0 h-full bg-black" style={{
                         left: `${beatWidth * currentTime}px`,
                         width: '1px',
-                        zIndex: 20,
+                        zIndex: 3,
                         pointerEvents: 'none',
                     }} />
                 </div>

@@ -16,8 +16,8 @@ export default function DropdownMenu({
     return (
         <div className={`relative ${className}`}>
             <ul
-                className={`absolute left-0 mt-2 z-50 p-1 bg-[var(--bg-primary)] rounded-[var(--border-radius)] shadow-lg overflow-hidden transition-all duration-100 ease-in-out ${isOpen ? "pointer-events-auto" : "opacity-0 pointer-events-none"}`}
-                style={{ border: "var(--border)" }}
+                className={`absolute left-0 mt-2 p-1 bg-[var(--bg-primary)] rounded-[var(--border-radius)] shadow-lg overflow-hidden transition-all duration-100 ease-in-out ${isOpen ? "pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+                style={{ border: "var(--border)", zIndex: 9 }}
             >
                 {options.map((option) => (
                     <li

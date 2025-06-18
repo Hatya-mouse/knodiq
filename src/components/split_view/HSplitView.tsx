@@ -6,14 +6,16 @@ export default function HSplitView({
     className = "",
     doesStrech = false,
     leftWidth = 200,
-    setLeftWidth = () => { },
+    onDragMove = () => { },
+    onDragEnd = () => { },
 }: {
     left: React.ReactNode,
     right: React.ReactNode,
     className?: string,
     doesStrech?: boolean,
     leftWidth?: number,
-    setLeftWidth?: (width: number) => void,
+    onDragMove?: (width: number) => void,
+    onDragEnd?: () => void,
 }) {
     const containerRef = useRef<HTMLDivElement>(null);
     const splitHandleRef = useRef<HTMLDivElement>(null);
@@ -25,12 +27,14 @@ export default function HSplitView({
             if (!containerRef.current) return;
             const rect = containerRef.current.getBoundingClientRect();
             const newLeftWidth = Math.min(Math.max(e.clientX - rect.left, 0), rect.width);
-            setLeftWidth(newLeftWidth);
+            onDragMove(newLeftWidth);
 
             e.preventDefault();
         };
 
         const stopResize = (e: MouseEvent) => {
+            onDragEnd();
+
             document.removeEventListener("mousemove", handleMouseMove);
             document.removeEventListener("mouseup", stopResize);
             setIsDragging(false);
@@ -67,7 +71,7 @@ export default function HSplitView({
                     left: leftWidth - 8,
                     top: 0,
                     bottom: 0,
-                    zIndex: 10,
+                    zIndex: 5,
                     background: "transparent",
                 }}
                 onMouseEnter={() => setIsHovered(true)}

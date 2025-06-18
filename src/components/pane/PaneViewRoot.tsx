@@ -23,22 +23,28 @@ export default function PaneViewRoot({
                     type: 'split',
                     direction,
                     children: [
-                        { id: `${node.id}-1`, type: 'leaf', contentType: node.contentType },
-                        { id: `${node.id}-2`, type: 'leaf', contentType: node.contentType }
+                        { id: `${Date.now()}-1`, type: 'leaf', contentType: node.contentType },
+                        { id: `${Date.now()}-2`, type: 'leaf', contentType: node.contentType }
                     ],
                     size,
                 };
                 return newPaneNode;
             }
-            return node;
+            return { ...node };
         }));
     };
 
     const setPaneSize = (id: PaneNodeId, size: number) => {
-        setPaneLayout(prev => updatePaneNode(prev, id, node => ({
-            ...node,
-            size,
-        })));
+        setPaneLayout(prev => updatePaneNode(prev, id, node => {
+            if (node.type === 'split') {
+                return {
+                    ...node,
+                    size,
+                };
+            } else {
+                return { ...node };
+            }
+        }));
     };
 
     const mergePanes = (parentId: PaneNodeId, remainingId: PaneNodeId) => {
@@ -50,7 +56,7 @@ export default function PaneViewRoot({
                     return remainingChild;
                 }
             }
-            return node;
+            return { ...node };
         }));
     };
 
@@ -63,7 +69,7 @@ export default function PaneViewRoot({
                 };
                 return newPaneNode;
             }
-            return node;
+            return { ...node };
         }));
     };
 
@@ -107,5 +113,5 @@ function updatePaneNode(
         }
     }
 
-    return currentNode;
+    return { ...currentNode };
 }

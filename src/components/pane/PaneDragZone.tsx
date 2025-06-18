@@ -97,7 +97,7 @@ export default function PaneDragZone({
             ref={hitArea}
             className={`absolute ${className}`}
             style={{
-                zIndex: 100,
+                zIndex: 5,
             }}
             onMouseEnter={() => {
                 setIsHovered(true);
@@ -110,7 +110,7 @@ export default function PaneDragZone({
         >
             {/* Drag zone for the {direction} edge */}
             <div
-                className={`absolute transition-all duration-150 z-100 ease-out ${isHovered ? "bg-[var(--accent-color)]" : "opacity-0"}`}
+                className={`absolute transition-all duration-150 ease-out ${isHovered ? "bg-[var(--accent-color)]" : "opacity-0"}`}
                 style={{
                     transformOrigin: direction,
                     transform: direction === "top" || direction === "bottom" ?
