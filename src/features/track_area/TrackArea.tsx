@@ -1,9 +1,11 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 import TrackListItem from "@/features/track_area/TrackListItem";
 import TrackListContent from "@/features/track_area/TrackListContent";
 import HSplitView from "@/components/split_view/HSplitView";
 import { MixerState } from "@/lib/audio_api/mixer_state";
+
+const MIN_SPLIT_WIDTH = 150;
 
 export default function TrackArea({
     mixerState,
@@ -22,9 +24,11 @@ export default function TrackArea({
 }) {
     const [trackHeight, _] = useState(60);
     const [beatWidth, setBeatWidth] = useState(10);
-    const rightPaneRef = useRef<HTMLDivElement>(null);
     const [contentWidth, setContentWidth] = useState(0);
     const [splitLeftWidth, setSplitLeftWidth] = useState(200);
+
+    const trackAreaRef = useRef<HTMLDivElement>(null);
+    const rightPaneRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const rightPaneElement = rightPaneRef.current;
@@ -65,9 +69,15 @@ export default function TrackArea({
         seek(clickedBeat);
     };
 
+    const handleDragSplit = useCallback((newSize: number) => {
+        if (!trackAreaRef.current) return;
+        setSplitLeftWidth(Math.min(Math.max(newSize, MIN_SPLIT_WIDTH), trackAreaRef.current.clientWidth - MIN_SPLIT_WIDTH));
+    }, []);
+
     return (
         <div
             className="h-full flex-1 overflow-x-hidden overflow-y-scroll scrollbar-hidden"
+            ref={trackAreaRef}
         >
             <HSplitView className="w-full min-h-full" doesStrech={true} left={(
                 <div>
@@ -149,8 +159,8 @@ export default function TrackArea({
                         pointerEvents: 'none',
                     }} />
                 </div>
-            )
-            } leftWidth={splitLeftWidth} setLeftWidth={setSplitLeftWidth} />
+            )}
+                leftWidth={splitLeftWidth} onDragMove={handleDragSplit} />
         </div >
     );
 }

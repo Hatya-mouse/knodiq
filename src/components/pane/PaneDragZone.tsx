@@ -15,21 +15,18 @@ export default function PaneDragZone({
     onDragMove?: (amount: number) => void;
     onDragEnd?: () => void;
 }) {
-    const hitArea = useRef<HTMLDivElement>(null);
     const [isHovered, setIsHovered] = useState(false);
+
+    const hitArea = useRef<HTMLDivElement>(null);
     const startMousePos = useRef(0);
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             let newDragAmount = 0;
-            if (direction === "top") {
+            if (direction === "top" || direction === "bottom") {
                 newDragAmount = e.clientY - startMousePos.current;
-            } else if (direction === "bottom") {
-                newDragAmount = startMousePos.current - e.clientY;
-            } else if (direction === "left") {
-                newDragAmount = e.clientX - startMousePos.current;
             } else {
-                newDragAmount = startMousePos.current - e.clientX;
+                newDragAmount = e.clientX - startMousePos.current;
             }
             onDragMove(newDragAmount);
 
@@ -56,7 +53,6 @@ export default function PaneDragZone({
 
             e.preventDefault();
         };
-
 
         const hitAreaElement = hitArea.current;
         hitAreaElement?.addEventListener("mousedown", handleMouseDown);

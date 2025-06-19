@@ -89,7 +89,7 @@ export default function VSplitView({
                     }}
                 />
             </div>
-            <div className="min-w-full flex-1 overflow-hidden min-h-full">
+            <div className="min-w-full flex-1 overflow-hidden">
                 {bottom}
             </div>
         </div>

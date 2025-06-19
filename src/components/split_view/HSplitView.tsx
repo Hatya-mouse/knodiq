@@ -89,7 +89,7 @@ export default function HSplitView({
                     }}
                 />
             </div>
-            <div className="min-h-full flex-1 overflow-hidden min-w-full">
+            <div className="min-h-full flex-1 overflow-hidden">
                 {right}
             </div>
         </div>
