@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 
-import TrackListItem from "@/features/track_area/TrackListItem";
-import TrackListContent from "@/features/track_area/TrackListContent";
+import TrackListItem from "@/features/pane/track_area/TrackListItem";
+import TrackListContent from "@/features/pane/track_area/TrackListContent";
 import HSplitView from "@/components/split_view/HSplitView";
 import { MixerState } from "@/lib/audio_api/mixer_state";
 
@@ -10,15 +10,19 @@ const MIN_SPLIT_WIDTH = 150;
 export default function TrackArea({
     mixerState,
     currentTime = 0,
+    selectedTrackId,
     onAddTrack,
     onRemoveTrack,
+    onSelectTrack,
     onMoveRegion,
     seek,
 }: {
     mixerState?: MixerState,
     currentTime?: number,
+    selectedTrackId?: number,
     onAddTrack?: () => void,
-    onRemoveTrack?: (index: number) => void,
+    onRemoveTrack?: (trackId: number) => void,
+    onSelectTrack?: (trackId: number) => void,
     onMoveRegion?: (trackId: number, regionId: number, newBeats: number) => void,
     seek?: (beats: number) => void,
 }) {
@@ -91,9 +95,11 @@ export default function TrackArea({
                     {(mixerState?.tracks ?? []).map((track) => (
                         <TrackListItem
                             key={track.id}
-                            height={trackHeight}
                             track={track}
+                            isSelected={selectedTrackId === track.id}
+                            height={trackHeight}
                             onRemoveTrack={onRemoveTrack}
+                            onSelectTrack={onSelectTrack}
                         />
                     ))}
                 </div>

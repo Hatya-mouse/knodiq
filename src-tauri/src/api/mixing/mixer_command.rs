@@ -65,8 +65,8 @@ pub enum MixerCommand {
     /// - node: `Box<dyn knodiq_engine::Node + Send>`
     AddNode(u32, Box<dyn knodiq_engine::Node + Send>),
 
-    /// Get the input nodes of a track.
-    GetInputNodes(u32),
+    /// Get the input node of a track.
+    GetInputNode(u32),
 
     /// Get the output node of a track.
     GetOutputNode(u32),
@@ -77,7 +77,7 @@ pub enum MixerCommand {
 
 pub enum MixerResult {
     /// Result of the `GetInputNodes` command.
-    InputNodes(Vec<NodeId>),
+    InputNode(NodeId),
     /// Result of the `GetOutputNode` command.
     OutputNode(NodeId),
     /// Result of the `DoesNeedMix` command.

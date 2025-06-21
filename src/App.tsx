@@ -13,6 +13,8 @@ export default function App() {
     const [mixerState, setMixerState] = useState<MixerState | null>(null);
     const [trackId, setTrackId] = useState<number>(0);
     const [currentBeats, setCurrentBeats] = useState<number>(0);
+    const [selectedTrackId, setSelectedTrackId] = useState<number | undefined>(undefined);
+
     const intervalRef = useRef<number | null>(null);
 
     useEffect(() => {
@@ -102,6 +104,10 @@ export default function App() {
 
     const handleRemoveTrack = (index: number) => {
         invoke("remove_track", { trackId: index });
+
+        if (selectedTrackId === index) {
+            setSelectedTrackId(undefined);
+        }
     }
 
     const handleMoveRegion = (trackId: number, regionId: number, newBeats: number) => {
@@ -129,10 +135,22 @@ export default function App() {
             trackViewData: {
                 mixerState: mixerState || undefined,
                 currentTime: currentBeats,
+                selectedTrackId: selectedTrackId,
                 onAddTrack: handleFileSelect,
                 onRemoveTrack: handleRemoveTrack,
+                onSelectTrack: (id: number) => setSelectedTrackId(id),
                 onMoveRegion: handleMoveRegion,
                 seek: seek,
+            },
+
+            nodeEditorData: {
+                mixerState: mixerState || undefined,
+                selectedTrackId: selectedTrackId,
+                onAddNode: () => invoke("add_node", { trackId: trackId }),
+                onRemoveNode: (nodeId: string) => invoke("remove_node", { nodeId }),
+                onConnectNodes: (sourceId: string, targetId: string) => invoke("connect_nodes", { sourceId, targetId }),
+                onDisconnectNodes: (sourceId: string, targetId: string) => invoke("disconnect_nodes", { sourceId, targetId }),
+                onMoveNode: (nodeId: string, newPosition: { x: number, y: number }) => invoke("move_node", { nodeId, newPosition }),
             }
         }} />
     </div>;

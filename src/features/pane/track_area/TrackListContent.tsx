@@ -1,5 +1,5 @@
 import { TrackState } from "@/lib/audio_api/track_state";
-import RegionView from "@/features/track_area/RegionView";
+import RegionView from "@/features/pane/track_area/RegionView";
 
 export default function TrackListContent({
     track,

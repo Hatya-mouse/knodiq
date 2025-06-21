@@ -78,7 +78,7 @@ export default function VSplitView({
                 onMouseLeave={() => setIsHovered(false)}
             >
                 <div
-                    className={`cursor-ns-resize ${isHovered || isDragging ? "bg-[var(--accent-color)] h-1.5 z-100" : "bg-gray-400 h-0.5 z-50"} shrink-0 transition-all`}
+                    className={`cursor-ns-resize ${isHovered || isDragging ? "bg-[var(--accent-blue)] h-1.5 z-100" : "bg-gray-400 h-0.5 z-50"} shrink-0 transition-all`}
                     style={{
                         position: "absolute",
                         top: "50%",

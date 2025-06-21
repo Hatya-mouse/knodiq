@@ -24,21 +24,18 @@ pub fn connect_graph(
 }
 
 #[command]
-pub fn get_input_nodes(track_id: u32, state: State<'_, Mutex<AppState>>) -> Vec<NodeId> {
+pub fn get_input_nodes(track_id: u32, state: State<'_, Mutex<AppState>>) -> Option<NodeId> {
     let state = state.lock().unwrap();
     if let Some(mixer_command_sender) = state.mixer_command_sender.as_ref() {
         mixer_command_sender
-            .send(MixerCommand::GetInputNodes(track_id))
+            .send(MixerCommand::GetInputNode(track_id))
             .unwrap();
         let mixer_result_receiver = state.mixer_result_receiver.as_ref().unwrap();
-        if let MixerResult::InputNodes(input_nodes) = mixer_result_receiver.recv().unwrap() {
-            input_nodes
-        } else {
-            vec![]
+        if let MixerResult::InputNode(input_node) = mixer_result_receiver.recv().unwrap() {
+            return Some(input_node);
         }
-    } else {
-        vec![]
     }
+    None
 }
 
 #[command]

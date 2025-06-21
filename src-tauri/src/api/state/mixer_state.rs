@@ -1,4 +1,4 @@
-use crate::api::mixing::TrackState;
+use crate::api::TrackState;
 use knodiq_engine::{audio_utils::Beats, Mixer};
 use serde::{Deserialize, Serialize};
 
@@ -11,10 +11,10 @@ pub struct MixerState {
 }
 
 impl MixerState {
-    pub fn from_mixer(mixer: &Mixer) -> Self {
+    pub fn from_mixer(mixer: &mut Mixer) -> Self {
         let tracks = mixer
             .tracks
-            .iter()
+            .iter_mut()
             .map(|track| TrackState::from_track(track))
             .collect::<Vec<_>>();
         let bpm = mixer.tempo;

@@ -14,13 +14,17 @@
     --bg-quaternary: rgb(200, 204, 214);
 
     --button-default: rgba(220, 220, 220, 1.0);
-    --button-hover: rgb(200, 200, 200);
-    --button-active: rgb(180, 180, 180);
+    --button-hover: rgb(200, 200, 200, 0.8);
+    --button-active: rgb(180, 180, 180, 1.0);
 
     --fg: rgba(50, 50, 50, 1.0);
     --fg-inverted: rgba(255, 255, 255, 1.0);
 
-    --accent-color: rgb(0, 130, 220);
+    --accent-color: rgb(200, 40, 250);
+    --accent-color-transparent: rgba(200, 40, 250, 0.5);
+
+    --accent-blue: rgb(50, 130, 220);
+    --accent-blue-transparent: rgba(50, 130, 220, 0.5);
 
     --destructive-color: rgba(220, 50, 50, 0.7);
 }

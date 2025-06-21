@@ -1,13 +1,14 @@
 import { useCallback, useRef, useEffect, useState, useContext } from "react";
 
 import PaneHeader from "./PaneHeader";
-import TrackArea from "@/features/track_area/TrackArea";
-import { PaneContentType, PaneNode, PaneNodeId } from "./type/PaneNode";
-import { EditorData } from "./type/EditorData";
+import TrackArea from "@/features/pane/track_area/TrackArea";
+import { PaneContentType, PaneNode, PaneNodeId } from "../../lib/type/PaneNode";
+import { EditorData } from "../../lib/type/EditorData";
 import HSplitView from "../split_view/HSplitView";
 import VSplitView from "../split_view/VSplitView";
 import PaneDragZone from "./PaneDragZone";
-import { PaneContext } from "./type/PaneContext";
+import { PaneContext } from "../../lib/type/PaneContext";
+import NodeEditor from "@/features/pane/node_editor/NodeEditor";
 
 const MIN_SIZE = 150; // Minimum size for a pane to allow splitting
 const MERGE_SIZE = 50; // Size below which panes will merge
@@ -43,6 +44,9 @@ export default function PaneComponent({
     const [paneWidth, setCurrentPaneWidth] = useState<number>(0);
     const [paneHeight, setCurrentPaneHeight] = useState<number>(0);
 
+    const paneWidthRef = useRef<number>(0);
+    const paneHeightRef = useRef<number>(0);
+
     if (!context) {
         throw new Error("PaneComponent must be used within a PaneContext.Provider");
     }
@@ -50,6 +54,9 @@ export default function PaneComponent({
     useEffect(() => {
         mergingChildRef.current = mergingChild;
     }, [mergingChild]);
+
+    useEffect(() => { paneWidthRef.current = paneWidth }, [paneWidth]);
+    useEffect(() => { paneHeightRef.current = paneHeight }, [paneHeight]);
 
     const handlePaneRef = useCallback((node: HTMLDivElement | null) => {
         if (!node) return;
@@ -71,30 +78,33 @@ export default function PaneComponent({
     }, [paneNode, context]);
 
     const splitPane = useCallback((edge: "top" | "bottom" | "left" | "right", amount: number) => {
-        let residualAmount = 0;
-        if (edge === "top" || edge === "bottom") {
-            residualAmount = paneHeight - amount;
-        } else if (edge === "left" || edge === "right") {
-            residualAmount = paneWidth - amount;
+        const isHorizontal = edge === 'right' || edge === 'left';
+        const paneSize = isHorizontal ? paneWidthRef.current : paneHeightRef.current;
+
+        let mainAmount = 0;
+        if (edge === "top" || edge === "left") {
+            mainAmount = amount;
+        } else {
+            mainAmount = paneSize + amount;
         }
 
-        const isHorizontal = edge === 'right' || edge === 'left';
+        let residualAmount = paneSize - mainAmount;
 
-        if (amount > MIN_SIZE && residualAmount > MIN_SIZE) {
+        if (mainAmount > MIN_SIZE && residualAmount > MIN_SIZE) {
             if (paneNode.type === 'leaf') {
-                context.callSplitPane(paneNode.id, isHorizontal ? 'horizontal' : 'vertical', amount / (isHorizontal ? paneWidth : paneHeight));
+                context.callSplitPane(paneNode.id, isHorizontal ? 'horizontal' : 'vertical', mainAmount / paneSize);
             } else {
-                context.callSetPaneSize(paneNode.id, amount / (isHorizontal ? paneWidth : paneHeight));
+                context.callSetPaneSize(paneNode.id, mainAmount / paneSize);
             }
         } else if (paneNode.type === 'split') {
             context.callMergePanes(paneNode.id, paneNode.children[1].id);
         }
-    }, [paneNode, context, paneWidth, paneHeight]);
+    }, [paneNode, context, paneWidthRef, paneHeightRef]);
 
     const handleDragSplit = useCallback((newSize: number, direction: 'horizontal' | 'vertical') => {
         if (paneNode.type !== 'split') return;
 
-        let paneSize = direction === 'horizontal' ? paneWidth : paneHeight;
+        const paneSize = direction === 'horizontal' ? paneWidthRef.current : paneHeightRef.current;
 
         if (newSize < MERGE_SIZE) {
             setMergingChild(paneNode.children[1].id);
@@ -102,14 +112,14 @@ export default function PaneComponent({
             setMergingChild(paneNode.children[0].id);
         } else {
             setMergingChild(undefined);
-            context.callSetPaneSize(paneNode.id, Math.min(
-                Math.max(newSize, MIN_SIZE),
-                paneWidth - MIN_SIZE
-            ) / (
-                    direction === 'horizontal' ? paneWidth : paneHeight
-                ));
+            const min = MIN_SIZE;
+            const max = paneSize - MIN_SIZE;
+            context.callSetPaneSize(
+                paneNode.id,
+                Math.min(Math.max(newSize, min), max) / paneSize
+            );
         }
-    }, [paneNode, mergingChild, paneWidth, paneHeight, context]);
+    }, [paneNode, mergingChild, context, paneWidthRef, paneHeightRef]);
 
     const handleDragEnd = useCallback(() => {
         const finalMergingChild = mergingChildRef.current;
@@ -120,6 +130,33 @@ export default function PaneComponent({
             setMergingChild(undefined);
         }, 0);
     }, [paneNode, mergingChild, context]);
+
+    const content = paneNode.type === 'leaf' ? (
+        <>
+            {paneNode.contentType === PaneContentType.TrackView && editorData.trackViewData ?
+                <TrackArea
+                    mixerState={editorData.trackViewData.mixerState}
+                    currentTime={editorData.trackViewData.currentTime}
+                    selectedTrackId={editorData.trackViewData.selectedTrackId}
+                    onAddTrack={editorData.trackViewData.onAddTrack}
+                    onRemoveTrack={editorData.trackViewData.onRemoveTrack}
+                    onSelectTrack={editorData.trackViewData.onSelectTrack}
+                    onMoveRegion={editorData.trackViewData.onMoveRegion}
+                    seek={editorData.trackViewData.seek}
+                />
+                : PaneContentType.NodeEditor && editorData.nodeEditorData ?
+                    <NodeEditor
+                        mixerState={editorData.nodeEditorData.mixerState}
+                        selectedTrackId={editorData.nodeEditorData.selectedTrackId}
+                        onAddNode={editorData.nodeEditorData.onAddNode}
+                        onRemoveNode={editorData.nodeEditorData.onRemoveNode}
+                        onConnectNodes={editorData.nodeEditorData.onConnectNodes}
+                        onDisconnectNodes={editorData.nodeEditorData.onDisconnectNodes}
+                        onMoveNode={editorData.nodeEditorData.onMoveNode}
+                    /> : null
+            }
+        </>
+    ) : null;
 
     return (
         <div
@@ -139,16 +176,7 @@ export default function PaneComponent({
                 {paneNode.type === 'leaf' &&
                     <div className="h-full w-full">
                         <PaneHeader selectedPane={paneNode.contentType} onPaneSelect={handlePaneSelect} />
-                        {paneNode.contentType === PaneContentType.TrackView && editorData.trackViewData &&
-                            <TrackArea
-                                mixerState={editorData.trackViewData.mixerState}
-                                currentTime={editorData.trackViewData.currentTime}
-                                onAddTrack={editorData.trackViewData.onAddTrack}
-                                onRemoveTrack={editorData.trackViewData.onRemoveTrack}
-                                onMoveRegion={editorData.trackViewData.onMoveRegion}
-                                seek={editorData.trackViewData.seek}
-                            />
-                        }
+                        {content}
                     </div>
                 }
                 {paneNode.type === 'split' && (paneNode.direction === 'horizontal' ? (

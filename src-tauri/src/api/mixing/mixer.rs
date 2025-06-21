@@ -1,5 +1,5 @@
-use crate::api::mixing::{MixerCommand, MixerResult, MixerState, RegionData, RegionType};
-use crate::api::AppState;
+use crate::api::mixing::{MixerCommand, MixerResult, RegionData, RegionType};
+use crate::api::{AppState, MixerState};
 use crate::track::TrackType;
 use knodiq_audio_shader::AudioShaderNode;
 use knodiq_engine::mixing::region::BufferRegion;
@@ -77,7 +77,7 @@ fn process_mixer(
                 };
 
                 // Connect the input and output nodes of the track
-                let input_node = track.graph.input_nodes[0];
+                let input_node = track.graph.input_node;
                 let output_node = track.graph.output_node;
 
                 let mut shader_node = AudioShaderNode::new();
@@ -179,11 +179,11 @@ fn process_mixer(
                 needs_mix = true;
             }
 
-            MixerCommand::GetInputNodes(track_id) => {
+            MixerCommand::GetInputNode(track_id) => {
                 // Get the input nodes of the track
                 if let Some(track) = mixer.get_track_by_id_mut(track_id) {
-                    let input_nodes = &track.graph().input_nodes;
-                    let _ = result_sender.send(MixerResult::InputNodes(input_nodes.clone()));
+                    let input_node = &track.graph().input_node;
+                    let _ = result_sender.send(MixerResult::InputNode(input_node.clone()));
                 } else {
                     eprintln!("Track with ID {} not found.", track_id);
                 }
@@ -219,7 +219,7 @@ fn process_mixer(
     }
 }
 
-fn emit_state(mixer: &Mixer, app: &AppHandle) {
+fn emit_state(mixer: &mut Mixer, app: &AppHandle) {
     let state = MixerState::from_mixer(mixer);
     app.emit("mixer_state", state).ok();
 }

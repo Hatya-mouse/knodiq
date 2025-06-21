@@ -59,7 +59,7 @@ export default function HSplitView({
 
     return (
         <div ref={containerRef} className={`flex relative ${doesStrech ? "items-strech" : ""} ${className}`}>
-            <div style={{ width: leftWidth }} className="shrink-0 overflow-hidden">
+            <div style={{ width: leftWidth }} className="shrink-0 overflow-hidden transition-transform duration-200 ease-out">
                 {left}
             </div>
             <div
@@ -78,7 +78,7 @@ export default function HSplitView({
                 onMouseLeave={() => setIsHovered(false)}
             >
                 <div
-                    className={`cursor-ew-resize ${isHovered || isDragging ? "bg-[var(--accent-color)] w-1.5 z-100" : "bg-gray-400 w-0.5 z-50"} shrink-0 transition-all`}
+                    className={`cursor-ew-resize ${isHovered || isDragging ? "bg-[var(--accent-blue)] w-1.5 z-100" : "bg-gray-400 w-0.5 z-50"} shrink-0 transition-all`}
                     style={{
                         position: "absolute",
                         left: "50%",
@@ -89,7 +89,7 @@ export default function HSplitView({
                     }}
                 />
             </div>
-            <div className="min-h-full flex-1 overflow-hidden">
+            <div className="min-h-full flex-1 overflow-hidden transition-transform duration-200 ease-out">
                 {right}
             </div>
         </div>

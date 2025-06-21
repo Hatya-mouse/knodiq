@@ -1,4 +1,5 @@
-import { RegionState } from '@/lib/audio_api/region_state';
+import { RegionState } from './region_state';
+import { GraphState } from './graph_state';
 
 export type TrackState = {
     /** The ID of the track. */
@@ -11,4 +12,6 @@ export type TrackState = {
     track_type: string;
     /** The regions in the track. */
     regions: RegionState[];
+    /** The graph structure of the track. */
+    graph: GraphState;
 }

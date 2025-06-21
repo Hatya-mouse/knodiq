@@ -4,13 +4,11 @@ import { useEffect, useState } from "react";
 export default function RegionView({
     region,
     beatWidth,
-    height = 0,
     className = "",
     onMoveRegion,
 }: {
     region: RegionState,
     beatWidth: number,
-    height?: number,
     className?: string,
     onMoveRegion?: (id: number, newBeats: number) => void,
 }) {

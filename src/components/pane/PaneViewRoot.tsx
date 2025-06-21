@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
-import { PaneContentType, PaneNode, PaneNodeId } from './type/PaneNode';
-import { PaneContext } from './type/PaneContext';
-import { EditorData } from './type/EditorData';
+import { PaneContentType, PaneNode, PaneNodeId } from '../../lib/type/PaneNode';
+import { PaneContext } from '../../lib/type/PaneContext';
+import { EditorData } from '../../lib/type/EditorData';
 import PaneComponent from './PaneComponent';
 
 export default function PaneViewRoot({
@@ -53,7 +53,7 @@ export default function PaneViewRoot({
                 // Find the child that has remainingId
                 const remainingChild = node.children.find(child => child.id === remainingId);
                 if (remainingChild) {
-                    return remainingChild;
+                    return { ...remainingChild, id: parentId };
                 }
             }
             return { ...node };

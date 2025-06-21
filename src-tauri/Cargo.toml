@@ -27,3 +27,4 @@ knodiq_audio_shader = { git = "https://github.com/Hatya-mouse/knodiq_audio_shade
 tauri-plugin-dialog = "2"
 tauri-plugin-log = "2.4.0"
 tauri-plugin-os = "2"
+uuid = "1.17.0"
