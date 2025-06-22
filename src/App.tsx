@@ -11,7 +11,7 @@ import "./App.css";
 export default function App() {
     const [isPlaying, setIsPlaying] = useState(false);
     const [mixerState, setMixerState] = useState<MixerState | null>(null);
-    const [trackId, setTrackId] = useState<number>(0);
+    const [nextTrackId, setNextTrackId] = useState<number>(0);
     const [currentBeats, setCurrentBeats] = useState<number>(0);
     const [selectedTrackId, setSelectedTrackId] = useState<number | undefined>(undefined);
 
@@ -59,7 +59,7 @@ export default function App() {
 
         // Get the opened file path
         if (typeof selected == "string") {
-            setTrackId(prev => prev + 1);
+            setNextTrackId(prev => prev + 1);
 
             // Get the file name from the path
             // Windows paths may contain backslashes, so we use split("/") to ensure we get the last part of the path
@@ -68,7 +68,7 @@ export default function App() {
 
             invoke("add_track", {
                 trackData: {
-                    id: trackId,
+                    id: nextTrackId,
                     name: fileName,
                     channels: 2,
                     track_type: "BufferTrack"
@@ -86,7 +86,7 @@ export default function App() {
                         BufferRegion: [selected, 0],
                     },
                 },
-                trackId: trackId,
+                trackId: nextTrackId,
             });
 
         }
@@ -118,6 +118,14 @@ export default function App() {
         });
     }
 
+    const handleMoveNode = (trackId: number, nodeId: string, newPosition: [number, number]) => {
+        invoke("move_node", {
+            trackId: trackId,
+            nodeId: nodeId,
+            position: newPosition
+        });
+    };
+
     const seek = async (beats: number) => {
         setCurrentBeats(beats);
         handlePauseAudio();
@@ -131,6 +139,7 @@ export default function App() {
             onSkipBack={() => seek(0)}
             onSkipForward={() => seek(mixerState?.duration || 0)}
         />
+
         <PaneViewRoot editorData={{
             trackViewData: {
                 mixerState: mixerState || undefined,
@@ -146,11 +155,7 @@ export default function App() {
             nodeEditorData: {
                 mixerState: mixerState || undefined,
                 selectedTrackId: selectedTrackId,
-                onAddNode: () => invoke("add_node", { trackId: trackId }),
-                onRemoveNode: (nodeId: string) => invoke("remove_node", { nodeId }),
-                onConnectNodes: (sourceId: string, targetId: string) => invoke("connect_nodes", { sourceId, targetId }),
-                onDisconnectNodes: (sourceId: string, targetId: string) => invoke("disconnect_nodes", { sourceId, targetId }),
-                onMoveNode: (nodeId: string, newPosition: { x: number, y: number }) => invoke("move_node", { nodeId, newPosition }),
+                onMoveNode: handleMoveNode,
             }
         }} />
     </div>;

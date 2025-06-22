@@ -64,7 +64,7 @@ export default function RegionView({
             }}
             onMouseDown={handleMouseDown}
         >
-            <div className="text-[var(--fg)] text-xs p-1">
+            <div className="text-[var(--text)] text-xs p-1">
                 {region.name}
             </div>
         </div>

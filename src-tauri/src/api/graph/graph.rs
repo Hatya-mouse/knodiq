@@ -75,13 +75,14 @@ pub fn disconnect_graph(
 pub fn add_node(
     track_id: u32,
     node_type: NodeType,
+    position: (f32, f32),
     state: State<'_, Mutex<AppState>>,
 ) -> Option<NodeId> {
     let node = match node_type {
         NodeType::EmptyNode => Box::new(EmptyNode::new()) as Box<dyn knodiq_engine::Node + Send>,
         NodeType::AudioSourceNode => Box::new(AudioShaderNode::new()),
     };
-    send_mixer_command(MixerCommand::AddNode(track_id, node), &state);
+    send_mixer_command(MixerCommand::AddNode(track_id, node, position), &state);
 
     let state = state.lock().unwrap();
 

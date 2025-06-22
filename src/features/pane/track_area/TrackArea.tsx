@@ -4,10 +4,13 @@ import TrackListItem from "@/features/pane/track_area/TrackListItem";
 import TrackListContent from "@/features/pane/track_area/TrackListContent";
 import HSplitView from "@/components/split_view/HSplitView";
 import { MixerState } from "@/lib/audio_api/mixer_state";
+import { PaneContentType } from "@/lib/type/PaneNode";
+import PaneHeader from "@/components/pane/PaneHeader";
 
 const MIN_SPLIT_WIDTH = 150;
 
 export default function TrackArea({
+    onPaneSelect = () => { },
     mixerState,
     currentTime = 0,
     selectedTrackId,
@@ -17,6 +20,7 @@ export default function TrackArea({
     onMoveRegion,
     seek,
 }: {
+    onPaneSelect?: (pane: PaneContentType) => void,
     mixerState?: MixerState,
     currentTime?: number,
     selectedTrackId?: number,
@@ -83,11 +87,16 @@ export default function TrackArea({
             className="h-full flex-1 overflow-x-hidden overflow-y-scroll scrollbar-hidden"
             ref={trackAreaRef}
         >
+            <PaneHeader
+                selectedPane={PaneContentType.TrackView}
+                onPaneSelect={onPaneSelect}
+            />
+
             <HSplitView className="w-full min-h-full" doesStrech={true} left={(
                 <div>
                     {/* Track list */}
                     <button
-                        className="text-[var(--fg)] bottom-border w-full h-8 cursor-pointer track-list-item"
+                        className="text-[var(--text)] bottom-border w-full h-8 cursor-pointer track-list-item"
                         onClick={onAddTrack}
                     >
                         Add Track
@@ -126,8 +135,8 @@ export default function TrackArea({
                                     left: `${index * 4 * beatWidth}px`,
                                 }}
                             >
-                                <div className="text-left text-[var(--fg)] text-sm">
-                                    {index * 4}
+                                <div className="text-left text-[var(--text)] text-sm">
+                                    {index}
                                 </div>
                             </div>
                         ))}

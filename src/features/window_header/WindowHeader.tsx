@@ -42,11 +42,11 @@ export default function WindowHeader({
 
     return (
         <div data-tauri-drag-region className="bottom-border flex justify-between align-middle bg-[var(--bg-tertiary)]">
-            <div className="flex overflow-hidden mx-2 my-1.5 bg-[var(--bg-quaternary)] rounded-[var(--border-radius)]">
+            <div className="flex overflow-hidden mx-2 my-1.5 bg-[var(--bg-tertiary)] rounded-[var(--border-radius)]">
                 <PlaybackControlButton
                     icon={<LucideSkipBack size={16} />}
                     onClick={onSkipBack}
-                    defaultBg="bg-[var(--bg-quaternary)]"
+                    defaultBg="bg-[var(--bg-tertiary)]"
                     hoverBg="hover:brightness-[90%]"
                     activeBg="active:brightness-[80%]"
                     className="px-2"
@@ -54,7 +54,7 @@ export default function WindowHeader({
                 <PlaybackControlButton
                     icon={isPlaying ? <LucidePause size={16} /> : <LucidePlay size={16} />}
                     onClick={handlePlayPause}
-                    defaultBg="bg-[var(--bg-quaternary)]"
+                    defaultBg="bg-[var(--bg-tertiary)]"
                     hoverBg="hover:bg-[var(--accent-color)]"
                     activeBg="active:brightness-[90%]"
                     className="px-2"
@@ -62,7 +62,7 @@ export default function WindowHeader({
                 <PlaybackControlButton
                     icon={<LucideSkipForward size={16} />}
                     onClick={onSkipForward}
-                    defaultBg="bg-[var(--bg-quaternary)]"
+                    defaultBg="bg-[var(--bg-tertiary)]"
                     hoverBg="hover:brightness-[90%]"
                     activeBg="active:brightness-[80%]"
                     className="px-2"

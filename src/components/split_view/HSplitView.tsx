@@ -78,7 +78,7 @@ export default function HSplitView({
                 onMouseLeave={() => setIsHovered(false)}
             >
                 <div
-                    className={`cursor-ew-resize ${isHovered || isDragging ? "bg-[var(--accent-blue)] w-1.5 z-100" : "bg-gray-400 w-0.5 z-50"} shrink-0 transition-all`}
+                    className={`cursor-ew-resize ${isHovered || isDragging ? "bg-[var(--accent-color)] w-1.5 z-100" : "bg-gray-400 w-0.5 z-50"} shrink-0 transition-all`}
                     style={{
                         position: "absolute",
                         left: "50%",

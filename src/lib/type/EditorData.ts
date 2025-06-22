@@ -19,6 +19,6 @@ export interface EditorData {
         onRemoveNode?: (nodeId: string) => void,
         onConnectNodes?: (sourceId: string, targetId: string) => void,
         onDisconnectNodes?: (sourceId: string, targetId: string) => void,
-        onMoveNode?: (nodeId: string, newPosition: { x: number, y: number }) => void,
+        onMoveNode?: (trackId: number, nodeId: string, newPosition: [number, number]) => void,
     }
 }

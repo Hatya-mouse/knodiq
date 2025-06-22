@@ -21,7 +21,7 @@ export default function PlaybackControlButton({
             className={`large-icon-button p-1 flex justify-center items-center box-border cursor-pointer duration-150 ${defaultBg} ${hoverBg} ${activeBg} ${className} `}
             onClick={onClick}
         >
-            <div className="flex justify-center items-center lucide-icon">
+            <div className="flex justify-center items-center">
                 {icon}
             </div>
         </button>

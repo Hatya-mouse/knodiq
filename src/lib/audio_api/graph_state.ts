@@ -3,15 +3,12 @@ export type NodeState = {
     id: string;
     /** The type of the node, e.g., "oscillator", "filter", etc. */
     node_type: string;
-    /** The properties of the node, which can vary based on the node type. */
-    properties: Array<{
-        /** The name of the property. */
-        name: string;
-        /** The type of the property. */
-        type: 'Buffer' | 'Float';
-    }>;
+    /** The inputs of the node, which can vary based on the node type. */
+    inputs: Array<string>;
+    /** The outputs of the node, which can vary based on the node type. */
+    outputs: Array<string>;
     /** The position of the node in the editor, for UI purposes. */
-    position: { x: number; y: number };
+    position: [number, number];
 }
 
 export type ConnectorState = {

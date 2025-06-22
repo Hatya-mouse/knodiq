@@ -8,25 +8,21 @@
 
     --region-border-radius: 4px;
 
-    --bg-primary: rgba(255, 255, 255, 1.0);
-    --bg-secondary: rgb(238, 242, 249);
-    --bg-tertiary: rgb(216, 220, 231);
-    --bg-quaternary: rgb(200, 204, 214);
+    --bg-primary: oklch(0.9828 0.0085 247.91);
+    --bg-secondary: oklch(94.538% 0.0117 264.578 / 0.7);
+    --bg-tertiary: oklch(87.658% 0.01714 271.227 / 0.7);
 
-    --button-default: rgba(220, 220, 220, 1.0);
-    --button-hover: rgb(200, 200, 200, 0.8);
-    --button-active: rgb(180, 180, 180, 1.0);
+    --button-default: oklch(0.8945 0 0);
+    --button-hover: oklch(0.8328 0 0 / 80%);
+    --button-active: oklch(0.7699 0 0);
 
-    --fg: rgba(50, 50, 50, 1.0);
-    --fg-inverted: rgba(255, 255, 255, 1.0);
+    --text: oklch(0.3171 0 0);
+    --text-inverted: oklch(1 0 0);
 
-    --accent-color: rgb(200, 40, 250);
-    --accent-color-transparent: rgba(200, 40, 250, 0.5);
+    --accent-color: oklch(0.5639 0.2756 300.17);
+    --accent-color-transparent: oklch(0.5639 0.2756 300.17 / 50%);
 
-    --accent-blue: rgb(50, 130, 220);
-    --accent-blue-transparent: rgba(50, 130, 220, 0.5);
-
-    --destructive-color: rgba(220, 50, 50, 0.7);
+    --destructive-color: oklch(0.5866 0.2061 26.36 / 70%);
 }
 
 @font-face {
@@ -70,7 +66,7 @@ body #root {
     border-radius: var(--border-radius);
     transition: all 0.3s ease-in-out;
     transition: filter 0.1s ease-in-out;
-    color: var(--fg);
+    color: var(--text);
     cursor: pointer;
     background-color: rgba(150, 150, 150, 0.2);
 }
@@ -89,7 +85,7 @@ body #root {
 
 .basic-button.destructive {
     background-color: var(--destructive-color);
-    color: var(--fg-inverted);
+    color: var(--text-inverted);
 }
 
 .basic-button:hover {

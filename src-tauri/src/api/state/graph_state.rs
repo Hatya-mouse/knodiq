@@ -1,25 +1,32 @@
-use knodiq_engine::{Connector, Graph, Node};
+use knodiq_engine::{Connector, Graph, Node, NodeId};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize)]
 pub struct NodeState {
     id: String,
     node_type: String,
-    properties: Vec<String>,
+    inputs: Vec<String>,
+    outputs: Vec<String>,
     position: (f32, f32),
 }
 
 impl NodeState {
-    pub fn from_node(node: &Box<dyn Node>) -> Self {
+    pub fn from_node(node: &Box<dyn Node>, position: (f32, f32)) -> Self {
         NodeState {
             id: node.get_id().to_string(),
             node_type: node.get_type().to_string(),
-            properties: node
+            inputs: node
                 .get_input_list()
                 .iter()
                 .map(|name| name.clone())
                 .collect(),
-            position: (0.0, 0.0),
+            outputs: node
+                .get_output_list()
+                .iter()
+                .map(|name| name.clone())
+                .collect(),
+            position,
         }
     }
 }
@@ -29,7 +36,8 @@ impl Clone for NodeState {
         NodeState {
             id: self.id.clone(),
             node_type: self.node_type.clone(),
-            properties: self.properties.clone(),
+            inputs: self.inputs.clone(),
+            outputs: self.outputs.clone(),
             position: self.position.clone(),
         }
     }
@@ -74,11 +82,17 @@ pub struct GraphState {
 }
 
 impl GraphState {
-    pub fn from_graph(graph: &Graph) -> Self {
+    pub fn from_graph(graph: &Graph, node_positions: &HashMap<NodeId, (f32, f32)>) -> Self {
         let nodes = graph
             .get_nodes()
             .iter()
-            .map(|node| NodeState::from_node(node))
+            .map(|node| {
+                let position = node_positions
+                    .get(&node.get_id())
+                    .cloned()
+                    .unwrap_or((0.0, 0.0));
+                NodeState::from_node(node, position)
+            })
             .collect();
 
         let connections = graph

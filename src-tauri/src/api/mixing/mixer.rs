@@ -4,7 +4,8 @@ use crate::track::TrackType;
 use knodiq_audio_shader::AudioShaderNode;
 use knodiq_engine::mixing::region::BufferRegion;
 use knodiq_engine::mixing::track::BufferTrack;
-use knodiq_engine::{AudioSource, Mixer, Track};
+use knodiq_engine::{AudioSource, Mixer, NodeId, Track};
+use std::collections::HashMap;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
     mpsc, Arc, Mutex,
@@ -32,9 +33,16 @@ pub fn start_mixer_thread(state: State<Mutex<AppState>>, app: AppHandle) {
         let sample_rate = 48000;
         let channels = 2;
         let mut mixer = Mixer::new(tempo, sample_rate, channels);
+        let mut node_positions: HashMap<u32, HashMap<NodeId, (f32, f32)>> = HashMap::new();
 
         while running_clone.load(Ordering::SeqCst) {
-            process_mixer(&mut mixer, &command_receiver, &result_sender, &app_handle);
+            process_mixer(
+                &mut mixer,
+                &mut node_positions,
+                &command_receiver,
+                &result_sender,
+                &app_handle,
+            );
         }
     });
 
@@ -46,6 +54,7 @@ pub fn start_mixer_thread(state: State<Mutex<AppState>>, app: AppHandle) {
 
 fn process_mixer(
     mixer: &mut Mixer,
+    node_positions: &mut HashMap<u32, HashMap<NodeId, (f32, f32)>>,
     receiver: &mpsc::Receiver<MixerCommand>,
     result_sender: &mpsc::Sender<MixerResult>,
     app: &AppHandle,
@@ -113,18 +122,18 @@ fn process_mixer(
                 // Add the track to the mixer
                 mixer.add_track(Box::new(track));
 
-                emit_state(mixer, app);
+                emit_state(mixer, node_positions, app);
                 needs_mix = true;
             }
 
             MixerCommand::AddRegion(track_id, region_data) => {
-                handle_add_region(mixer, track_id, region_data, app);
+                handle_add_region(mixer, node_positions, track_id, region_data, app);
             }
 
             MixerCommand::RemoveTrack(track_id) => {
                 // Remove the track from the mixer
                 mixer.remove_track(track_id);
-                emit_state(mixer, app);
+                emit_state(mixer, node_positions, app);
                 needs_mix = true;
             }
 
@@ -135,7 +144,7 @@ fn process_mixer(
                 } else {
                     eprintln!("Track with ID {} not found.", track_id);
                 }
-                emit_state(mixer, app);
+                emit_state(mixer, node_positions, app);
                 needs_mix = true;
             }
 
@@ -153,7 +162,7 @@ fn process_mixer(
                 } else {
                     eprintln!("Track with ID {} not found.", track_id);
                 }
-                emit_state(mixer, app);
+                emit_state(mixer, node_positions, app);
                 needs_mix = true;
             }
 
@@ -164,7 +173,7 @@ fn process_mixer(
                 } else {
                     eprintln!("Track with ID {} not found.", track_id);
                 }
-                emit_state(mixer, app);
+                emit_state(mixer, node_positions, app);
                 needs_mix = true;
             }
 
@@ -175,7 +184,7 @@ fn process_mixer(
                 } else {
                     eprintln!("Track with ID {} not found.", track_id);
                 }
-                emit_state(mixer, app);
+                emit_state(mixer, node_positions, app);
                 needs_mix = true;
             }
 
@@ -199,7 +208,12 @@ fn process_mixer(
                 }
             }
 
-            MixerCommand::AddNode(track_id, node) => {
+            MixerCommand::AddNode(track_id, node, position) => {
+                node_positions
+                    .entry(track_id)
+                    .or_default()
+                    .insert(node.get_id(), position);
+
                 // Add a node to the track's graph
                 if let Some(track) = mixer.get_track_by_id_mut(track_id) {
                     let _ = result_sender.send(MixerResult::NodeId(track.graph().add_node(node)));
@@ -207,8 +221,17 @@ fn process_mixer(
                     eprintln!("Track with ID {} not found.", track_id);
                     let _ = result_sender.send(MixerResult::Error("Track not found".to_string()));
                 }
-                emit_state(mixer, app);
+
+                emit_state(mixer, node_positions, app);
                 needs_mix = true;
+            }
+
+            MixerCommand::MoveNode(track_id, node_id, position) => {
+                node_positions
+                    .entry(track_id)
+                    .or_default()
+                    .insert(node_id, position);
+                emit_state(mixer, node_positions, app);
             }
 
             MixerCommand::DoesNeedMix => {
@@ -219,12 +242,22 @@ fn process_mixer(
     }
 }
 
-fn emit_state(mixer: &mut Mixer, app: &AppHandle) {
-    let state = MixerState::from_mixer(mixer);
+fn emit_state(
+    mixer: &mut Mixer,
+    node_positions: &HashMap<u32, HashMap<NodeId, (f32, f32)>>,
+    app: &AppHandle,
+) {
+    let state = MixerState::from_mixer(mixer, node_positions);
     app.emit("mixer_state", state).ok();
 }
 
-fn handle_add_region(mixer: &mut Mixer, track_id: u32, region_data: RegionData, app: &AppHandle) {
+fn handle_add_region(
+    mixer: &mut Mixer,
+    node_positions: &mut HashMap<u32, HashMap<NodeId, (f32, f32)>>,
+    track_id: u32,
+    region_data: RegionData,
+    app: &AppHandle,
+) {
     let RegionType::BufferRegion(path, track_index) = &region_data.region_type;
     let duration_secs = match AudioSource::get_duration_from_path(path, *track_index) {
         Ok(duration) => duration,
@@ -249,7 +282,7 @@ fn handle_add_region(mixer: &mut Mixer, track_id: u32, region_data: RegionData, 
             println!("Region added: {:?}", region_data.name);
         }
     }
-    emit_state(mixer, app);
+    emit_state(mixer, node_positions, app);
 
     // Set audio source
     let source = match AudioSource::from_path(path, *track_index) {
@@ -269,5 +302,5 @@ fn handle_add_region(mixer: &mut Mixer, track_id: u32, region_data: RegionData, 
         }
     }
     println!("Audio source set for region: {:?}", region_data.name);
-    emit_state(mixer, app);
+    emit_state(mixer, node_positions, app);
 }

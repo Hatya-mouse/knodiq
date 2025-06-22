@@ -1,6 +1,7 @@
 use crate::api::{mixing::TrackType, state::GraphState, RegionState};
-use knodiq_engine::Track;
+use knodiq_engine::{NodeId, Track};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize)]
 pub struct TrackState {
@@ -13,7 +14,10 @@ pub struct TrackState {
 }
 
 impl TrackState {
-    pub fn from_track(track: &mut Box<dyn Track>) -> Self {
+    pub fn from_track(
+        track: &mut Box<dyn Track>,
+        node_positions: &HashMap<NodeId, (f32, f32)>,
+    ) -> Self {
         let id = track.id();
         let name = track.name().to_string();
         let channels = track.channels();
@@ -26,7 +30,7 @@ impl TrackState {
             .iter()
             .map(|&region| RegionState::from_region(Box::new(region)))
             .collect::<Vec<_>>();
-        let graph = GraphState::from_graph(track.graph());
+        let graph = GraphState::from_graph(track.graph(), node_positions);
 
         TrackState {
             id,

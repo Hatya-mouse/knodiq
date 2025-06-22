@@ -1,6 +1,5 @@
 import { useCallback, useRef, useEffect, useState, useContext } from "react";
 
-import PaneHeader from "./PaneHeader";
 import TrackArea from "@/features/pane/track_area/TrackArea";
 import { PaneContentType, PaneNode, PaneNodeId } from "../../lib/type/PaneNode";
 import { EditorData } from "../../lib/type/EditorData";
@@ -135,6 +134,7 @@ export default function PaneComponent({
         <>
             {paneNode.contentType === PaneContentType.TrackView && editorData.trackViewData ?
                 <TrackArea
+                    onPaneSelect={handlePaneSelect}
                     mixerState={editorData.trackViewData.mixerState}
                     currentTime={editorData.trackViewData.currentTime}
                     selectedTrackId={editorData.trackViewData.selectedTrackId}
@@ -146,6 +146,7 @@ export default function PaneComponent({
                 />
                 : PaneContentType.NodeEditor && editorData.nodeEditorData ?
                     <NodeEditor
+                        onPaneSelect={handlePaneSelect}
                         mixerState={editorData.nodeEditorData.mixerState}
                         selectedTrackId={editorData.nodeEditorData.selectedTrackId}
                         onAddNode={editorData.nodeEditorData.onAddNode}
@@ -175,7 +176,6 @@ export default function PaneComponent({
             <div className="h-full w-full">
                 {paneNode.type === 'leaf' &&
                     <div className="h-full w-full">
-                        <PaneHeader selectedPane={paneNode.contentType} onPaneSelect={handlePaneSelect} />
                         {content}
                     </div>
                 }

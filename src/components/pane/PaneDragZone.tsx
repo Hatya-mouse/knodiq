@@ -71,7 +71,7 @@ export default function PaneDragZone({
             C 3 0, 2 0, 0 0
             z
             "
-            fill="var(--accent-blue)"
+            fill="var(--accent-color)"
         />
     </svg>);
 
@@ -84,7 +84,7 @@ export default function PaneDragZone({
             C 0 0, 1 0, 3 0
             z
             "
-            fill="var(--accent-blue)"
+            fill="var(--accent-color)"
         />
     </svg>);
 
@@ -106,7 +106,7 @@ export default function PaneDragZone({
         >
             {/* Drag zone for the {direction} edge */}
             <div
-                className={`absolute transition-all duration-150 ease-out ${isHovered ? "bg-[var(--accent-blue)]" : "opacity-0"}`}
+                className={`absolute transition-all duration-150 ease-out ${isHovered ? "bg-[var(--accent-color)]" : "opacity-0"}`}
                 style={{
                     transformOrigin: direction,
                     transform: direction === "top" || direction === "bottom" ?

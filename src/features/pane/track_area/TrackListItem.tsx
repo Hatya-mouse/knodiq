@@ -22,7 +22,7 @@ export default function TrackListItem({
 
     return (
         <div
-            className="text-[var(--fg)] flex flex-row justify-between items-center gap-1 bottom-border px-3 py-2"
+            className="text-[var(--text)] flex flex-row justify-between items-center gap-1 bottom-border px-3 py-2"
             style={{ height: height, overflow: "hidden" }}
         >
             <h3 className="text-ellipsis whitespace-nowrap overflow-hidden">{track.name}</h3>

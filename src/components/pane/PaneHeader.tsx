@@ -6,9 +6,11 @@ import { useEffect, useRef, useState } from "react";
 export default function PaneHeader({
     selectedPane,
     onPaneSelect = () => { },
+    controls,
 }: {
     selectedPane?: PaneContentType,
     onPaneSelect?: (pane: PaneContentType) => void,
+    controls?: React.ReactNode,
 }) {
     let [isMenuOpen, setIsMenuOpen] = useState(false);
     let dropdownRef = useRef<HTMLDivElement>(null);
@@ -53,6 +55,8 @@ export default function PaneHeader({
                     className="mt-0"
                 />
             </div>
+
+            <div>{controls}</div>
         </div>
     </>)
 }

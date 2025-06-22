@@ -1,6 +1,6 @@
 mod api;
 
-use api::graph::graph;
+use api::graph::{graph, node};
 use api::mixing::{region, track};
 use api::AppState;
 use api::{playback, setup};
@@ -26,6 +26,7 @@ pub fn run() {
             graph::get_output_node,
             graph::disconnect_graph,
             graph::add_node,
+            node::node::move_node,
             track::track::add_track,
             track::track::remove_track,
             region::region::add_region,

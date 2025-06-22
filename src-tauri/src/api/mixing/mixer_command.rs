@@ -63,13 +63,20 @@ pub enum MixerCommand {
     /// Add a node to a track.
     /// - track_id: `u32`
     /// - node: `Box<dyn knodiq_engine::Node + Send>`
-    AddNode(u32, Box<dyn knodiq_engine::Node + Send>),
+    /// - position: `(f32, f32)` (x, y)
+    AddNode(u32, Box<dyn knodiq_engine::Node + Send>, (f32, f32)),
 
     /// Get the input node of a track.
     GetInputNode(u32),
 
     /// Get the output node of a track.
     GetOutputNode(u32),
+
+    /// Update the position of a node in the graph.
+    /// - track_id: `u32`
+    /// - node_id: `NodeId`
+    /// - position: `(f32, f32)` (x, y)
+    MoveNode(u32, NodeId, (f32, f32)),
 
     /// Check if the mixer needs to mix.
     DoesNeedMix,
