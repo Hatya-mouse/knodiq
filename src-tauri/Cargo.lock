@@ -2176,8 +2176,8 @@ dependencies = [
 
 [[package]]
 name = "knodiq_audio_shader"
-version = "0.1.9"
-source = "git+https://github.com/Hatya-mouse/knodiq_audio_shader#cf82d84226c1bd49291ba4673131ddf6019d8246"
+version = "0.1.10"
+source = "git+https://github.com/Hatya-mouse/knodiq_audio_shader#6991007e0499d28d574fb649576ecd661db01599"
 dependencies = [
  "knodiq_engine",
  "rand 0.9.1",
@@ -2186,8 +2186,8 @@ dependencies = [
 
 [[package]]
 name = "knodiq_engine"
-version = "0.2.63"
-source = "git+https://github.com/Hatya-mouse/knodiq_engine#ae399199c46538908af94c1073e84dd11a514d7a"
+version = "0.2.64"
+source = "git+https://github.com/Hatya-mouse/knodiq_engine#275a635b716fd46ab79066924c3db8dd94ba08cf"
 dependencies = [
  "cpal",
  "rubato",
@@ -2314,9 +2314,9 @@ checksum = "c41e0c4fef86961ac6d6f8a82609f55f31b05e4fce149ac5710e439df7619ba4"
 
 [[package]]
 name = "mach2"
-version = "0.4.2"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "19b955cdeb2a02b9117f121ce63aa52d08ade45de53e48fe6a38b39c10f6f709"
+checksum = "d640282b302c0bb0a2a8e0233ead9035e3bed871f0b7e81fe4a1ec829765db44"
 dependencies = [
  "libc",
 ]
