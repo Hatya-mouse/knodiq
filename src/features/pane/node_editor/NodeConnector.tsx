@@ -14,10 +14,26 @@
 // limitations under the License.
 //
 
-use serde::{Deserialize, Serialize};
+export default function NodeConnector({
+    x1,
+    y1,
+    x2,
+    y2,
+}: {
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+}) {
+    const horizontalOffset = Math.abs(x1 - x2) * 0.6;
+    const pathData = `M ${x1} ${y1} C ${x1 + horizontalOffset} ${y1}, ${x2 - horizontalOffset} ${y2}, ${x2} ${y2}`;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum NodeType {
-    EmptyNode,
-    AudioSourceNode,
+    return (
+        <path
+            d={pathData}
+            stroke="var(--text)"
+            strokeWidth="3"
+            fill="none"
+        />
+    );
 }

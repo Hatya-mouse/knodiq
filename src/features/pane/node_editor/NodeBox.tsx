@@ -16,15 +16,28 @@
 
 import React, { useRef } from "react";
 import { NodeState } from "@/lib/audio_api/graph_state";
+import { getNodeTypeString } from "@/lib/audio_api/graph_state";
+import CircleButton from "./CircleButton";
+import { LucideX } from "lucide-react";
 
 export default function NodeBox({
     nodeState,
     onMove,
     onMoveEnded,
+    onRemove,
+    onClickParameter,
+    onMouseDownParameter,
+    onMouseEnterParameter,
+    onMouseLeaveParameter,
 }: {
     nodeState: NodeState,
     onMove?: (newPosition: [number, number]) => void,
     onMoveEnded?: (newPosition: [number, number]) => void,
+    onRemove?: () => void,
+    onClickParameter?: (nodeId: string, key: string, isInput: boolean) => void,
+    onMouseDownParameter?: (nodeId: string, key: string, isInput: boolean) => void,
+    onMouseEnterParameter?: (nodeId: string, key: string, isInput: boolean) => void,
+    onMouseLeaveParameter?: (nodeId: string, key: string, isInput: boolean) => void,
 }) {
     const dragging = useRef(false);
     const offset = useRef([0, 0]);
@@ -59,7 +72,7 @@ export default function NodeBox({
 
     return (
         <div
-            className="absolute rounded-[var(--border-radius)] bg-[var(--bg-primary)] shadow overflow-hidden select-none"
+            className="absolute rounded-[var(--border-radius)] bg-[var(--bg-primary)] overflow-hidden select-none"
             style={{
                 border: "var(--border)",
                 left: nodeState.position[0],
@@ -68,16 +81,52 @@ export default function NodeBox({
         >
             {/* Header */}
             <div
-                className="bg-[var(--bg-secondary)] px-1.5 py-1 text-sm font-medium cursor-move"
+                className="bg-[var(--bg-secondary)] flex flex-row justify-between px-1.5 py-1 text-sm font-medium cursor-move"
                 style={{ borderBottom: "var(--border)" }}
                 onMouseDown={onMouseDown}
             >
-                {nodeState.node_type}
+                {getNodeTypeString(nodeState.node_type)}
+
+                <div className="flex items-center">
+                    <button className="flex justify-center items-center rounded h-5 w-5 hover:bg-[var(--bg-tertiary)] transition cursor-pointer" onClick={onRemove}>
+                        <LucideX size={16} />
+                    </button>
+                </div>
             </div>
 
             {/* Content */}
-            <div className="p-2">
+            <div className="flex flex-row gap-2 px-2 py-1">
+                <div className="flex-1 gap-1 text-sm">
+                    {nodeState.inputs.map((input, index) => (
+                        <div key={index} className="flex items-center justify-start gap-1">
+                            <CircleButton
+                                id={`conn-${nodeState.id}-input-${input}`}
+                                className="bg-[var(--button-default)] hover:bg-[var(--button-hover)] active:bg-[var(--button-active)]"
+                                onClick={onClickParameter ? () => onClickParameter(nodeState.id, input, true) : undefined}
+                                onMouseDown={onMouseDownParameter ? () => onMouseDownParameter(nodeState.id, input, true) : undefined}
+                                onMouseEnter={onMouseEnterParameter ? () => onMouseEnterParameter(nodeState.id, input, true) : undefined}
+                                onMouseLeave={onMouseLeaveParameter ? () => onMouseLeaveParameter(nodeState.id, input, true) : undefined}
+                            />
+                            {input}
+                        </div>
+                    ))}
+                </div>
 
+                <div className="flex-1 gap-1 text-sm">
+                    {nodeState.outputs.map((output, index) => (
+                        <div key={index} className="text-right flex items-center justify-end gap-1">
+                            {output}
+                            <CircleButton
+                                id={`conn-${nodeState.id}-output-${output}`}
+                                className="bg-[var(--button-default)] hover:bg-[var(--button-hover)] active:bg-[var(--button-active)]"
+                                onClick={onClickParameter ? () => onClickParameter(nodeState.id, output, false) : undefined}
+                                onMouseDown={onMouseDownParameter ? () => onMouseDownParameter(nodeState.id, output, false) : undefined}
+                                onMouseEnter={onMouseEnterParameter ? () => onMouseEnterParameter(nodeState.id, output, false) : undefined}
+                                onMouseLeave={onMouseLeaveParameter ? () => onMouseLeaveParameter(nodeState.id, output, false) : undefined}
+                            />
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );

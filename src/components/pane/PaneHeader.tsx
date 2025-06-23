@@ -49,7 +49,7 @@ export default function PaneHeader({
         <div className="flex px-2 h-7 items-center bg-[var(--bg-secondary)] justify-between" style={{
             borderBottom: "var(--border)",
         }}>
-            <div className="flex-col gap-0" ref={dropdownRef}>
+            <div className="flex flex-col gap-0" ref={dropdownRef}>
                 <button
                     className="text-sm font-medium max-w-fit px-1 rounded flex-1 flex select-none hover:bg-[var(--bg-tertiary)] transition cursor-pointer"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}

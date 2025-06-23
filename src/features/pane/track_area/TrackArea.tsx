@@ -100,7 +100,7 @@ export default function TrackArea({
 
     return (
         <div
-            className="h-full flex-1 overflow-x-hidden overflow-y-scroll scrollbar-hidden"
+            className="h-full flex-1 flex flex-col overflow-hidden"
             ref={trackAreaRef}
         >
             <PaneHeader
@@ -108,7 +108,7 @@ export default function TrackArea({
                 onPaneSelect={onPaneSelect}
             />
 
-            <HSplitView className="w-full min-h-full" doesStrech={true} left={(
+            <HSplitView className="w-full flex-1" doesStrech={true} left={(
                 <div>
                     {/* Track list */}
                     <button

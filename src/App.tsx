@@ -37,6 +37,7 @@ export default function App() {
         listen<MixerState>("mixer_state", (event) => {
             let state = event.payload;
             setMixerState(state);
+            console.log("Received mixer state:", state);
 
             if (currentBeats > state.duration) {
                 setCurrentBeats(state.duration);
@@ -132,7 +133,26 @@ export default function App() {
             regionId: regionId,
             newBeats: newBeats
         });
-    }
+    };
+
+    const handleAddNode = (trackId: number, nodeType: string, position: [number, number]) => {
+        if (selectedTrackId === undefined) return;
+
+        invoke("add_node", {
+            trackId: trackId,
+            nodeData: {
+                node_type: nodeType,
+            },
+            position: position
+        });
+    };
+
+    const handleRemoveNode = (trackId: number, nodeId: string) => {
+        invoke("remove_node", {
+            trackId: trackId,
+            nodeId: nodeId
+        });
+    };
 
     const handleMoveNode = (trackId: number, nodeId: string, newPosition: [number, number]) => {
         invoke("move_node", {
@@ -142,10 +162,30 @@ export default function App() {
         });
     };
 
+    const handleConnectNodes = (trackId: number, from: string, fromParam: string, to: string, toParam: string) => {
+        invoke("connect_graph", {
+            trackId: trackId,
+            from: from,
+            fromParam: fromParam,
+            to: to,
+            toParam: toParam
+        });
+    };
+
+    const handleDisconnectNodes = (trackId: number, from: string, fromParam: string, to: string, toParam: string) => {
+        invoke("disconnect_graph", {
+            trackId: trackId,
+            from: from,
+            fromParam: fromParam,
+            to: to,
+            toParam: toParam
+        });
+    };
+
     const seek = async (beats: number) => {
         setCurrentBeats(beats);
         handlePauseAudio();
-    }
+    };
 
     return <div className="App w-screen h-screen flex flex-col font-(family-name:--base-font)">
         <WindowHeader
@@ -171,7 +211,11 @@ export default function App() {
             nodeEditorData: {
                 mixerState: mixerState || undefined,
                 selectedTrackId: selectedTrackId,
+                onAddNode: handleAddNode,
+                onRemoveNode: handleRemoveNode,
                 onMoveNode: handleMoveNode,
+                onConnectNodes: handleConnectNodes,
+                onDisconnectNodes: handleDisconnectNodes,
             }
         }} />
     </div>;

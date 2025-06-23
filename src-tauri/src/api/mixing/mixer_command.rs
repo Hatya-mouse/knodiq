@@ -14,10 +14,11 @@
 // limitations under the License.
 //
 
-use crate::api::mixing::{RegionData, TrackData};
 use crate::api::AppState;
+use crate::api::graph::node::node::NodeData;
+use crate::api::mixing::{RegionData, TrackData};
 use knodiq_engine::audio_utils::Beats;
-use knodiq_engine::{NodeId, Sample};
+use knodiq_engine::{NodeId, Sample, Value};
 use std::sync::{Mutex, MutexGuard};
 use tauri::State;
 
@@ -78,21 +79,33 @@ pub enum MixerCommand {
 
     /// Add a node to a track.
     /// - track_id: `u32`
-    /// - node: `Box<dyn knodiq_engine::Node + Send>`
+    /// - node_data: `NodeData`
     /// - position: `(f32, f32)` (x, y)
-    AddNode(u32, Box<dyn knodiq_engine::Node + Send>, (f32, f32)),
+    AddNode(u32, NodeData, (f32, f32)),
 
-    /// Get the input node of a track.
-    GetInputNode(u32),
-
-    /// Get the output node of a track.
-    GetOutputNode(u32),
+    /// Remove a node from a track.
+    /// - track_id: `u32`
+    /// - node_id: `NodeId`
+    RemoveNode(u32, NodeId),
 
     /// Update the position of a node in the graph.
     /// - track_id: `u32`
     /// - node_id: `NodeId`
     /// - position: `(f32, f32)` (x, y)
     MoveNode(u32, NodeId, (f32, f32)),
+
+    /// Set the input properties of a node.
+    /// - track_id: `u32`
+    /// - node_id: `NodeId`
+    /// - key: `String`
+    /// - value: `Value`
+    SetInputProperties(u32, NodeId, String, Value),
+
+    /// Get the input node of a track.
+    GetInputNode(u32),
+
+    /// Get the output node of a track.
+    GetOutputNode(u32),
 
     /// Check if the mixer needs to mix.
     DoesNeedMix,
@@ -105,11 +118,8 @@ pub enum MixerResult {
     OutputNode(NodeId),
     /// Result of the `DoesNeedMix` command.
     NeedsMix(bool),
-    /// Result of the `AddNode` command.
-    NodeId(NodeId),
-
-    /// Error result.
-    Error(String),
+    // Error result.
+    // Error(String),
 }
 
 pub fn send_mixer_command(command: MixerCommand, state: &State<'_, Mutex<AppState>>) {

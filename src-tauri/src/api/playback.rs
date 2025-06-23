@@ -14,12 +14,12 @@
 // limitations under the License.
 //
 
-use super::mixing::{mixer_command::send_mixer_command_locked, MixerResult};
-use crate::api::mixing::MixerCommand;
+use super::mixing::{MixerResult, mixer_command::send_mixer_command_locked};
 use crate::api::AppState;
-use knodiq_engine::{audio_utils::Beats, AudioPlayer};
+use crate::api::mixing::MixerCommand;
+use knodiq_engine::{AudioPlayer, audio_utils::Beats};
 use std::sync::Mutex;
-use tauri::{command, AppHandle, State};
+use tauri::{AppHandle, State, command};
 
 #[command]
 pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>, app: AppHandle) {
@@ -81,7 +81,7 @@ pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>, app: AppHandle) 
     if needs_mix {
         // TODO: --- Add a cache processing here!!! ---
 
-        let app_handle = app.clone();
+        // let app_handle = app.clone();
 
         // If mixing is needed, send the mix command to the mixer
         let mix_command = MixerCommand::Mix(

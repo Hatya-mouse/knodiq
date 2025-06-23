@@ -18,28 +18,28 @@ export default function DropdownMenu({
     options = [],
     isOpen = false,
     onSelect = () => { },
-    className = "",
+    className = '',
+    align = 'left',
 }: {
     options?: { label: string, value: any }[],
     isOpen?: boolean,
     onSelect?: (value: any) => void,
     className?: string,
+    align?: 'left' | 'right',
 }) {
-    let handleOptionClick = (value: any) => {
-        onSelect(value);
-    }
+    const alignmentClass = align === 'right' ? 'right-0' : 'left-0';
 
     return (
         <div className={`relative ${className}`}>
             <ul
-                className={`absolute left-0 mt-2 p-1 bg-[var(--bg-primary)] rounded-[var(--border-radius)] shadow-lg overflow-hidden transition-all duration-100 ease-in-out ${isOpen ? "pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+                className={`absolute mt-2 p-1 bg-[var(--bg-primary)] rounded-[var(--border-radius)] shadow-lg overflow-hidden transition-all duration-100 ease-in-out ${isOpen ? "pointer-events-auto" : "opacity-0 pointer-events-none"} ${alignmentClass}`}
                 style={{ border: "var(--border)", zIndex: 9 }}
             >
                 {options.map((option) => (
                     <li
                         key={option.value}
                         className="px-1 py-0.5 hover:bg-[var(--bg-secondary)] rounded cursor-pointer text-nowrap text-left text-sm"
-                        onClick={() => handleOptionClick(option.value)}
+                        onClick={() => onSelect(option.value)}
                     >
                         {option.label}
                     </li>

@@ -28,9 +28,9 @@
     --bg-secondary: oklch(94.538% 0.0117 264.578 / 0.7);
     --bg-tertiary: oklch(87.658% 0.01714 271.227 / 0.7);
 
-    --button-default: oklch(0.8945 0 0);
-    --button-hover: oklch(0.8328 0 0 / 80%);
-    --button-active: oklch(0.7699 0 0);
+    --button-default: oklch(50% 0.00006 271.152);
+    --button-hover: oklch(40% 0 0);
+    --button-active: oklch(30% 0 0);
 
     --text: oklch(0.3171 0 0);
     --text-inverted: oklch(1 0 0);

@@ -14,20 +14,28 @@
 // limitations under the License.
 //
 
-use crate::api::{
-    mixing::{send_mixer_command, MixerCommand},
-    AppState,
-};
-use knodiq_engine::NodeId;
-use std::sync::Mutex;
-use tauri::{command, State};
+use serde::{Deserialize, Serialize};
 
-#[command]
-pub fn move_node(
-    track_id: u32,
-    node_id: NodeId,
-    position: (f32, f32),
-    state: State<'_, Mutex<AppState>>,
-) {
-    send_mixer_command(MixerCommand::MoveNode(track_id, node_id, position), &state);
+#[derive(Serialize, Deserialize)]
+pub enum NodeType {
+    EmptyNode,
+    BufferInputNode,
+    BufferOutputNode,
+    AudioShaderNode,
+}
+
+impl Clone for NodeType {
+    fn clone(&self) -> Self {
+        match self {
+            NodeType::EmptyNode => NodeType::EmptyNode,
+            NodeType::BufferInputNode => NodeType::BufferInputNode,
+            NodeType::BufferOutputNode => NodeType::BufferOutputNode,
+            NodeType::AudioShaderNode => NodeType::AudioShaderNode,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct NodeData {
+    pub node_type: NodeType,
 }

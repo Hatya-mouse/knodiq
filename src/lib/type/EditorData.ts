@@ -31,10 +31,10 @@ export interface EditorData {
     nodeEditorData?: {
         mixerState?: MixerState,
         selectedTrackId?: number,
-        onAddNode?: () => void,
-        onRemoveNode?: (nodeId: string) => void,
-        onConnectNodes?: (sourceId: string, targetId: string) => void,
-        onDisconnectNodes?: (sourceId: string, targetId: string) => void,
+        onAddNode?: (trackId: number, nodeType: string, position: [number, number]) => void,
+        onRemoveNode?: (trackId: number, nodeId: string) => void,
+        onConnectNodes?: (trackId: number, from: string, fromParam: string, to: string, toParam: string) => void,
+        onDisconnectNodes?: (trackId: number, from: string, fromParam: string, to: string, toParam: string) => void,
         onMoveNode?: (trackId: number, nodeId: string, newPosition: [number, number]) => void,
     }
 }

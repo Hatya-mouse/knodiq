@@ -17,11 +17,11 @@
 export type NodeState = {
     /** The ID of the node. */
     id: string;
-    /** The type of the node, e.g., "oscillator", "filter", etc. */
+    /** The type of the node. */
     node_type: string;
-    /** The inputs of the node, which can vary based on the node type. */
+    /** The input properties of the node. */
     inputs: Array<string>;
-    /** The outputs of the node, which can vary based on the node type. */
+    /** The output properties of the node. */
     outputs: Array<string>;
     /** The position of the node in the editor, for UI purposes. */
     position: [number, number];
@@ -47,4 +47,28 @@ export type GraphState = {
     input_node: string;
     /** The ID of the output node. */
     output_node: string;
+}
+
+export function getNodeTypeString(typeString: string): string {
+    switch (typeString) {
+        case "AudioShaderNode":
+            return "Audio Shader Node";
+        case "EmptyNode":
+            return "Empty Node";
+        case "BufferInputNode":
+            return "Input";
+        case "BufferOutputNode":
+            return "Output";
+        default:
+            return "Unknown Node Type";
+    }
+}
+
+export function getNodeTypes(): Array<string> {
+    return [
+        "AudioShaderNode",
+        "EmptyNode",
+        "BufferInputNode",
+        "BufferOutputNode"
+    ];
 }

@@ -117,8 +117,8 @@ impl GraphState {
             .map(|connection| ConnectorState::from_connector(connection))
             .collect();
 
-        let input_node = graph.input_node.to_string();
-        let output_node = graph.output_node.to_string();
+        let input_node = graph.get_input_node_id().to_string();
+        let output_node = graph.get_output_node_id().to_string();
 
         GraphState {
             nodes,

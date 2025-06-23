@@ -16,9 +16,9 @@
 
 mod api;
 
-use api::graph::{graph, node};
-use api::mixing::{region, track};
 use api::AppState;
+use api::graph::graph;
+use api::mixing::{region, track};
 use api::{playback, setup};
 
 use std::sync::Mutex;
@@ -38,11 +38,13 @@ pub fn run() {
             playback::pause_audio,
             playback::play_audio,
             graph::connect_graph,
-            graph::get_input_nodes,
-            graph::get_output_node,
             graph::disconnect_graph,
             graph::add_node,
-            node::node::move_node,
+            graph::remove_node,
+            graph::move_node,
+            graph::set_input_properties,
+            graph::get_input_nodes,
+            graph::get_output_node,
             track::track::add_track,
             track::track::remove_track,
             region::region::add_region,

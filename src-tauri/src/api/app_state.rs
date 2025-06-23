@@ -51,7 +51,7 @@ impl AppState {
         self.audio_player = None;
     }
 
-    pub fn set_mixer_result_cache(&mut self, cache: AudioSource) {
-        self.mixer_result_cache = Some(cache);
-    }
+    // pub fn set_mixer_result_cache(&mut self, cache: AudioSource) {
+    //     self.mixer_result_cache = Some(cache);
+    // }
 }
