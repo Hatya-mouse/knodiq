@@ -33,6 +33,7 @@ export default function NodeConnector({
             d={pathData}
             stroke="var(--text)"
             strokeWidth="3"
+            strokeLinecap="round"
             fill="none"
         />
     );

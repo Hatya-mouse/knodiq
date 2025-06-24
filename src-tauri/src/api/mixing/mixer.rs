@@ -193,10 +193,16 @@ fn process_mixer(
                     NodeType::AudioShaderNode => Box::new(AudioShaderNode::new()),
                 };
 
-                node_positions
-                    .entry(track_id)
-                    .or_default()
-                    .insert(node.get_id(), position);
+                if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+                    node_positions
+                        .entry(track_id)
+                        .or_default()
+                        .insert(node.get_id(), position);
+
+                    track.graph().add_node(node);
+                } else {
+                    eprintln!("Track with ID {} not found.", track_id);
+                }
 
                 emit_state(mixer, node_positions, app);
                 needs_mix = true;

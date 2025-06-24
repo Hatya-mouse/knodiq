@@ -136,8 +136,6 @@ export default function App() {
     };
 
     const handleAddNode = (trackId: number, nodeType: string, position: [number, number]) => {
-        if (selectedTrackId === undefined) return;
-
         invoke("add_node", {
             trackId: trackId,
             nodeData: {
