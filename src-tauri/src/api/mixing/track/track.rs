@@ -14,11 +14,11 @@
 // limitations under the License.
 //
 
-use crate::api::mixing::{send_mixer_command, MixerCommand};
 use crate::api::AppState;
+use crate::api::mixing::{MixerCommand, send_mixer_command};
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
-use tauri::{command, State};
+use tauri::{State, command};
 
 #[derive(Serialize, Deserialize)]
 pub enum TrackType {
@@ -35,7 +35,6 @@ impl Clone for TrackType {
 
 #[derive(Serialize, Deserialize)]
 pub struct TrackData {
-    pub id: u32,
     pub name: String,
     pub channels: usize,
     pub track_type: TrackType,

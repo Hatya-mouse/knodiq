@@ -85,7 +85,6 @@ export default function App() {
 
             invoke("add_track", {
                 trackData: {
-                    id: nextTrackId,
                     name: fileName,
                     channels: 2,
                     track_type: "BufferTrack"
@@ -94,7 +93,6 @@ export default function App() {
 
             invoke("add_region", {
                 regionData: {
-                    id: 0,
                     name: fileName,
                     start_time: 0,
                     duration: 10,

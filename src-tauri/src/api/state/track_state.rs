@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-use crate::api::{mixing::TrackType, state::GraphState, RegionState};
+use crate::api::{RegionState, mixing::TrackType, state::GraphState};
 use knodiq_engine::{NodeId, Track};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -34,8 +34,8 @@ impl TrackState {
         track: &mut Box<dyn Track>,
         node_positions: &HashMap<NodeId, (f32, f32)>,
     ) -> Self {
-        let id = track.id();
-        let name = track.name().to_string();
+        let id = track.get_id();
+        let name = track.get_name().to_string();
         let channels = track.channels();
         let track_type = match track.track_type().as_str() {
             "BufferTrack" => TrackType::BufferTrack,

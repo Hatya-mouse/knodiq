@@ -97,11 +97,9 @@ fn process_mixer(
 
             MixerCommand::AddTrack(track_data) => {
                 let mut track = match track_data.track_type {
-                    TrackType::BufferTrack => BufferTrack::new(
-                        track_data.id,
-                        track_data.name.as_str(),
-                        track_data.channels,
-                    ),
+                    TrackType::BufferTrack => {
+                        BufferTrack::new(track_data.name.as_str(), track_data.channels)
+                    }
                 };
 
                 // Connect the input and output nodes of the track
@@ -165,7 +163,7 @@ fn process_mixer(
             MixerCommand::ConnectGraph(track_id, from, from_param, to, to_param) => {
                 // Connect the two nodes in the graph
                 if let Some(track) = mixer.get_track_by_id_mut(track_id) {
-                    track.graph().connect(from, from_param, to, to_param);
+                    track.graph_mut().connect(from, from_param, to, to_param);
                 } else {
                     eprintln!("Track with ID {} not found.", track_id);
                 }
@@ -176,7 +174,7 @@ fn process_mixer(
             MixerCommand::DisconnectGraph(track_id, from, from_param, to, to_param) => {
                 // Disconnect the two nodes in the graph
                 if let Some(track) = mixer.get_track_by_id_mut(track_id) {
-                    track.graph().disconnect(from, from_param, to, to_param);
+                    track.graph_mut().disconnect(from, from_param, to, to_param);
                 } else {
                     eprintln!("Track with ID {} not found.", track_id);
                 }
@@ -199,7 +197,7 @@ fn process_mixer(
                         .or_default()
                         .insert(node.get_id(), position);
 
-                    track.graph().add_node(node);
+                    track.graph_mut().add_node(node);
                 } else {
                     eprintln!("Track with ID {} not found.", track_id);
                 }
@@ -210,7 +208,7 @@ fn process_mixer(
 
             MixerCommand::RemoveNode(track_id, node_id) => {
                 if let Some(track) = mixer.get_track_by_id_mut(track_id) {
-                    track.graph().remove_node(node_id);
+                    track.graph_mut().remove_node(node_id);
                     node_positions.entry(track_id).or_default().remove(&node_id);
                 } else {
                     eprintln!("Track with ID {} not found.", track_id);
@@ -229,7 +227,7 @@ fn process_mixer(
 
             MixerCommand::SetInputProperties(track_id, node_id, key, value) => {
                 if let Some(track) = mixer.get_track_by_id_mut(track_id) {
-                    if let Some(node) = track.graph().get_node_mut(node_id) {
+                    if let Some(node) = track.graph_mut().get_node_mut(node_id) {
                         node.set_input(key.as_str(), value);
                     } else {
                         eprintln!("Node with ID {} not found in track {}.", node_id, track_id);
@@ -284,49 +282,66 @@ fn handle_add_region(
     region_data: RegionData,
     app: &AppHandle,
 ) {
-    let RegionType::BufferRegion(path, track_index) = &region_data.region_type;
-    let duration_secs = match AudioSource::get_duration_from_path(path, *track_index) {
-        Ok(duration) => duration,
-        Err(e) => {
-            eprintln!("Error getting duration from path: {}", e);
-            return;
-        }
-    };
+    match region_data.region_type {
+        RegionType::BufferRegion(path, track_index) => {
+            let duration_secs = match AudioSource::get_duration_from_path(&path, track_index) {
+                Ok(duration) => duration,
+                Err(e) => {
+                    eprintln!("Error getting duration from path: {}", e);
+                    return;
+                }
+            };
 
-    let duration = duration_secs / (60.0 / mixer.tempo);
+            let duration = duration_secs / (60.0 / mixer.tempo);
+            let mut region_id = 0;
 
-    // Add region
-    if let Some(track) = mixer.get_track_by_id_mut(track_id) {
-        if let Some(buffer_track) = track.as_any_mut().downcast_mut::<BufferTrack>() {
-            let region = BufferRegion::empty(
-                region_data.id,
-                region_data.name.clone(),
-                region_data.samples_per_beat,
-                duration,
-            );
-            buffer_track.add_region(region.clone(), region_data.start_time, region_data.duration);
-            println!("Region added: {:?}", region_data.name);
-        }
-    }
-    emit_state(mixer, node_positions, app);
+            // Add region
+            if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+                if let Some(buffer_track) = track.as_any_mut().downcast_mut::<BufferTrack>() {
+                    let region = BufferRegion::empty(
+                        region_data.name.clone(),
+                        region_data.samples_per_beat,
+                        duration,
+                    );
+                    region_id = match buffer_track.add_region(
+                        Box::new(region.clone()),
+                        region_data.start_time,
+                        region_data.duration,
+                    ) {
+                        Ok(id) => id,
+                        Err(e) => {
+                            eprintln!("Error adding region: {}", e);
+                            return;
+                        }
+                    };
+                    println!("Region added: {:?}", region_data.name);
+                }
+            }
+            emit_state(mixer, node_positions, app);
 
-    // Set audio source
-    let source = match AudioSource::from_path(path, *track_index) {
-        Ok(source) => Some(source),
-        Err(e) => {
-            eprintln!("Error loading audio source: {}", e);
-            None
-        }
-    };
-    if let Some(track) = mixer.get_track_by_id_mut(track_id) {
-        if let Some(buffer_track) = track.as_any_mut().downcast_mut::<BufferTrack>() {
-            if let Some(region) = buffer_track.get_region_mut(region_data.id) {
-                if let Some(region) = region.as_any_mut().downcast_mut::<BufferRegion>() {
-                    region.set_audio_source(source);
+            // Set audio source
+            let source = match AudioSource::from_path(&path, track_index) {
+                Ok(source) => Some(source),
+                Err(e) => {
+                    eprintln!("Error loading audio source: {}", e);
+                    None
+                }
+            };
+            if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+                if let Some(buffer_track) = track.as_any_mut().downcast_mut::<BufferTrack>() {
+                    if let Some(region) = buffer_track.get_region_mut(region_id) {
+                        if let Some(region) = region.as_any_mut().downcast_mut::<BufferRegion>() {
+                            region.set_audio_source(source);
+                        }
+                    }
                 }
             }
         }
+
+        RegionType::NoteRegion() => {
+            eprintln!("Note regions are not supported yet.");
+            return;
+        }
     }
-    println!("Audio source set for region: {:?}", region_data.name);
     emit_state(mixer, node_positions, app);
 }

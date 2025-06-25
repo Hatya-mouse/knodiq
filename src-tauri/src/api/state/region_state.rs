@@ -28,8 +28,8 @@ pub struct RegionState {
 impl RegionState {
     pub fn from_region(region: Box<&dyn Region>) -> Self {
         RegionState {
-            id: *region.id(),
-            name: region.name().to_string(),
+            id: *region.get_id(),
+            name: region.get_name().to_string(),
             start_time: region.start_time(),
             duration: region.duration(),
         }

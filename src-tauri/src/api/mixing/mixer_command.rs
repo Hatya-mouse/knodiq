@@ -24,14 +24,16 @@ use tauri::State;
 
 pub enum MixerCommand {
     /// Command to set the sample callback function for the mixer.
+    /// - callback: `Box<dyn Fn(Sample, Beats) -> bool + Send>`
     Mix(Beats, Box<dyn Fn(Sample, Beats) -> bool + Send>),
 
     /// Add a track to the mixer.
+    /// - track_data: `TrackData`
     AddTrack(TrackData),
 
     /// Add a region to the specified track.
-    /// - track_id: `usize`
-    /// - region_data: `RegionData,
+    /// - track_id: `u32`
+    /// - region_data: `RegionData`
     AddRegion(u32, RegionData),
 
     /// Remove a track from the mixer.

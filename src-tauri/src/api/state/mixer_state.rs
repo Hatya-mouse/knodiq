@@ -15,7 +15,7 @@
 //
 
 use crate::api::TrackState;
-use knodiq_engine::{audio_utils::Beats, Mixer, NodeId};
+use knodiq_engine::{Mixer, NodeId, audio_utils::Beats};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -37,8 +37,10 @@ impl MixerState {
             .tracks
             .iter_mut()
             .map(|track| {
-                let track_node_positions =
-                    node_positions.get(&track.id()).cloned().unwrap_or_default();
+                let track_node_positions = node_positions
+                    .get(&track.get_id())
+                    .cloned()
+                    .unwrap_or_default();
                 TrackState::from_track(track, &track_node_positions)
             })
             .collect::<Vec<_>>();
