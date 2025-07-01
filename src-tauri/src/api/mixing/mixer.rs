@@ -19,10 +19,12 @@ use crate::api::mixing::{MixerCommand, MixerResult, RegionData, RegionType};
 use crate::api::{AppState, MixerState};
 use crate::track::TrackType;
 use knodiq_audio_shader::AudioShaderNode;
+use knodiq_audio_shader::AudioShaderNode;
 use knodiq_engine::graph::built_in::{BufferInputNode, BufferOutputNode, EmptyNode};
 use knodiq_engine::mixing::region::BufferRegion;
 use knodiq_engine::mixing::track::BufferTrack;
 use knodiq_engine::{AudioSource, Mixer, Node, NodeId, Track};
+use knodiq_note::{NodeInputNode, NoteTrack};
 use std::collections::HashMap;
 use std::sync::{
     Arc, Mutex,
@@ -100,6 +102,7 @@ fn process_mixer(
                     TrackType::BufferTrack => {
                         BufferTrack::new(track_data.name.as_str(), track_data.channels)
                     }
+                    TrackType::NoteTrack => NoteTrack::new(id, name, volume, channels),
                 };
 
                 // Connect the input and output nodes of the track
@@ -110,7 +113,7 @@ fn process_mixer(
                     input_node,
                     "buffer".to_string(),
                     output_node,
-                    "buffe".to_string(),
+                    "buffer".to_string(),
                 );
 
                 // Add the track to the mixer
@@ -142,11 +145,11 @@ fn process_mixer(
                 needs_mix = true;
             }
 
-            MixerCommand::MoveRegion(track_id, region_id, new_beats) => {
-                // Move the region to the new beats position
+            MixerCommand::ApplyRegionOp(track_id, region_id, operation) => {
+                // Apply the operation to the specified region in the track
                 if let Some(track) = mixer.get_track_by_id_mut(track_id) {
                     if let Some(region) = track.get_region_mut(region_id) {
-                        region.set_start_time(new_beats);
+                        region.apply_operation(operation);
                     } else {
                         eprintln!(
                             "Region with ID {} not found in track {}.",
@@ -189,6 +192,7 @@ fn process_mixer(
                     NodeType::BufferInputNode => Box::new(BufferInputNode::new()),
                     NodeType::BufferOutputNode => Box::new(BufferOutputNode::new()),
                     NodeType::AudioShaderNode => Box::new(AudioShaderNode::new()),
+                    NodeType::NoteInputNode => Box::new(NodeInputNode::new()),
                 };
 
                 if let Some(track) = mixer.get_track_by_id_mut(track_id) {
@@ -253,6 +257,18 @@ fn process_mixer(
                 if let Some(track) = mixer.get_track_by_id_mut(track_id) {
                     let output_node = track.graph().get_output_node_id();
                     let _ = result_sender.send(MixerResult::OutputNode(output_node));
+                } else {
+                    eprintln!("Track with ID {} not found.", track_id);
+                }
+            }
+
+            MixerCommand::SetAudioShader(track_id, node_id, shader) => {
+                if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+                    if let Some(node) = track.graph_mut().get_node_mut(node_id) {
+                        node.set_shader(shader);
+                    } else {
+                        eprintln!("Node with ID {} not found in track {}.", node_id, track_id);
+                    }
                 } else {
                     eprintln!("Track with ID {} not found.", track_id);
                 }

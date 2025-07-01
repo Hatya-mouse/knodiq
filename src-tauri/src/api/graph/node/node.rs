@@ -22,6 +22,7 @@ pub enum NodeType {
     BufferInputNode,
     BufferOutputNode,
     AudioShaderNode,
+    NoteInputNode,
 }
 
 impl Clone for NodeType {
@@ -31,6 +32,7 @@ impl Clone for NodeType {
             NodeType::BufferInputNode => NodeType::BufferInputNode,
             NodeType::BufferOutputNode => NodeType::BufferOutputNode,
             NodeType::AudioShaderNode => NodeType::AudioShaderNode,
+            NodeType::NoteInputNode => NodeType::NoteInputNode,
         }
     }
 }

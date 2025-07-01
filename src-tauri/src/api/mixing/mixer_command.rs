@@ -31,25 +31,25 @@ pub enum MixerCommand {
     /// - track_data: `TrackData`
     AddTrack(TrackData),
 
+    /// Remove a track from the mixer.
+    /// - track_id: `u32`
+    RemoveTrack(u32),
+
     /// Add a region to the specified track.
     /// - track_id: `u32`
     /// - region_data: `RegionData`
     AddRegion(u32, RegionData),
-
-    /// Remove a track from the mixer.
-    /// - track_id: `u32`
-    RemoveTrack(u32),
 
     /// Remove a region from the specified track.
     /// - track_id: `u32`
     /// - region_id: `u32`
     RemoveRegion(u32, u32),
 
-    /// Move a region to a new position in the specified track.
+    /// Apply the operations to the specified region in the track.
     /// - track_id: `u32`
     /// - region_id: `u32`
-    /// - new_beats: `Beats`
-    MoveRegion(u32, u32, Beats),
+    /// - operation: `RegionOperation`
+    ApplyRegionOp(u32, u32, RegionOperation),
 
     /// Connect two nodes in the graph.
     /// - track_id: `u32`
@@ -108,6 +108,12 @@ pub enum MixerCommand {
 
     /// Get the output node of a track.
     GetOutputNode(u32),
+
+    /// Set the shader of an audio shader node.
+    /// - track_id: `u32`
+    /// - node_id: `NodeId`
+    /// - shader: `String`
+    SetAudioShader(u32, NodeId, String),
 
     /// Check if the mixer needs to mix.
     DoesNeedMix,

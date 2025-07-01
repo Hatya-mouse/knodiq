@@ -23,12 +23,14 @@ use tauri::{State, command};
 #[derive(Serialize, Deserialize)]
 pub enum TrackType {
     BufferTrack,
+    NoteTrack,
 }
 
 impl Clone for TrackType {
     fn clone(&self) -> Self {
         match self {
             TrackType::BufferTrack => TrackType::BufferTrack,
+            TrackType::NoteTrack => TrackType::NoteTrack,
         }
     }
 }
