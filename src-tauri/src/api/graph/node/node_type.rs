@@ -19,8 +19,6 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 pub enum NodeType {
     EmptyNode,
-    BufferInputNode,
-    BufferOutputNode,
     AudioShaderNode,
     NoteInputNode,
 }
@@ -29,8 +27,6 @@ impl Clone for NodeType {
     fn clone(&self) -> Self {
         match self {
             NodeType::EmptyNode => NodeType::EmptyNode,
-            NodeType::BufferInputNode => NodeType::BufferInputNode,
-            NodeType::BufferOutputNode => NodeType::BufferOutputNode,
             NodeType::AudioShaderNode => NodeType::AudioShaderNode,
             NodeType::NoteInputNode => NodeType::NoteInputNode,
         }

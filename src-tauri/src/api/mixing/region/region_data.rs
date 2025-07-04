@@ -15,6 +15,7 @@
 //
 
 use crate::api::AppState;
+use crate::api::mixing::region::RegionOperation;
 use crate::api::mixing::{MixerCommand, send_mixer_command};
 use knodiq_engine::audio_utils::Beats;
 use serde::{Deserialize, Serialize};
@@ -56,8 +57,6 @@ pub fn move_region(
     new_beats: Beats,
     state: State<'_, Mutex<AppState>>,
 ) {
-    send_mixer_command(
-        MixerCommand::MoveRegion(track_id, region_id, new_beats),
-        &state,
-    );
+    let op = RegionOperation::SetStartTime(new_beats);
+    send_mixer_command(MixerCommand::ApplyRegionOp(track_id, region_id, op), &state);
 }

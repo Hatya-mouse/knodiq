@@ -15,7 +15,8 @@
 //
 
 use crate::api::AppState;
-use crate::api::graph::node::node::NodeData;
+use crate::api::graph::node::node_type::NodeData;
+use crate::api::mixing::region::RegionOperation;
 use crate::api::mixing::{RegionData, TrackData};
 use knodiq_engine::audio_utils::Beats;
 use knodiq_engine::{NodeId, Sample, Value};
@@ -126,6 +127,8 @@ pub enum MixerResult {
     OutputNode(NodeId),
     /// Result of the `DoesNeedMix` command.
     NeedsMix(bool),
+    /// Result of the `SetAudioShader` command.
+    AudioShaderErrors(Vec<String>),
     // Error result.
     // Error(String),
 }

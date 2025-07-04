@@ -15,7 +15,7 @@
 //
 
 use knodiq_engine::{Beats, Region};
-use knodiq_note::{Note, NoteRegion};
+use knodiq_note::NoteRegion;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -26,8 +26,8 @@ pub enum RegionOperation {
     SetDuration(Beats),
     /// Set the name of the region.
     SetName(String),
-    /// Set the samples per beat of the region.
-    SetSamplesPerBeat(f32),
+    /// Scale the region to the new duration.
+    Scale(f32),
 
     /// Add a note to a `NoteRegion`.
     AddNote {
@@ -38,7 +38,7 @@ pub enum RegionOperation {
     },
     /// Modify a note in a `NoteRegion`.
     ModifyNote {
-        id: usize,
+        id: u32,
         pitch: u8,
         velocity: u8,
         start_beat: Beats,
@@ -47,14 +47,12 @@ pub enum RegionOperation {
 }
 
 impl RegionOperation {
-    pub fn apply(&self, region: &mut Box<dyn Region>) {
+    pub fn apply(&self, region: &mut dyn Region) {
         match self {
             RegionOperation::SetStartTime(beats) => region.set_start_time(*beats),
             RegionOperation::SetDuration(beats) => region.set_duration(*beats),
             RegionOperation::SetName(name) => region.set_name(name.clone()),
-            RegionOperation::SetSamplesPerBeat(samples_per_beat) => {
-                region.set_samples_per_beat(*samples_per_beat)
-            }
+            RegionOperation::Scale(new_duration) => region.scale(*new_duration),
 
             RegionOperation::AddNote {
                 pitch,
@@ -98,12 +96,31 @@ impl Clone for RegionOperation {
             RegionOperation::SetStartTime(beats) => RegionOperation::SetStartTime(*beats),
             RegionOperation::SetDuration(beats) => RegionOperation::SetDuration(*beats),
             RegionOperation::SetName(name) => RegionOperation::SetName(name.clone()),
-            RegionOperation::SetSamplesPerBeat(samples_per_beat) => {
-                RegionOperation::SetSamplesPerBeat(*samples_per_beat)
-            }
-            RegionOperation::AddNote(pitch, velocity, start_beat, duration) => {
-                RegionOperation::AddNote(*pitch, *velocity, *start_beat, *duration)
-            }
+            RegionOperation::Scale(new_duration) => RegionOperation::Scale(*new_duration),
+            RegionOperation::AddNote {
+                pitch,
+                velocity,
+                start_beat,
+                duration,
+            } => RegionOperation::AddNote {
+                pitch: *pitch,
+                velocity: *velocity,
+                start_beat: *start_beat,
+                duration: *duration,
+            },
+            RegionOperation::ModifyNote {
+                id,
+                pitch,
+                velocity,
+                start_beat,
+                duration,
+            } => RegionOperation::ModifyNote {
+                id: *id,
+                pitch: *pitch,
+                velocity: *velocity,
+                start_beat: *start_beat,
+                duration: *duration,
+            },
         }
     }
 }

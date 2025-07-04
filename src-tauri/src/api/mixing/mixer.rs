@@ -19,12 +19,11 @@ use crate::api::mixing::{MixerCommand, MixerResult, RegionData, RegionType};
 use crate::api::{AppState, MixerState};
 use crate::track::TrackType;
 use knodiq_audio_shader::AudioShaderNode;
-use knodiq_audio_shader::AudioShaderNode;
-use knodiq_engine::graph::built_in::{BufferInputNode, BufferOutputNode, EmptyNode};
+use knodiq_engine::graph::built_in::EmptyNode;
 use knodiq_engine::mixing::region::BufferRegion;
 use knodiq_engine::mixing::track::BufferTrack;
 use knodiq_engine::{AudioSource, Mixer, Node, NodeId, Track};
-use knodiq_note::{NodeInputNode, NoteTrack};
+use knodiq_note::{NoteInputNode, NoteTrack};
 use std::collections::HashMap;
 use std::sync::{
     Arc, Mutex,
@@ -91,7 +90,13 @@ fn process_mixer(
             MixerCommand::Mix(at, callback) => {
                 let mut mixer_clone = mixer.clone();
                 thread::spawn(move || {
-                    mixer_clone.prepare();
+                    match mixer_clone.prepare() {
+                        Ok(_) => {}
+                        Err(e) => {
+                            eprintln!("Error preparing mixer: {}", e);
+                            return;
+                        }
+                    }
                     println!("Mixing starting at: {}", at);
                     mixer_clone.mix(at, callback);
                 });
@@ -99,17 +104,21 @@ fn process_mixer(
 
             MixerCommand::AddTrack(track_data) => {
                 let mut track = match track_data.track_type {
-                    TrackType::BufferTrack => {
-                        BufferTrack::new(track_data.name.as_str(), track_data.channels)
-                    }
-                    TrackType::NoteTrack => NoteTrack::new(id, name, volume, channels),
+                    TrackType::BufferTrack => Box::new(BufferTrack::new(
+                        track_data.name.as_str(),
+                        track_data.channels,
+                    )) as Box<dyn Track>,
+                    TrackType::NoteTrack => Box::new(NoteTrack::new(
+                        track_data.name.as_str(),
+                        track_data.channels,
+                    )) as Box<dyn Track>,
                 };
 
                 // Connect the input and output nodes of the track
-                let input_node = track.graph.get_input_node_id();
-                let output_node = track.graph.get_output_node_id();
+                let input_node = track.graph().get_input_node_id();
+                let output_node = track.graph().get_output_node_id();
 
-                track.graph.connect(
+                track.graph_mut().connect(
                     input_node,
                     "buffer".to_string(),
                     output_node,
@@ -117,7 +126,7 @@ fn process_mixer(
                 );
 
                 // Add the track to the mixer
-                mixer.add_track(Box::new(track));
+                mixer.add_track(track);
 
                 emit_state(mixer, node_positions, app);
                 needs_mix = true;
@@ -149,7 +158,7 @@ fn process_mixer(
                 // Apply the operation to the specified region in the track
                 if let Some(track) = mixer.get_track_by_id_mut(track_id) {
                     if let Some(region) = track.get_region_mut(region_id) {
-                        region.apply_operation(operation);
+                        operation.apply(region);
                     } else {
                         eprintln!(
                             "Region with ID {} not found in track {}.",
@@ -189,10 +198,8 @@ fn process_mixer(
                 // Create a new node based on the provided data
                 let node: Box<dyn Node> = match node_data.node_type {
                     NodeType::EmptyNode => Box::new(EmptyNode::new()),
-                    NodeType::BufferInputNode => Box::new(BufferInputNode::new()),
-                    NodeType::BufferOutputNode => Box::new(BufferOutputNode::new()),
                     NodeType::AudioShaderNode => Box::new(AudioShaderNode::new()),
-                    NodeType::NoteInputNode => Box::new(NodeInputNode::new()),
+                    NodeType::NoteInputNode => Box::new(NoteInputNode::new()),
                 };
 
                 if let Some(track) = mixer.get_track_by_id_mut(track_id) {
@@ -265,7 +272,20 @@ fn process_mixer(
             MixerCommand::SetAudioShader(track_id, node_id, shader) => {
                 if let Some(track) = mixer.get_track_by_id_mut(track_id) {
                     if let Some(node) = track.graph_mut().get_node_mut(node_id) {
-                        node.set_shader(shader);
+                        if let Some(audio_shader_node) =
+                            node.as_any_mut().downcast_mut::<AudioShaderNode>()
+                        {
+                            let errors = match audio_shader_node.set_shader(shader) {
+                                Ok(_) => vec![],
+                                Err(e) => e,
+                            };
+                            let _ = result_sender.send(MixerResult::AudioShaderErrors(errors));
+                        } else {
+                            eprintln!(
+                                "Node with ID {} is not an AudioShaderNode in track {}.",
+                                node_id, track_id
+                            );
+                        }
                     } else {
                         eprintln!("Node with ID {} not found in track {}.", node_id, track_id);
                     }
@@ -300,25 +320,21 @@ fn handle_add_region(
 ) {
     match region_data.region_type {
         RegionType::BufferRegion(path, track_index) => {
-            let duration_secs = match AudioSource::get_duration_from_path(&path, track_index) {
-                Ok(duration) => duration,
-                Err(e) => {
-                    eprintln!("Error getting duration from path: {}", e);
-                    return;
-                }
-            };
+            // let duration_secs = match AudioSource::get_duration_from_path(&path, track_index) {
+            //     Ok(duration) => duration,
+            //     Err(e) => {
+            //         eprintln!("Error getting duration from path: {}", e);
+            //         return;
+            //     }
+            // };
 
-            let duration = duration_secs / (60.0 / mixer.tempo);
+            // let duration = duration_secs / (60.0 / mixer.tempo);
             let mut region_id = 0;
 
             // Add region
             if let Some(track) = mixer.get_track_by_id_mut(track_id) {
                 if let Some(buffer_track) = track.as_any_mut().downcast_mut::<BufferTrack>() {
-                    let region = BufferRegion::empty(
-                        region_data.name.clone(),
-                        region_data.samples_per_beat,
-                        duration,
-                    );
+                    let region = BufferRegion::empty(region_data.name.clone());
                     region_id = match buffer_track.add_region(
                         Box::new(region.clone()),
                         region_data.start_time,
@@ -343,11 +359,12 @@ fn handle_add_region(
                     None
                 }
             };
+            let tempo = mixer.tempo;
             if let Some(track) = mixer.get_track_by_id_mut(track_id) {
                 if let Some(buffer_track) = track.as_any_mut().downcast_mut::<BufferTrack>() {
                     if let Some(region) = buffer_track.get_region_mut(region_id) {
                         if let Some(region) = region.as_any_mut().downcast_mut::<BufferRegion>() {
-                            region.set_audio_source(source);
+                            region.set_audio_source(source, tempo);
                         }
                     }
                 }

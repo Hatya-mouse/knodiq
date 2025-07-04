@@ -17,7 +17,7 @@
 mod api;
 
 use api::AppState;
-use api::graph::graph;
+use api::graph;
 use api::mixing::{region, track};
 use api::{playback, setup};
 
@@ -37,14 +37,15 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             playback::pause_audio,
             playback::play_audio,
-            graph::connect_graph,
-            graph::disconnect_graph,
-            graph::add_node,
-            graph::remove_node,
-            graph::move_node,
-            graph::set_input_properties,
-            graph::get_input_nodes,
-            graph::get_output_node,
+            graph::graph::connect_graph,
+            graph::graph::disconnect_graph,
+            graph::graph::add_node,
+            graph::graph::remove_node,
+            graph::graph::move_node,
+            graph::graph::set_input_properties,
+            graph::graph::get_input_nodes,
+            graph::graph::get_output_node,
+            graph::node::audio_shader_node::set_audio_shader,
             track::track::add_track,
             track::track::remove_track,
             region::region_data::add_region,

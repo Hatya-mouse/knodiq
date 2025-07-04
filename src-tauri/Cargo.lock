@@ -150,9 +150,9 @@ dependencies = [
 
 [[package]]
 name = "async-channel"
-version = "2.3.1"
+version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89b47800b0be77592da0afd425cc03468052844aff33b84e33cc696f64e77b6a"
+checksum = "16c74e56284d2188cabb6ad99603d1ace887a5d7e7b695d01b728155ed9ed427"
 dependencies = [
  "concurrent-queue",
  "event-listener-strategy",
@@ -2002,6 +2002,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "io-uring"
+version = "0.7.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b86e202f00093dcba4275d4636b93ef9dd75d025ae560d2521b45ea28ab49013"
+dependencies = [
+ "bitflags 2.9.1",
+ "cfg-if",
+ "libc",
+]
+
+[[package]]
 name = "ipnet"
 version = "2.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2169,8 +2180,8 @@ dependencies = [
 
 [[package]]
 name = "knodiq_audio_shader"
-version = "0.2.1"
-source = "git+https://github.com/Hatya-mouse/knodiq_audio_shader#d3480a32943a078ba686e56922e11e42599f7bb3"
+version = "0.2.3"
+source = "git+https://github.com/Hatya-mouse/knodiq_audio_shader#c160bd577ba4904d65cbd62960c734bcc36ba600"
 dependencies = [
  "knodiq_engine",
  "rand 0.9.1",
@@ -2179,8 +2190,8 @@ dependencies = [
 
 [[package]]
 name = "knodiq_engine"
-version = "0.2.94"
-source = "git+https://github.com/Hatya-mouse/knodiq_engine#2861c9e5df4ec680882ea2586ae7c3fb04b61a7c"
+version = "0.2.98"
+source = "git+https://github.com/Hatya-mouse/knodiq_engine#71379f6bcdd7c8a486738dd0fbc9c85f336fb1e6"
 dependencies = [
  "cpal",
  "rubato",
@@ -2191,8 +2202,8 @@ dependencies = [
 
 [[package]]
 name = "knodiq_note"
-version = "0.1.1"
-source = "git+https://github.com/Hatya-mouse/knodiq_note#43c89eeef2caf17a3cb42156399c59535e834be4"
+version = "0.1.6"
+source = "git+https://github.com/Hatya-mouse/knodiq_note#7135578bb216162a181e5623cea2ff3b07a8d593"
 dependencies = [
  "knodiq_engine",
 ]
@@ -3507,9 +3518,9 @@ dependencies = [
 
 [[package]]
 name = "reqwest"
-version = "0.12.21"
+version = "0.12.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4c8cea6b35bcceb099f30173754403d2eba0a5dc18cea3630fccd88251909288"
+checksum = "cbc931937e6ca3a06e3b6c0aa7841849b160a90351d6ab467a8b9b9959767531"
 dependencies = [
  "base64 0.22.1",
  "bytes",
@@ -4866,16 +4877,18 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokio"
-version = "1.45.1"
+version = "1.46.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75ef51a33ef1da925cea3e4eb122833cb377c61439ca401b770f54902b806779"
+checksum = "1140bb80481756a8cbe10541f37433b459c5aa1e727b4c020fbfebdc25bf3ec4"
 dependencies = [
  "backtrace",
  "bytes",
+ "io-uring",
  "libc",
  "mio",
  "pin-project-lite",
  "signal-hook-registry",
+ "slab",
  "socket2",
  "tracing",
  "windows-sys 0.52.0",

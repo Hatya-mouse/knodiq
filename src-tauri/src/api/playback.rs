@@ -19,10 +19,10 @@ use crate::api::AppState;
 use crate::api::mixing::MixerCommand;
 use knodiq_engine::{AudioPlayer, audio_utils::Beats};
 use std::sync::Mutex;
-use tauri::{AppHandle, State, command};
+use tauri::{State, command};
 
 #[command]
-pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>, app: AppHandle) {
+pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>) {
     let mut locked_state = state.lock().unwrap();
 
     // Clear the old audio player if it exists
