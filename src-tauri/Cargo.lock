@@ -589,9 +589,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.2.27"
+version = "1.2.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d487aa071b5f64da6f19a3e848e3578944b726ee5a4854b82172f02aa876bfdc"
+checksum = "4ad45f4f74e4e20eaa392913b7b33a7091c87e59628f4dd27888205ad888843c"
 dependencies = [
  "jobserver",
  "libc",
@@ -2180,8 +2180,8 @@ dependencies = [
 
 [[package]]
 name = "knodiq_audio_shader"
-version = "0.2.3"
-source = "git+https://github.com/Hatya-mouse/knodiq_audio_shader#c160bd577ba4904d65cbd62960c734bcc36ba600"
+version = "0.2.4"
+source = "git+https://github.com/Hatya-mouse/knodiq_audio_shader#ee19aa6bdc42c9f8d28e17654db49a8c17a7b83e"
 dependencies = [
  "knodiq_engine",
  "rand 0.9.1",
@@ -2190,8 +2190,8 @@ dependencies = [
 
 [[package]]
 name = "knodiq_engine"
-version = "0.2.98"
-source = "git+https://github.com/Hatya-mouse/knodiq_engine#71379f6bcdd7c8a486738dd0fbc9c85f336fb1e6"
+version = "0.2.100"
+source = "git+https://github.com/Hatya-mouse/knodiq_engine#4ca25afbcae3d464e26476ddb7f0e10de8364747"
 dependencies = [
  "cpal",
  "rubato",
@@ -2202,8 +2202,8 @@ dependencies = [
 
 [[package]]
 name = "knodiq_note"
-version = "0.1.6"
-source = "git+https://github.com/Hatya-mouse/knodiq_note#7135578bb216162a181e5623cea2ff3b07a8d593"
+version = "0.1.7"
+source = "git+https://github.com/Hatya-mouse/knodiq_note#d4e01c806fce1d5cc2cd22211f04e3a596364a1a"
 dependencies = [
  "knodiq_engine",
 ]
@@ -4877,9 +4877,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokio"
-version = "1.46.0"
+version = "1.46.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1140bb80481756a8cbe10541f37433b459c5aa1e727b4c020fbfebdc25bf3ec4"
+checksum = "0cc3a2344dafbe23a245241fe8b09735b521110d30fcefbbd5feb1797ca35d17"
 dependencies = [
  "backtrace",
  "bytes",

@@ -23,6 +23,7 @@ export default function TrackListContent({
     width = 0,
     height = 50,
     className = "",
+    onAddRegion,
     onMoveRegion,
 }: {
     track: TrackState,
@@ -30,10 +31,20 @@ export default function TrackListContent({
     width?: number,
     height?: number,
     className?: string,
+    onAddRegion?: (trackId: number, name: string, startTime: number, duration: number) => void,
     onMoveRegion?: (trackId: number, regionId: number, newBeats: number) => void,
 }) {
     const moveRegion = (id: number, newBeats: number) => {
         if (onMoveRegion) onMoveRegion(track.id, id, newBeats);
+    };
+
+    const handleAddRegion = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        if (onAddRegion) {
+            const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const beats = Math.floor(x / beatWidth);
+            onAddRegion(track.id, "New Region", beats, 4);
+        }
     };
 
     return (
@@ -43,6 +54,7 @@ export default function TrackListContent({
                 width: width,
                 height: height,
             }}
+            onDoubleClick={handleAddRegion}
         >
             {track.regions.map((region, i) =>
                 <RegionView

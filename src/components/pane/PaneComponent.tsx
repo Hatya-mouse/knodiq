@@ -157,6 +157,7 @@ export default function PaneComponent({
                     onAddTrack={editorData.trackViewData.onAddTrack}
                     onRemoveTrack={editorData.trackViewData.onRemoveTrack}
                     onSelectTrack={editorData.trackViewData.onSelectTrack}
+                    onAddRegion={editorData.trackViewData.onAddRegion}
                     onMoveRegion={editorData.trackViewData.onMoveRegion}
                     seek={editorData.trackViewData.seek}
                 />

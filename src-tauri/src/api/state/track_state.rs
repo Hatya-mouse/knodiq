@@ -26,6 +26,7 @@ pub struct TrackState {
     pub channels: usize,
     pub track_type: TrackType,
     pub regions: Vec<RegionState>,
+    pub color: String,
     pub graph: GraphState,
 }
 
@@ -33,6 +34,7 @@ impl TrackState {
     pub fn from_track(
         track: &mut Box<dyn Track>,
         node_positions: &HashMap<NodeId, (f32, f32)>,
+        color: String,
     ) -> Self {
         let id = track.get_id();
         let name = track.get_name().to_string();
@@ -54,6 +56,7 @@ impl TrackState {
             channels,
             track_type,
             regions,
+            color,
             graph,
         }
     }
@@ -67,6 +70,7 @@ impl Clone for TrackState {
             channels: self.channels,
             track_type: self.track_type.clone(),
             regions: self.regions.clone(),
+            color: self.color.clone(),
             graph: self.graph.clone(),
         }
     }

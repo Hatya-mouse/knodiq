@@ -36,6 +36,11 @@ pub enum MixerCommand {
     /// - track_id: `u32`
     RemoveTrack(u32),
 
+    /// Set a track color.
+    /// - track_id: `u32`
+    /// - color: `String`
+    SetTrackColor(u32, String),
+
     /// Add a region to the specified track.
     /// - track_id: `u32`
     /// - region_data: `RegionData`
@@ -129,8 +134,6 @@ pub enum MixerResult {
     NeedsMix(bool),
     /// Result of the `SetAudioShader` command.
     AudioShaderErrors(Vec<String>),
-    // Error result.
-    // Error(String),
 }
 
 pub fn send_mixer_command(command: MixerCommand, state: &State<'_, Mutex<AppState>>) {

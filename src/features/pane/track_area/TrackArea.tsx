@@ -33,6 +33,7 @@ export default function TrackArea({
     onAddTrack,
     onRemoveTrack,
     onSelectTrack,
+    onAddRegion,
     onMoveRegion,
     seek,
 }: {
@@ -43,6 +44,7 @@ export default function TrackArea({
     onAddTrack?: () => void,
     onRemoveTrack?: (trackId: number) => void,
     onSelectTrack?: (trackId: number) => void,
+    onAddRegion?: (trackId: number, name: string, startTime: number, duration: number) => void,
     onMoveRegion?: (trackId: number, regionId: number, newBeats: number) => void,
     seek?: (beats: number) => void,
 }) {
@@ -167,6 +169,7 @@ export default function TrackArea({
                             height={trackHeight}
                             track={track}
                             onMoveRegion={onMoveRegion}
+                            onAddRegion={onAddRegion}
                         />
                     ))}
 

@@ -21,9 +21,12 @@ use std::collections::HashMap;
 #[derive(Serialize, Deserialize)]
 pub struct NodeState {
     id: String,
+    name: String,
     node_type: String,
     inputs: Vec<String>,
     outputs: Vec<String>,
+    is_input_node: bool,
+    is_output_node: bool,
     position: (f32, f32),
 }
 
@@ -31,6 +34,7 @@ impl NodeState {
     pub fn from_node(node: &Box<dyn Node>, position: (f32, f32)) -> Self {
         NodeState {
             id: node.get_id().to_string(),
+            name: node.get_name().to_string(),
             node_type: node.get_type().to_string(),
             inputs: node
                 .get_input_list()
@@ -42,6 +46,8 @@ impl NodeState {
                 .iter()
                 .map(|name| name.clone())
                 .collect(),
+            is_input_node: node.is_input(),
+            is_output_node: node.is_output(),
             position,
         }
     }
@@ -51,9 +57,12 @@ impl Clone for NodeState {
     fn clone(&self) -> Self {
         NodeState {
             id: self.id.clone(),
+            name: self.name.clone(),
             node_type: self.node_type.clone(),
             inputs: self.inputs.clone(),
             outputs: self.outputs.clone(),
+            is_input_node: self.is_input_node,
+            is_output_node: self.is_output_node,
             position: self.position.clone(),
         }
     }

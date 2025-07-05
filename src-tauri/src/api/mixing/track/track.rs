@@ -51,3 +51,8 @@ pub fn add_track(track_data: TrackData, state: State<'_, Mutex<AppState>>) {
 pub fn remove_track(track_id: u32, state: State<'_, Mutex<AppState>>) {
     send_mixer_command(MixerCommand::RemoveTrack(track_id), &state);
 }
+
+#[command]
+pub fn set_track_color(track_id: u32, color: String, state: State<'_, Mutex<AppState>>) {
+    send_mixer_command(MixerCommand::SetTrackColor(track_id, color), &state);
+}

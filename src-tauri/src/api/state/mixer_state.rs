@@ -32,6 +32,7 @@ impl MixerState {
     pub fn from_mixer(
         mixer: &mut Mixer,
         node_positions: &HashMap<u32, HashMap<NodeId, (f32, f32)>>,
+        track_colors: &HashMap<u32, String>,
     ) -> Self {
         let tracks = mixer
             .tracks
@@ -41,7 +42,11 @@ impl MixerState {
                     .get(&track.get_id())
                     .cloned()
                     .unwrap_or_default();
-                TrackState::from_track(track, &track_node_positions)
+                let track_color = track_colors
+                    .get(&track.get_id())
+                    .cloned()
+                    .unwrap_or_else(|| "#FFFFFF".to_string());
+                TrackState::from_track(track, &track_node_positions, track_color)
             })
             .collect::<Vec<_>>();
         let bpm = mixer.tempo;

@@ -16,7 +16,6 @@
 
 import React, { useRef } from "react";
 import { NodeState } from "@/lib/audio_api/graph_state";
-import { getNodeTypeString } from "@/lib/audio_api/graph_state";
 import CircleButton from "./CircleButton";
 import { LucideX } from "lucide-react";
 
@@ -85,7 +84,7 @@ export default function NodeBox({
                 style={{ borderBottom: "var(--border)" }}
                 onMouseDown={onMouseDown}
             >
-                {getNodeTypeString(nodeState.node_type)}
+                {nodeState.name}
 
                 <div className="flex items-center">
                     <button className="flex justify-center items-center rounded h-5 w-5 hover:bg-[var(--bg-tertiary)] transition cursor-pointer" onClick={onRemove}>
@@ -97,7 +96,7 @@ export default function NodeBox({
             {/* Content */}
             <div className="flex flex-row gap-2 px-2 py-1">
                 <div className="flex-1 gap-1 text-sm">
-                    {nodeState.inputs.map((input, index) => (
+                    {!nodeState.is_input_node && nodeState.inputs.map((input, index) => (
                         <div key={index} className="flex items-center justify-start gap-1">
                             <CircleButton
                                 id={`conn-${nodeState.id}-input-${input}`}
@@ -113,7 +112,7 @@ export default function NodeBox({
                 </div>
 
                 <div className="flex-1 gap-1 text-sm">
-                    {nodeState.outputs.map((output, index) => (
+                    {!nodeState.is_output_node && nodeState.outputs.map((output, index) => (
                         <div key={index} className="text-right flex items-center justify-end gap-1">
                             {output}
                             <CircleButton

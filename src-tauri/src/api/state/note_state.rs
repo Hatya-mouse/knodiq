@@ -20,8 +20,8 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 pub struct NoteState {
     pub id: u32,
-    pub pitch: u8,    // MIDI pitch
-    pub velocity: u8, // MIDI velocity
+    pub pitch: u8,
+    pub velocity: u8,
     pub start_time: f32,
     pub duration: f32,
 }

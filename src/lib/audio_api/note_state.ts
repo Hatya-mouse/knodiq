@@ -14,22 +14,15 @@
 // limitations under the License.
 //
 
-import { RegionState } from './region_state';
-import { GraphState } from './graph_state';
-
-export type TrackState = {
-    /** The ID of the track. */
+export type NoteState = {
+    /** The unique identifier for the note. */
     id: number;
-    /** The name of the track, specified by the user. */
-    name: string;
-    /** Number of channels in the track. */
-    channels: number;
-    /** The type of the track. This is used to determine how to process the track. */
-    track_type: string;
-    /** The regions in the track. */
-    regions: RegionState[];
-    /** Color of the track. */
-    color: string;
-    /** The graph structure of the track. */
-    graph: GraphState;
+    /** The pitch of the note, represented as a MIDI note number. */
+    pitch: number;
+    /** The velocity of the note, typically ranging from 0 to 127. */
+    velocity: number;
+    /** The start time of the note in beats. */
+    start_time: number;
+    /** The duration of the note in beats. */
+    duration: number;
 }

@@ -48,6 +48,7 @@ pub fn run() {
             graph::node::audio_shader_node::set_audio_shader,
             track::track::add_track,
             track::track::remove_track,
+            track::track::set_track_color,
             region::region_data::add_region,
             region::region_data::remove_region,
             region::region_data::move_region,

@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+import { RegionDataState } from "./region_data_state";
+
 export type RegionState = {
     /** The ID of the region. */
     id: number;
@@ -23,4 +25,6 @@ export type RegionState = {
     start_time: number;
     /** The duration of the region in beats. */
     duration: number;
+    /** The data of the region. */
+    data: RegionDataState;
 }

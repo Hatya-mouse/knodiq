@@ -20,7 +20,7 @@ import { LucidePlus } from "lucide-react";
 import PaneHeader from "@/components/pane/PaneHeader";
 import { PaneContentType } from "@/lib/type/PaneNode";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { getNodeTypes, getNodeTypeString, NodeState } from "@/lib/audio_api/graph_state";
+import { getNodeTypes, NodeState } from "@/lib/audio_api/graph_state";
 import NodeConnector from "./NodeConnector";
 import DropdownMenu from "@/components/button/DropdownMenu";
 
@@ -176,7 +176,7 @@ export default function NodeEditor({
 
                         <DropdownMenu
                             options={getNodeTypes().map((nodeType) => ({
-                                label: getNodeTypeString(nodeType),
+                                label: nodeType,
                                 value: nodeType,
                             }))}
                             isOpen={isAddMenuOpen}

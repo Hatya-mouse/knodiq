@@ -53,12 +53,15 @@ pub fn start_mixer_thread(state: State<Mutex<AppState>>, app: AppHandle) {
         let sample_rate = 48000;
         let channels = 2;
         let mut mixer = Mixer::new(tempo, sample_rate, channels);
+
         let mut node_positions: HashMap<u32, HashMap<NodeId, (f32, f32)>> = HashMap::new();
+        let mut track_colors: HashMap<u32, String> = HashMap::new();
 
         while running_clone.load(Ordering::SeqCst) {
             process_mixer(
                 &mut mixer,
                 &mut node_positions,
+                &mut track_colors,
                 &command_receiver,
                 &result_sender,
                 &app_handle,
@@ -75,6 +78,7 @@ pub fn start_mixer_thread(state: State<Mutex<AppState>>, app: AppHandle) {
 fn process_mixer(
     mixer: &mut Mixer,
     node_positions: &mut HashMap<u32, HashMap<NodeId, (f32, f32)>>,
+    track_colors: &mut HashMap<u32, String>,
     receiver: &mpsc::Receiver<MixerCommand>,
     result_sender: &mpsc::Sender<MixerResult>,
     app: &AppHandle,
@@ -120,27 +124,46 @@ fn process_mixer(
 
                 track.graph_mut().connect(
                     input_node,
-                    "buffer".to_string(),
+                    "audio".to_string(),
                     output_node,
-                    "buffer".to_string(),
+                    "audio".to_string(),
                 );
 
                 // Add the track to the mixer
                 mixer.add_track(track);
 
-                emit_state(mixer, node_positions, app);
+                emit_state(mixer, node_positions, track_colors, app);
                 needs_mix = true;
-            }
-
-            MixerCommand::AddRegion(track_id, region_data) => {
-                handle_add_region(mixer, node_positions, track_id, region_data, app);
             }
 
             MixerCommand::RemoveTrack(track_id) => {
                 // Remove the track from the mixer
                 mixer.remove_track(track_id);
-                emit_state(mixer, node_positions, app);
+                emit_state(mixer, node_positions, track_colors, app);
                 needs_mix = true;
+            }
+
+            MixerCommand::AddRegion(track_id, region_data) => {
+                handle_add_region(
+                    mixer,
+                    node_positions,
+                    track_colors,
+                    track_id,
+                    region_data,
+                    app,
+                );
+            }
+
+            MixerCommand::RemoveTrack(track_id) => {
+                // Remove the track from the mixer
+                mixer.remove_track(track_id);
+                emit_state(mixer, node_positions, track_colors, app);
+                needs_mix = true;
+            }
+
+            MixerCommand::SetTrackColor(track_id, color) => {
+                track_colors.insert(track_id, color);
+                emit_state(mixer, node_positions, track_colors, app);
             }
 
             MixerCommand::RemoveRegion(track_id, region_id) => {
@@ -150,7 +173,7 @@ fn process_mixer(
                 } else {
                     eprintln!("Track with ID {} not found.", track_id);
                 }
-                emit_state(mixer, node_positions, app);
+                emit_state(mixer, node_positions, track_colors, app);
                 needs_mix = true;
             }
 
@@ -168,7 +191,7 @@ fn process_mixer(
                 } else {
                     eprintln!("Track with ID {} not found.", track_id);
                 }
-                emit_state(mixer, node_positions, app);
+                emit_state(mixer, node_positions, track_colors, app);
                 needs_mix = true;
             }
 
@@ -179,7 +202,7 @@ fn process_mixer(
                 } else {
                     eprintln!("Track with ID {} not found.", track_id);
                 }
-                emit_state(mixer, node_positions, app);
+                emit_state(mixer, node_positions, track_colors, app);
                 needs_mix = true;
             }
 
@@ -190,7 +213,7 @@ fn process_mixer(
                 } else {
                     eprintln!("Track with ID {} not found.", track_id);
                 }
-                emit_state(mixer, node_positions, app);
+                emit_state(mixer, node_positions, track_colors, app);
                 needs_mix = true;
             }
 
@@ -213,7 +236,7 @@ fn process_mixer(
                     eprintln!("Track with ID {} not found.", track_id);
                 }
 
-                emit_state(mixer, node_positions, app);
+                emit_state(mixer, node_positions, track_colors, app);
                 needs_mix = true;
             }
 
@@ -224,7 +247,7 @@ fn process_mixer(
                 } else {
                     eprintln!("Track with ID {} not found.", track_id);
                 }
-                emit_state(mixer, node_positions, app);
+                emit_state(mixer, node_positions, track_colors, app);
                 needs_mix = true;
             }
 
@@ -233,7 +256,7 @@ fn process_mixer(
                     .entry(track_id)
                     .or_default()
                     .insert(node_id, position);
-                emit_state(mixer, node_positions, app);
+                emit_state(mixer, node_positions, track_colors, app);
             }
 
             MixerCommand::SetInputProperties(track_id, node_id, key, value) => {
@@ -246,7 +269,7 @@ fn process_mixer(
                 } else {
                     eprintln!("Track with ID {} not found.", track_id);
                 }
-                emit_state(mixer, node_positions, app);
+                emit_state(mixer, node_positions, track_colors, app);
             }
 
             MixerCommand::GetInputNode(track_id) => {
@@ -305,15 +328,17 @@ fn process_mixer(
 fn emit_state(
     mixer: &mut Mixer,
     node_positions: &HashMap<u32, HashMap<NodeId, (f32, f32)>>,
+    track_colors: &HashMap<u32, String>,
     app: &AppHandle,
 ) {
-    let state = MixerState::from_mixer(mixer, node_positions);
+    let state = MixerState::from_mixer(mixer, node_positions, track_colors);
     app.emit("mixer_state", state).ok();
 }
 
 fn handle_add_region(
     mixer: &mut Mixer,
     node_positions: &mut HashMap<u32, HashMap<NodeId, (f32, f32)>>,
+    track_colors: &mut HashMap<u32, String>,
     track_id: u32,
     region_data: RegionData,
     app: &AppHandle,
@@ -349,7 +374,7 @@ fn handle_add_region(
                     println!("Region added: {:?}", region_data.name);
                 }
             }
-            emit_state(mixer, node_positions, app);
+            emit_state(mixer, node_positions, track_colors, app);
 
             // Set audio source
             let source = match AudioSource::from_path(&path, track_index) {
@@ -376,5 +401,5 @@ fn handle_add_region(
             return;
         }
     }
-    emit_state(mixer, node_positions, app);
+    emit_state(mixer, node_positions, track_colors, app);
 }

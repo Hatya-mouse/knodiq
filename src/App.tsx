@@ -27,7 +27,6 @@ import "./App.css";
 export default function App() {
     const [isPlaying, setIsPlaying] = useState(false);
     const [mixerState, setMixerState] = useState<MixerState | null>(null);
-    const [nextTrackId, setNextTrackId] = useState<number>(0);
     const [currentBeats, setCurrentBeats] = useState<number>(0);
     const [selectedTrackId, setSelectedTrackId] = useState<number | undefined>(undefined);
 
@@ -65,55 +64,23 @@ export default function App() {
     }, [isPlaying, mixerState?.bpm]);
 
     /// Called when the file selection button is pressed.
-    const handleFileSelect = async () => {
-        // Open a file dialog to select an audio file
-        const selected = await open({
-            filters: [{
-                name: "audio",
-                extensions: ["wav", "mp3", "ogg"],
-            }]
+    const handleFileSelect = () => {
+        invoke("add_track", {
+            trackData: {
+                name: "TRACK!!!!!",
+                channels: 2,
+                track_type: "BufferTrack"
+            }
         });
-
-        // Get the opened file path
-        if (typeof selected == "string") {
-            setNextTrackId(prev => prev + 1);
-
-            // Get the file name from the path
-            // Windows paths may contain backslashes, so we use split("/") to ensure we get the last part of the path
-            var fileName = selected.split("/").pop() || "Unknown File";
-            fileName = fileName.split("\\").pop() || "Unknown File";
-
-            invoke("add_track", {
-                trackData: {
-                    name: fileName,
-                    channels: 2,
-                    track_type: "BufferTrack"
-                }
-            });
-
-            invoke("add_region", {
-                regionData: {
-                    name: fileName,
-                    start_time: 0,
-                    duration: 10,
-                    samples_per_beat: 22550,
-                    region_type: {
-                        BufferRegion: [selected, 0],
-                    },
-                },
-                trackId: nextTrackId,
-            });
-
-        }
     }
 
-    const handlePlayAudio = async () => {
-        await invoke("play_audio", { at: currentBeats });
+    const handlePlayAudio = () => {
+        invoke("play_audio", { at: currentBeats });
         setIsPlaying(true);
     }
 
-    const handlePauseAudio = async () => {
-        await invoke("pause_audio");
+    const handlePauseAudio = () => {
+        invoke("pause_audio");
         setIsPlaying(false);
     }
 
@@ -124,6 +91,37 @@ export default function App() {
             setSelectedTrackId(undefined);
         }
     }
+
+    const handleAddRegion = async (trackId: number, name: string, startTime: number, duration: number) => {
+        // Open a file dialog to select an audio file
+        const selected = await open({
+            filters: [{
+                name: "audio",
+                extensions: ["wav", "mp3", "ogg"],
+            }]
+        });
+
+        // Get the opened file path
+        if (typeof selected == "string") {
+            // Get the file name from the path
+            // Windows paths may contain backslashes, so we use split("/") to ensure we get the last part of the path
+            var fileName = selected.split("/").pop() || "Unknown File";
+            fileName = fileName.split("\\").pop() || "Unknown File";
+
+            invoke("add_region", {
+                regionData: {
+                    name: name,
+                    start_time: startTime,
+                    duration: duration,
+                    samples_per_beat: 22550,
+                    region_type: {
+                        BufferRegion: [selected, 0],
+                    },
+                },
+                trackId,
+            });
+        }
+    };
 
     const handleMoveRegion = (trackId: number, regionId: number, newBeats: number) => {
         invoke("move_region", {
@@ -200,6 +198,7 @@ export default function App() {
                 onAddTrack: handleFileSelect,
                 onRemoveTrack: handleRemoveTrack,
                 onSelectTrack: (id: number) => setSelectedTrackId(id),
+                onAddRegion: handleAddRegion,
                 onMoveRegion: handleMoveRegion,
                 seek: seek,
             },
