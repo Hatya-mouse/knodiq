@@ -32,6 +32,7 @@ export interface EditorData {
     graphEditorData?: {
         mixerState?: MixerState,
         selectedTrackId?: number,
+        selectedNodeId?: string,
         onAddNode?: (trackId: number, nodeType: string, position: [number, number]) => void,
         onRemoveNode?: (trackId: number, nodeId: string) => void,
         onConnectNodes?: (trackId: number, from: string, fromParam: string, to: string, toParam: string) => void,

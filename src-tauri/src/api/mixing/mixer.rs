@@ -308,6 +308,8 @@ fn process_mixer(
                 } else {
                     eprintln!("Track with ID {} not found.", track_id);
                 }
+
+                emit_state(mixer, node_positions, track_colors, app);
             }
 
             MixerCommand::DoesNeedMix => {

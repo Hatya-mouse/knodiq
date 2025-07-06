@@ -40,9 +40,11 @@ export default function PianoRoll({
             />
             {regions.map((region) => (
                 <div key={region.id} style={{
-                    position: 'relative',
-                    border: 'var(--border)',
-                    marginBottom: '10px',
+                    position: "relative",
+                    borderColor: "var(--border-color)",
+                    borderRadius: "1px",
+                    borderStyle: "solid",
+                    marginBottom: "10px",
                     backgroundColor: trackState.color,
                     left: `${region.start_time * beatWidth}px`,
                 }}>

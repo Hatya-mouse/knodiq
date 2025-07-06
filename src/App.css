@@ -17,7 +17,7 @@
 @import "tailwindcss";
 
 :root {
-    --border: 1px solid rgba(100, 100, 100, 0.3);
+    --border-color: rgba(100, 100, 100, 0.3);
     --border-radius: 8px;
 
     --base-font: "Geist", sans-serif;
@@ -55,11 +55,15 @@ body #root {
 }
 
 .default-border {
-    border: var(--border);
+    border-color: var(--border-color);
+    border-width: 1px;
+    border-style: solid;
 }
 
 .bottom-border {
-    border-bottom: var(--border);
+    border-bottom: var(--border-color);
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
 }
 
 .border-rounded {

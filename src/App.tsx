@@ -64,7 +64,7 @@ export default function App() {
     }, [isPlaying, mixerState?.bpm]);
 
     /// Called when the file selection button is pressed.
-    const handleFileSelect = () => {
+    const handleAddTrack = () => {
         invoke("add_track", {
             trackData: {
                 name: "TRACK!!!!!",
@@ -174,12 +174,13 @@ export default function App() {
         });
     };
 
-    const handleSetShaderCode = (trackId: number, nodeId: string, code: string) => {
-        invoke("set_shader_code", {
+    const handleSetShaderCode = async (trackId: number, nodeId: string, code: string) => {
+        let errors = await invoke("set_audio_shader", {
             trackId: trackId,
             nodeId: nodeId,
-            code: code
+            shader: code
         });
+        console.log("Errors: ", errors);
     }
 
     const handleSelectNode = (_trackId: number, nodeId: string) => {
@@ -205,7 +206,7 @@ export default function App() {
                 mixerState: mixerState || undefined,
                 currentTime: currentBeats,
                 selectedTrackId: selectedTrackId,
-                onAddTrack: handleFileSelect,
+                onAddTrack: handleAddTrack,
                 onRemoveTrack: handleRemoveTrack,
                 onSelectTrack: (id: number) => setSelectedTrackId(id),
                 onAddRegion: handleAddRegion,
@@ -216,6 +217,7 @@ export default function App() {
             graphEditorData: {
                 mixerState: mixerState || undefined,
                 selectedTrackId: selectedTrackId,
+                selectedNodeId: selectedNode,
                 onAddNode: handleAddNode,
                 onRemoveNode: handleRemoveNode,
                 onMoveNode: handleMoveNode,

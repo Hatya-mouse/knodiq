@@ -17,7 +17,8 @@
 import PaneHeader from "@/components/pane/PaneHeader";
 import { MixerState } from "@/lib/audio_api/mixer_state";
 import { PaneContentType } from "@/lib/type/PaneNode";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import InspectorGroup from "./InspectorGroup";
 
 export default function NodeProperties({
     onPaneSelect = () => { },
@@ -33,18 +34,23 @@ export default function NodeProperties({
     onSetShaderCode?: (trackId: number, nodeId: string, code: string) => void,
 }) {
     const [code, setCode] = useState<string>("");
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    const node = mixerState?.tracks.find(track => track.id === selectedTrackId)?.graph.nodes.find(node => node.id === selectedNodeId);
 
     useEffect(() => {
-        if (mixerState && selectedTrackId !== undefined && selectedNodeId) {
-            const track = mixerState.tracks.find(track => track.id === selectedTrackId);
-            if (track !== undefined) {
-                const node = track.graph.nodes.find(node => node.id === selectedNodeId);
-                setCode(node?.data?.AudioShaderNode?.shader_code || "");
-            }
-        }
+        setCode(node?.data?.AudioShaderNode?.shader_code || "");
     }, [mixerState, selectedTrackId, selectedNodeId]);
 
+    useEffect(() => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = "auto";
+            textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+        }
+    }, [code]);
+
     const handleCodeChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setCode(e.target.value);
         if (mixerState && selectedTrackId !== undefined && selectedNodeId) {
             onSetShaderCode(selectedTrackId, selectedNodeId, e.target.value);
         }
@@ -57,11 +63,51 @@ export default function NodeProperties({
                 onPaneSelect={onPaneSelect}
             />
 
-            {mixerState?.tracks.find(track => track.id === selectedTrackId)?.graph.nodes.find(node => node.id === selectedNodeId)?.data?.AudioShaderNode !== undefined &&
-                <div className="h-full w-full">
-                    <textarea onChange={handleCodeChange} value={code} />
-                </div>
-            }
+            <div className="grow flex flex-col overflow-x-hidden overflow-y-auto">
+                <InspectorGroup
+                    title="Inputs"
+                    children={!node?.is_input_node ? node?.inputs?.map((input, index) => (
+                        <div key={index} className="block text-sm font-medium text-gray-700">
+                            {input}
+                        </div>
+                    )) : null}
+                />
+
+                <InspectorGroup
+                    title="Outputs"
+                    children={!node?.is_output_node ? node?.outputs?.map((output, index) => (
+                        <div key={index} className="block text-sm font-medium text-gray-700">
+                            {output}
+                        </div>
+                    )) : null}
+                />
+
+                {node?.data?.AudioShaderNode !== undefined &&
+                    <InspectorGroup
+                        title="AudioShader"
+                        children={
+                            <div
+                                className="my-1 px-2 py-1 flex flex-col bg-[var(--bg-primary)]"
+                                style={{
+                                    borderColor: "var(--border-color)",
+                                    borderWidth: "1px",
+                                    borderRadius: "var(--border-radius)",
+                                }}
+                            >
+                                <textarea
+                                    ref={textareaRef}
+                                    className="grow font-mono resize-none w-full min-h-[100px] overflow-visible border-none outline-none focus:ring-0"
+                                    onChange={handleCodeChange}
+                                    value={code}
+                                    rows={1}
+                                />
+                            </div>
+                        }
+                    />
+                }
+
+                <div className="bg-[var(--bg-secondary)] grow" />
+            </div>
         </div>
     )
 }

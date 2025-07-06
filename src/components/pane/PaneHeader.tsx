@@ -47,7 +47,10 @@ export default function PaneHeader({
 
     return (<>
         <div className="flex px-2 h-7 items-center bg-[var(--bg-secondary)] justify-between" style={{
-            borderBottom: "var(--border)",
+            borderBottomColor: "var(--border-color)",
+            borderBottomWidth: "1px",
+            borderBottomStyle: "solid",
+
         }}>
             <div className="flex flex-col gap-0" ref={dropdownRef}>
                 <button

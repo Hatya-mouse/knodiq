@@ -167,6 +167,7 @@ export default function PaneComponent({
                         onPaneSelect={handlePaneSelect}
                         mixerState={editorData.graphEditorData.mixerState}
                         selectedTrackId={editorData.graphEditorData.selectedTrackId}
+                        selectedNodeId={editorData.graphEditorData.selectedNodeId}
                         onAddNode={editorData.graphEditorData.onAddNode}
                         onRemoveNode={editorData.graphEditorData.onRemoveNode}
                         onConnectNodes={editorData.graphEditorData.onConnectNodes}

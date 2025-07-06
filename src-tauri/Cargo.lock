@@ -150,9 +150,9 @@ dependencies = [
 
 [[package]]
 name = "async-channel"
-version = "2.4.0"
+version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "16c74e56284d2188cabb6ad99603d1ace887a5d7e7b695d01b728155ed9ed427"
+checksum = "924ed96dd52d1b75e9c1a3e6275715fd320f5f9439fb5a4a11fa51f4221158d2"
 dependencies = [
  "concurrent-queue",
  "event-listener-strategy",
@@ -405,9 +405,9 @@ dependencies = [
 
 [[package]]
 name = "blocking"
-version = "1.6.1"
+version = "1.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "703f41c54fc768e63e091340b424302bb1c29ef4aa0c7f10fe849dfb114d29ea"
+checksum = "e83f8d02be6967315521be875afa792a316e28d57b5a2d401897e2a7921b7f21"
 dependencies = [
  "async-channel",
  "async-task",
@@ -2180,8 +2180,8 @@ dependencies = [
 
 [[package]]
 name = "knodiq_audio_shader"
-version = "0.2.4"
-source = "git+https://github.com/Hatya-mouse/knodiq_audio_shader#ee19aa6bdc42c9f8d28e17654db49a8c17a7b83e"
+version = "0.2.8"
+source = "git+https://github.com/Hatya-mouse/knodiq_audio_shader#1c4b459be93245f0e8cd4e29be10b3186ee8515e"
 dependencies = [
  "knodiq_engine",
  "rand 0.9.1",
@@ -2190,8 +2190,8 @@ dependencies = [
 
 [[package]]
 name = "knodiq_engine"
-version = "0.2.103"
-source = "git+https://github.com/Hatya-mouse/knodiq_engine#af2dccdbb40ca97c365d1235cb3fe4a94d1987e8"
+version = "0.2.107"
+source = "git+https://github.com/Hatya-mouse/knodiq_engine#ef57f0f5cd3399a1fcb7f538a903347beab6aaf1"
 dependencies = [
  "cpal",
  "rubato",
@@ -2202,8 +2202,8 @@ dependencies = [
 
 [[package]]
 name = "knodiq_note"
-version = "0.1.7"
-source = "git+https://github.com/Hatya-mouse/knodiq_note#d4e01c806fce1d5cc2cd22211f04e3a596364a1a"
+version = "0.1.8"
+source = "git+https://github.com/Hatya-mouse/knodiq_note#5c45b9ff1155ff8cf53cdb1950ed479cd2ff3215"
 dependencies = [
  "knodiq_engine",
 ]
@@ -3118,9 +3118,9 @@ checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 
 [[package]]
 name = "plist"
-version = "1.7.2"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d77244ce2d584cd84f6a15f86195b8c9b2a0dfbfd817c09e0464244091a58ed"
+checksum = "546b279bf0638ee811d9e47de2ca5b66575a543035d79fdf83959dd2f5c3b4c3"
 dependencies = [
  "base64 0.22.1",
  "indexmap 2.10.0",
@@ -3731,9 +3731,9 @@ dependencies = [
 
 [[package]]
 name = "schemars"
-version = "1.0.3"
+version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1375ba8ef45a6f15d83fa8748f1079428295d403d6ea991d09ab100155fbc06d"
+checksum = "82d20c4491bc164fa2f6c5d44565947a52ad80b9505d8e36f8d54c27c739fcd0"
 dependencies = [
  "dyn-clone",
  "ref-cast",
@@ -3890,7 +3890,7 @@ dependencies = [
  "indexmap 1.9.3",
  "indexmap 2.10.0",
  "schemars 0.9.0",
- "schemars 1.0.3",
+ "schemars 1.0.4",
  "serde",
  "serde_derive",
  "serde_json",

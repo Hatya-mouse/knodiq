@@ -83,7 +83,11 @@ export default function NodeBox({
         <div
             className="absolute rounded-[var(--border-radius)] bg-[var(--bg-primary)] overflow-hidden select-none"
             style={{
-                border: isSelected ? "var(--accent-color)" : "var(--border)",
+                borderColor: isSelected ? "var(--accent-color)" : "var(--border-color)",
+                borderWidth: "1px",
+                outlineColor: isSelected ? "var(--accent-color)" : "transparent",
+                outlineStyle: "solid",
+                outlineWidth: "1px",
                 left: nodeState.position[0],
                 top: nodeState.position[1]
             }}
@@ -92,7 +96,11 @@ export default function NodeBox({
             {/* Header */}
             <div
                 className="bg-[var(--bg-secondary)] flex flex-row justify-between px-1.5 py-1 text-sm font-medium cursor-move"
-                style={{ borderBottom: "var(--border)" }}
+                style={{
+                    borderBottomColor: "var(--border-color)",
+                    borderBottomWidth: "1px",
+                    borderBottomStyle: "solid",
+                }}
                 onMouseDown={onMouseDown}
             >
                 {nodeState.name}
