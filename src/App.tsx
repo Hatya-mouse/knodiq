@@ -134,9 +134,7 @@ export default function App() {
     const handleAddNode = (trackId: number, nodeType: string, position: [number, number]) => {
         invoke("add_node", {
             trackId: trackId,
-            nodeData: {
-                node_type: nodeType,
-            },
+            nodeType: nodeType,
             position: position
         });
     };

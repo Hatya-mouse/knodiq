@@ -56,11 +56,11 @@ pub fn disconnect_graph(
 #[command]
 pub fn add_node(
     track_id: u32,
-    node_data: NodeType,
+    node_type: NodeType,
     position: (f32, f32),
     state: State<'_, Mutex<AppState>>,
 ) {
-    send_mixer_command(MixerCommand::AddNode(track_id, node_data, position), &state);
+    send_mixer_command(MixerCommand::AddNode(track_id, node_type, position), &state);
 }
 
 #[command]
