@@ -20,7 +20,7 @@ import { PaneContentType } from "@/lib/type/PaneNode";
 import { useEffect, useState, useRef } from "react";
 import InspectorGroup from "./InspectorGroup";
 
-export default function NodeProperties({
+export default function NodeInspector({
     onPaneSelect = () => { },
     mixerState,
     selectedTrackId,
@@ -59,7 +59,7 @@ export default function NodeProperties({
     return (
         <div className="h-full w-full flex flex-col">
             <PaneHeader
-                selectedPane={PaneContentType.NodeProperties}
+                selectedPane={PaneContentType.NodeInspector}
                 onPaneSelect={onPaneSelect}
             />
 

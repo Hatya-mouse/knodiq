@@ -226,7 +226,7 @@ export default function App() {
                 onSelectNode: handleSelectNode,
             },
 
-            nodePropertiesData: {
+            nodeInspectorData: {
                 mixerState: mixerState || undefined,
                 selectedTrackId: selectedTrackId,
                 selectedNodeId: selectedNode,

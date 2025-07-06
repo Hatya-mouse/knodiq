@@ -17,7 +17,7 @@
 export enum PaneContentType {
     Timeline = "Timeline",
     GraphEditor = "Graph Editor",
-    NodeProperties = "Node Properties",
+    NodeInspector = "Node Inspector",
     PianoRoll = "Piano Roll",
 }
 

@@ -24,7 +24,7 @@ import VSplitView from "../split_view/VSplitView";
 import PaneDragZone from "./PaneDragZone";
 import { PaneContext } from "../../lib/type/PaneContext";
 import GraphEditor from "@/features/pane/graph_editor/GraphEditor";
-import NodeProperties from "@/features/pane/node_properties/NodeProperties";
+import NodeInspector from "@/features/pane/node_inspector/NodeInspector";
 
 const MIN_SIZE = 150; // Minimum size for a pane to allow splitting
 const MERGE_SIZE = 50; // Size below which panes will merge
@@ -175,13 +175,13 @@ export default function PaneComponent({
                         onMoveNode={editorData.graphEditorData.onMoveNode}
                         onSelectNode={editorData.graphEditorData.onSelectNode}
 
-                    /> : paneNode.contentType === PaneContentType.NodeProperties && editorData.nodePropertiesData ?
-                        <NodeProperties
+                    /> : paneNode.contentType === PaneContentType.NodeInspector && editorData.nodeInspectorData ?
+                        <NodeInspector
                             onPaneSelect={handlePaneSelect}
-                            mixerState={editorData.nodePropertiesData.mixerState}
-                            selectedTrackId={editorData.nodePropertiesData.selectedTrackId}
-                            selectedNodeId={editorData.nodePropertiesData.selectedNodeId}
-                            onSetShaderCode={editorData.nodePropertiesData.onSetShaderCode}
+                            mixerState={editorData.nodeInspectorData.mixerState}
+                            selectedTrackId={editorData.nodeInspectorData.selectedTrackId}
+                            selectedNodeId={editorData.nodeInspectorData.selectedNodeId}
+                            onSetShaderCode={editorData.nodeInspectorData.onSetShaderCode}
                         /> : null
             }
         </>

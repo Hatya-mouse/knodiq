@@ -41,7 +41,7 @@ export interface EditorData {
         onSelectNode?: (trackId: number, nodeId: string) => void,
     },
 
-    nodePropertiesData?: {
+    nodeInspectorData?: {
         mixerState?: MixerState,
         selectedTrackId?: number,
         selectedNodeId?: string,
