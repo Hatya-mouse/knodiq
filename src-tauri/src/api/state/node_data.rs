@@ -14,23 +14,25 @@
 // limitations under the License.
 //
 
-export enum PaneContentType {
-    Timeline = "Timeline",
-    GraphEditor = "Graph Editor",
-    NodeProperties = "Node Properties",
-    PianoRoll = "Piano Roll",
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+pub enum NodeData {
+    EmptyNode,
+    AudioShaderNode { shader_code: String },
+    NoteInputNode,
+    Invalid,
 }
 
-export type PaneNodeId = string;
-
-export type PaneNode = {
-    id: PaneNodeId,
-    type: 'leaf',
-    contentType: PaneContentType,
-} | {
-    id: PaneNodeId,
-    type: 'split',
-    direction: 'horizontal' | 'vertical',
-    children: [PaneNode, PaneNode],
-    size: number,
+impl Clone for NodeData {
+    fn clone(&self) -> Self {
+        match self {
+            NodeData::EmptyNode => NodeData::EmptyNode,
+            NodeData::AudioShaderNode { shader_code } => NodeData::AudioShaderNode {
+                shader_code: shader_code.clone(),
+            },
+            NodeData::NoteInputNode => NodeData::NoteInputNode,
+            NodeData::Invalid => NodeData::Invalid,
+        }
+    }
 }

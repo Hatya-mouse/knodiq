@@ -15,7 +15,7 @@
 //
 
 use crate::api::AppState;
-use crate::api::graph::node::node_type::NodeData;
+use crate::api::graph::NodeType;
 use crate::api::mixing::region::RegionOperation;
 use crate::api::mixing::{RegionData, TrackData};
 use knodiq_engine::audio_utils::Beats;
@@ -89,7 +89,7 @@ pub enum MixerCommand {
     /// - track_id: `u32`
     /// - node_data: `NodeData`
     /// - position: `(f32, f32)` (x, y)
-    AddNode(u32, NodeData, (f32, f32)),
+    AddNode(u32, NodeType, (f32, f32)),
 
     /// Remove a node from a track.
     /// - track_id: `u32`

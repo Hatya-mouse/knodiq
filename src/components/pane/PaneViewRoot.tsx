@@ -28,7 +28,7 @@ export default function PaneViewRoot({
     const [paneLayout, setPaneLayout] = useState<PaneNode>({
         id: 'root',
         type: 'leaf',
-        contentType: PaneContentType.TrackView,
+        contentType: PaneContentType.Timeline,
     });
 
     const splitPane = (id: PaneNodeId, direction: "horizontal" | "vertical", size: number) => {

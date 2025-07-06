@@ -14,13 +14,17 @@
 // limitations under the License.
 //
 
+import PaneHeader from "@/components/pane/PaneHeader";
 import { TrackState } from "@/lib/audio_api/track_state";
+import { PaneContentType } from "@/lib/type/PaneNode";
 import { useState } from "react";
 
 export default function PianoRoll({
     trackState,
+    onPaneSelect = () => { },
 }: {
     trackState: TrackState
+    onPaneSelect?: (pane: PaneContentType) => void
 }) {
     const [beatWidth, _] = useState(10);
     // const [contentWidth, setContentWidth] = useState(0);
@@ -29,6 +33,11 @@ export default function PianoRoll({
 
     return (
         <div>
+            {/* Header */}
+            <PaneHeader
+                selectedPane={PaneContentType.PianoRoll}
+                onPaneSelect={onPaneSelect}
+            />
             {regions.map((region) => (
                 <div key={region.id} style={{
                     position: 'relative',

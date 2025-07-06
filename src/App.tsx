@@ -29,6 +29,7 @@ export default function App() {
     const [mixerState, setMixerState] = useState<MixerState | null>(null);
     const [currentBeats, setCurrentBeats] = useState<number>(0);
     const [selectedTrackId, setSelectedTrackId] = useState<number | undefined>(undefined);
+    const [selectedNode, setSelectedNode] = useState<string | undefined>(undefined);
 
     const intervalRef = useRef<number | null>(null);
 
@@ -36,7 +37,6 @@ export default function App() {
         listen<MixerState>("mixer_state", (event) => {
             let state = event.payload;
             setMixerState(state);
-            console.log("Received mixer state:", state);
 
             if (currentBeats > state.duration) {
                 setCurrentBeats(state.duration);
@@ -176,6 +176,18 @@ export default function App() {
         });
     };
 
+    const handleSetShaderCode = (trackId: number, nodeId: string, code: string) => {
+        invoke("set_shader_code", {
+            trackId: trackId,
+            nodeId: nodeId,
+            code: code
+        });
+    }
+
+    const handleSelectNode = (_trackId: number, nodeId: string) => {
+        setSelectedNode(nodeId);
+    }
+
     const seek = async (beats: number) => {
         setCurrentBeats(beats);
         handlePauseAudio();
@@ -191,7 +203,7 @@ export default function App() {
         />
 
         <PaneViewRoot editorData={{
-            trackViewData: {
+            timelineData: {
                 mixerState: mixerState || undefined,
                 currentTime: currentBeats,
                 selectedTrackId: selectedTrackId,
@@ -203,7 +215,7 @@ export default function App() {
                 seek: seek,
             },
 
-            nodeEditorData: {
+            graphEditorData: {
                 mixerState: mixerState || undefined,
                 selectedTrackId: selectedTrackId,
                 onAddNode: handleAddNode,
@@ -211,7 +223,15 @@ export default function App() {
                 onMoveNode: handleMoveNode,
                 onConnectNodes: handleConnectNodes,
                 onDisconnectNodes: handleDisconnectNodes,
-            }
+                onSelectNode: handleSelectNode,
+            },
+
+            nodePropertiesData: {
+                mixerState: mixerState || undefined,
+                selectedTrackId: selectedTrackId,
+                selectedNodeId: selectedNode,
+                onSetShaderCode: handleSetShaderCode,
+            },
         }} />
     </div>;
 }

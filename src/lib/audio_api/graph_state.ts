@@ -31,6 +31,8 @@ export type NodeState = {
     is_output_node: boolean;
     /** The position of the node in the editor, for UI purposes. */
     position: [number, number];
+    /** Data associated with the node */
+    data?: NodeData;
 }
 
 export type ConnectorState = {
@@ -62,3 +64,11 @@ export function getNodeTypes(): Array<string> {
         "NoteInputNode"
     ];
 }
+
+export type NodeData = {
+    AudioShaderNode?: {
+        shader_code: string;
+    };
+    EmptyNode?: {};
+    NoteInputNode?: {};
+};

@@ -17,7 +17,7 @@
 import { MixerState } from "@/lib/audio_api/mixer_state";
 
 export interface EditorData {
-    trackViewData?: {
+    timelineData?: {
         mixerState?: MixerState,
         currentTime?: number,
         selectedTrackId?: number,
@@ -29,7 +29,7 @@ export interface EditorData {
         seek?: (beats: number) => void,
     },
 
-    nodeEditorData?: {
+    graphEditorData?: {
         mixerState?: MixerState,
         selectedTrackId?: number,
         onAddNode?: (trackId: number, nodeType: string, position: [number, number]) => void,
@@ -37,5 +37,13 @@ export interface EditorData {
         onConnectNodes?: (trackId: number, from: string, fromParam: string, to: string, toParam: string) => void,
         onDisconnectNodes?: (trackId: number, from: string, fromParam: string, to: string, toParam: string) => void,
         onMoveNode?: (trackId: number, nodeId: string, newPosition: [number, number]) => void,
-    }
+        onSelectNode?: (trackId: number, nodeId: string) => void,
+    },
+
+    nodePropertiesData?: {
+        mixerState?: MixerState,
+        selectedTrackId?: number,
+        selectedNodeId?: string,
+        onSetShaderCode?: (trackId: number, nodeId: string, code: string) => void,
+    },
 }

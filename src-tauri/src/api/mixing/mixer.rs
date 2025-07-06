@@ -143,6 +143,11 @@ fn process_mixer(
                 needs_mix = true;
             }
 
+            MixerCommand::SetTrackColor(track_id, color) => {
+                track_colors.insert(track_id, color);
+                emit_state(mixer, node_positions, track_colors, app);
+            }
+
             MixerCommand::AddRegion(track_id, region_data) => {
                 handle_add_region(
                     mixer,
@@ -152,18 +157,6 @@ fn process_mixer(
                     region_data,
                     app,
                 );
-            }
-
-            MixerCommand::RemoveTrack(track_id) => {
-                // Remove the track from the mixer
-                mixer.remove_track(track_id);
-                emit_state(mixer, node_positions, track_colors, app);
-                needs_mix = true;
-            }
-
-            MixerCommand::SetTrackColor(track_id, color) => {
-                track_colors.insert(track_id, color);
-                emit_state(mixer, node_positions, track_colors, app);
             }
 
             MixerCommand::RemoveRegion(track_id, region_id) => {
@@ -219,7 +212,7 @@ fn process_mixer(
 
             MixerCommand::AddNode(track_id, node_data, position) => {
                 // Create a new node based on the provided data
-                let node: Box<dyn Node> = match node_data.node_type {
+                let node: Box<dyn Node> = match node_data {
                     NodeType::EmptyNode => Box::new(EmptyNode::new()),
                     NodeType::AudioShaderNode => Box::new(AudioShaderNode::new()),
                     NodeType::NoteInputNode => Box::new(NoteInputNode::new()),

@@ -16,14 +16,15 @@
 
 import { useCallback, useRef, useEffect, useState, useContext } from "react";
 
-import TrackArea from "@/features/pane/track_area/TrackArea";
+import Timeline from "@/features/pane/timeline/Timeline";
 import { PaneContentType, PaneNode, PaneNodeId } from "../../lib/type/PaneNode";
 import { EditorData } from "../../lib/type/EditorData";
 import HSplitView from "../split_view/HSplitView";
 import VSplitView from "../split_view/VSplitView";
 import PaneDragZone from "./PaneDragZone";
 import { PaneContext } from "../../lib/type/PaneContext";
-import NodeEditor from "@/features/pane/node_editor/NodeEditor";
+import GraphEditor from "@/features/pane/graph_editor/GraphEditor";
+import NodeProperties from "@/features/pane/node_properties/NodeProperties";
 
 const MIN_SIZE = 150; // Minimum size for a pane to allow splitting
 const MERGE_SIZE = 50; // Size below which panes will merge
@@ -148,30 +149,39 @@ export default function PaneComponent({
 
     const content = paneNode.type === 'leaf' ? (
         <>
-            {paneNode.contentType === PaneContentType.TrackView && editorData.trackViewData ?
-                <TrackArea
+            {paneNode.contentType === PaneContentType.Timeline && editorData.timelineData ?
+                <Timeline
                     onPaneSelect={handlePaneSelect}
-                    mixerState={editorData.trackViewData.mixerState}
-                    currentTime={editorData.trackViewData.currentTime}
-                    selectedTrackId={editorData.trackViewData.selectedTrackId}
-                    onAddTrack={editorData.trackViewData.onAddTrack}
-                    onRemoveTrack={editorData.trackViewData.onRemoveTrack}
-                    onSelectTrack={editorData.trackViewData.onSelectTrack}
-                    onAddRegion={editorData.trackViewData.onAddRegion}
-                    onMoveRegion={editorData.trackViewData.onMoveRegion}
-                    seek={editorData.trackViewData.seek}
+                    mixerState={editorData.timelineData.mixerState}
+                    currentTime={editorData.timelineData.currentTime}
+                    selectedTrackId={editorData.timelineData.selectedTrackId}
+                    onAddTrack={editorData.timelineData.onAddTrack}
+                    onRemoveTrack={editorData.timelineData.onRemoveTrack}
+                    onSelectTrack={editorData.timelineData.onSelectTrack}
+                    onAddRegion={editorData.timelineData.onAddRegion}
+                    onMoveRegion={editorData.timelineData.onMoveRegion}
+                    seek={editorData.timelineData.seek}
                 />
-                : PaneContentType.NodeEditor && editorData.nodeEditorData ?
-                    <NodeEditor
+                : paneNode.contentType === PaneContentType.GraphEditor && editorData.graphEditorData ?
+                    <GraphEditor
                         onPaneSelect={handlePaneSelect}
-                        mixerState={editorData.nodeEditorData.mixerState}
-                        selectedTrackId={editorData.nodeEditorData.selectedTrackId}
-                        onAddNode={editorData.nodeEditorData.onAddNode}
-                        onRemoveNode={editorData.nodeEditorData.onRemoveNode}
-                        onConnectNodes={editorData.nodeEditorData.onConnectNodes}
-                        onDisconnectNodes={editorData.nodeEditorData.onDisconnectNodes}
-                        onMoveNode={editorData.nodeEditorData.onMoveNode}
-                    /> : null
+                        mixerState={editorData.graphEditorData.mixerState}
+                        selectedTrackId={editorData.graphEditorData.selectedTrackId}
+                        onAddNode={editorData.graphEditorData.onAddNode}
+                        onRemoveNode={editorData.graphEditorData.onRemoveNode}
+                        onConnectNodes={editorData.graphEditorData.onConnectNodes}
+                        onDisconnectNodes={editorData.graphEditorData.onDisconnectNodes}
+                        onMoveNode={editorData.graphEditorData.onMoveNode}
+                        onSelectNode={editorData.graphEditorData.onSelectNode}
+
+                    /> : paneNode.contentType === PaneContentType.NodeProperties && editorData.nodePropertiesData ?
+                        <NodeProperties
+                            onPaneSelect={handlePaneSelect}
+                            mixerState={editorData.nodePropertiesData.mixerState}
+                            selectedTrackId={editorData.nodePropertiesData.selectedTrackId}
+                            selectedNodeId={editorData.nodePropertiesData.selectedNodeId}
+                            onSetShaderCode={editorData.nodePropertiesData.onSetShaderCode}
+                        /> : null
             }
         </>
     ) : null;

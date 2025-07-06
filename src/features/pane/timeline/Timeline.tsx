@@ -16,8 +16,8 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 
-import TrackListItem from "@/features/pane/track_area/TrackListItem";
-import TrackListContent from "@/features/pane/track_area/TrackListContent";
+import TrackListItem from "@/features/pane/timeline/TrackListItem";
+import TrackListContent from "@/features/pane/timeline/TrackListContent";
 import HSplitView from "@/components/split_view/HSplitView";
 import { MixerState } from "@/lib/audio_api/mixer_state";
 import { PaneContentType } from "@/lib/type/PaneNode";
@@ -25,7 +25,7 @@ import PaneHeader from "@/components/pane/PaneHeader";
 
 const MIN_SPLIT_WIDTH = 150;
 
-export default function TrackArea({
+export default function Timeline({
     onPaneSelect = () => { },
     mixerState,
     currentTime = 0,
@@ -56,6 +56,14 @@ export default function TrackArea({
     const trackAreaRef = useRef<HTMLDivElement>(null);
     const rightPaneRef = useRef<HTMLDivElement>(null);
 
+    // Update content width when beatWidth or mixerState changes
+    useEffect(() => {
+        if (mixerState) {
+            const newContentWidth = (beatWidth * mixerState.duration) + 500;
+            setContentWidth(newContentWidth);
+        }
+    }, [beatWidth, mixerState]);
+
     useEffect(() => {
         const rightPaneElement = rightPaneRef.current;
 
@@ -72,11 +80,6 @@ export default function TrackArea({
                 rightPaneElement.scrollLeft += event.deltaX;
                 rightPaneElement.scrollTop += event.deltaY;
             }
-
-            // Calculate the new content width based on the current beat width
-            if (!mixerState) return;
-            const newContentWidth = (beatWidth * mixerState.duration) + 500;
-            setContentWidth(newContentWidth);
         };
 
         rightPaneElement?.addEventListener("wheel", handleWheel, { passive: false });
@@ -84,7 +87,7 @@ export default function TrackArea({
         return () => {
             rightPaneElement?.removeEventListener("wheel", handleWheel);
         };
-    }, [beatWidth, mixerState]);
+    }, [beatWidth]);
 
     // Seek to the clicked time marker.
     const timeMarkerClicked = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -106,7 +109,7 @@ export default function TrackArea({
             ref={trackAreaRef}
         >
             <PaneHeader
-                selectedPane={PaneContentType.TrackView}
+                selectedPane={PaneContentType.Timeline}
                 onPaneSelect={onPaneSelect}
             />
 

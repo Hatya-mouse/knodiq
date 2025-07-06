@@ -14,9 +14,12 @@
 // limitations under the License.
 //
 
+use knodiq_audio_shader::AudioShaderNode;
 use knodiq_engine::{Connector, Graph, Node, NodeId};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+use crate::api::state::NodeData;
 
 #[derive(Serialize, Deserialize)]
 pub struct NodeState {
@@ -28,10 +31,23 @@ pub struct NodeState {
     is_input_node: bool,
     is_output_node: bool,
     position: (f32, f32),
+    data: NodeData,
 }
 
 impl NodeState {
     pub fn from_node(node: &Box<dyn Node>, position: (f32, f32)) -> Self {
+        let data = match node.get_type().as_str() {
+            "AudioShaderNode" => {
+                let shader_node = node.as_any().downcast_ref::<AudioShaderNode>().unwrap();
+                NodeData::AudioShaderNode {
+                    shader_code: shader_node.get_shader().to_string(),
+                }
+            }
+            "EmptyNode" => NodeData::EmptyNode,
+            "NoteInputNode" => NodeData::NoteInputNode,
+            _ => NodeData::Invalid,
+        };
+
         NodeState {
             id: node.get_id().to_string(),
             name: node.get_name().to_string(),
@@ -49,6 +65,7 @@ impl NodeState {
             is_input_node: node.is_input(),
             is_output_node: node.is_output(),
             position,
+            data,
         }
     }
 }
@@ -64,6 +81,7 @@ impl Clone for NodeState {
             is_input_node: self.is_input_node,
             is_output_node: self.is_output_node,
             position: self.position.clone(),
+            data: self.data.clone(),
         }
     }
 }

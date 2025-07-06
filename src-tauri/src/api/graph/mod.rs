@@ -17,4 +17,4 @@
 pub mod graph;
 pub mod node;
 
-pub use node::{NodeData, NodeType};
+pub use node::NodeType;

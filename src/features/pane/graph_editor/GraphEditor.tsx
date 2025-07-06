@@ -24,24 +24,28 @@ import { getNodeTypes, NodeState } from "@/lib/audio_api/graph_state";
 import NodeConnector from "./NodeConnector";
 import DropdownMenu from "@/components/button/DropdownMenu";
 
-export default function NodeEditor({
+export default function GraphEditor({
     onPaneSelect = () => { },
     mixerState,
     selectedTrackId,
+    selectedNodeId,
     onAddNode,
     onRemoveNode,
     onConnectNodes,
     onDisconnectNodes,
-    onMoveNode
+    onMoveNode,
+    onSelectNode = () => { },
 }: {
     onPaneSelect?: (pane: PaneContentType) => void,
     mixerState?: MixerState,
     selectedTrackId?: number,
+    selectedNodeId?: string,
     onAddNode?: (trackId: number, nodeType: string, position: [number, number]) => void,
     onRemoveNode?: (trackId: number, nodeId: string) => void,
     onConnectNodes?: (trackId: number, from: string, fromParam: string, to: string, toParam: string) => void,
     onDisconnectNodes?: (trackId: number, from: string, fromParam: string, to: string, toParam: string) => void,
     onMoveNode?: (trackId: number, nodeId: string, newPosition: [number, number]) => void,
+    onSelectNode?: (trackId: number, nodeId: string) => void,
 }) {
     const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
     const [localNodes, setLocalNodes] = useState<NodeState[]>([]);
@@ -154,11 +158,17 @@ export default function NodeEditor({
         }
     };
 
+    const handleNodeClick = (nodeId: string) => {
+        if (selectedTrackId !== undefined) {
+            onSelectNode(selectedTrackId, nodeId);
+        }
+    };
+
     return (
         <div className="w-full h-full flex flex-col" onMouseMove={handleMouseMove} onMouseUp={handleMouseUp}>
             {/* Header */}
             <PaneHeader
-                selectedPane={PaneContentType.NodeEditor}
+                selectedPane={PaneContentType.GraphEditor}
                 onPaneSelect={onPaneSelect}
                 controls={
                     <div className="flex flex-col gap-0">
@@ -230,6 +240,8 @@ export default function NodeEditor({
                     <NodeBox
                         key={node.id}
                         nodeState={node}
+                        isSelected={selectedNodeId === node.id}
+                        onClick={handleNodeClick}
                         onMove={(newPosition) => handleNodeMove(node.id, newPosition)}
                         onMoveEnded={(newPosition) => handleNodeMoveEnd(node.id, newPosition)}
                         onRemove={() => {

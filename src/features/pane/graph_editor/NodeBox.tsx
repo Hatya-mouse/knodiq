@@ -21,6 +21,8 @@ import { LucideX } from "lucide-react";
 
 export default function NodeBox({
     nodeState,
+    isSelected = false,
+    onClick,
     onMove,
     onMoveEnded,
     onRemove,
@@ -30,6 +32,8 @@ export default function NodeBox({
     onMouseLeaveParameter,
 }: {
     nodeState: NodeState,
+    isSelected?: boolean,
+    onClick?: (nodeId: string) => void,
     onMove?: (newPosition: [number, number]) => void,
     onMoveEnded?: (newPosition: [number, number]) => void,
     onRemove?: () => void,
@@ -69,14 +73,21 @@ export default function NodeBox({
         ]);
     }
 
+    const handleBoxClick = () => {
+        if (onClick) {
+            onClick(nodeState.id);
+        }
+    };
+
     return (
         <div
             className="absolute rounded-[var(--border-radius)] bg-[var(--bg-primary)] overflow-hidden select-none"
             style={{
-                border: "var(--border)",
+                border: isSelected ? "var(--accent-color)" : "var(--border)",
                 left: nodeState.position[0],
                 top: nodeState.position[1]
             }}
+            onClick={handleBoxClick}
         >
             {/* Header */}
             <div

@@ -16,24 +16,9 @@
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum NodeType {
-    EmptyNode,
     AudioShaderNode,
+    EmptyNode,
     NoteInputNode,
-}
-
-impl Clone for NodeType {
-    fn clone(&self) -> Self {
-        match self {
-            NodeType::EmptyNode => NodeType::EmptyNode,
-            NodeType::AudioShaderNode => NodeType::AudioShaderNode,
-            NodeType::NoteInputNode => NodeType::NoteInputNode,
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct NodeData {
-    pub node_type: NodeType,
 }

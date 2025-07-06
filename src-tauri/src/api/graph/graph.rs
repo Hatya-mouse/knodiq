@@ -16,7 +16,7 @@
 
 use crate::api::{
     AppState,
-    graph::NodeData,
+    graph::NodeType,
     mixing::{MixerCommand, MixerResult, send_mixer_command},
 };
 use knodiq_engine::{NodeId, Value};
@@ -56,7 +56,7 @@ pub fn disconnect_graph(
 #[command]
 pub fn add_node(
     track_id: u32,
-    node_data: NodeData,
+    node_data: NodeType,
     position: (f32, f32),
     state: State<'_, Mutex<AppState>>,
 ) {
