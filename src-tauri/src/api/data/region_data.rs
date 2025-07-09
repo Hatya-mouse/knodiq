@@ -19,11 +19,26 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub enum RegionType {
+    BufferRegion = 0,
+    NoteRegion = 1,
+}
+
+impl Clone for RegionType {
+    fn clone(&self) -> Self {
+        match self {
+            RegionType::BufferRegion => RegionType::BufferRegion,
+            RegionType::NoteRegion => RegionType::NoteRegion,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum RegionDataContainer {
     /// A region that contains audio data.
     /// String is the path to the audio file, and usize is the track index.
     BufferRegion(String, usize),
-    /// A region that contains midi data.
-    NoteRegion(),
+    /// A region that contains note data.
+    NoteRegion,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -33,4 +48,5 @@ pub struct RegionData {
     pub duration: Beats,
     pub samples_per_beat: f32,
     pub region_type: RegionType,
+    pub data: RegionDataContainer,
 }

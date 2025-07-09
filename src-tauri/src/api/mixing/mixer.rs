@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+use crate::api::data::region_data::RegionDataContainer;
 use crate::api::mixing::{MixerCommand, MixerResult};
 use crate::api::{AppState, MixerState, NodeType, RegionData, RegionType, TrackType};
 use knodiq_audio_shader::AudioShaderNode;
@@ -21,7 +22,7 @@ use knodiq_engine::graph::built_in::EmptyNode;
 use knodiq_engine::mixing::region::BufferRegion;
 use knodiq_engine::mixing::track::BufferTrack;
 use knodiq_engine::{AudioSource, Mixer, Node, NodeId, Track};
-use knodiq_note::{NoteInputNode, NoteTrack};
+use knodiq_note::{NoteInputNode, NoteRegion, NoteTrack};
 use std::collections::HashMap;
 use std::sync::{Mutex, mpsc};
 use std::thread;
@@ -330,61 +331,92 @@ fn handle_add_region(
     app: &AppHandle,
 ) {
     match region_data.region_type {
-        RegionType::BufferRegion(path, track_index) => {
-            // let duration_secs = match AudioSource::get_duration_from_path(&path, track_index) {
-            //     Ok(duration) => duration,
-            //     Err(e) => {
-            //         eprintln!("Error getting duration from path: {}", e);
-            //         return;
-            //     }
-            // };
+        RegionType::BufferRegion => {
+            match region_data.data {
+                RegionDataContainer::BufferRegion(path, track_index) => {
+                    // let duration_secs = match AudioSource::get_duration_from_path(&path, track_index) {
+                    //     Ok(duration) => duration,
+                    //     Err(e) => {
+                    //         eprintln!("Error getting duration from path: {}", e);
+                    //         return;
+                    //     }
+                    // };
 
-            // let duration = duration_secs / (60.0 / mixer.tempo);
-            let mut region_id = 0;
+                    // let duration = duration_secs / (60.0 / mixer.tempo);
+                    let mut region_id = 0;
 
-            // Add region
-            if let Some(track) = mixer.get_track_by_id_mut(track_id) {
-                if let Some(buffer_track) = track.as_any_mut().downcast_mut::<BufferTrack>() {
-                    let region = BufferRegion::empty(region_data.name.clone());
-                    region_id = match buffer_track.add_region(
-                        Box::new(region.clone()),
-                        region_data.start_time,
-                        region_data.duration,
-                    ) {
-                        Ok(id) => id,
-                        Err(e) => {
-                            eprintln!("Error adding region: {}", e);
-                            return;
-                        }
-                    };
-                    println!("Region added: {:?}", region_data.name);
-                }
-            }
-            emit_state(mixer, node_positions, track_colors, app);
-
-            // Set audio source
-            let source = match AudioSource::from_path(&path, track_index) {
-                Ok(source) => Some(source),
-                Err(e) => {
-                    eprintln!("Error loading audio source: {}", e);
-                    None
-                }
-            };
-            let tempo = mixer.tempo;
-            if let Some(track) = mixer.get_track_by_id_mut(track_id) {
-                if let Some(buffer_track) = track.as_any_mut().downcast_mut::<BufferTrack>() {
-                    if let Some(region) = buffer_track.get_region_mut(region_id) {
-                        if let Some(region) = region.as_any_mut().downcast_mut::<BufferRegion>() {
-                            region.set_audio_source(source, tempo);
+                    // Add region
+                    if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+                        if let Some(buffer_track) = track.as_any_mut().downcast_mut::<BufferTrack>()
+                        {
+                            let region = BufferRegion::empty(region_data.name.clone());
+                            region_id = match buffer_track.add_region(
+                                Box::new(region.clone()),
+                                region_data.start_time,
+                                region_data.duration,
+                            ) {
+                                Ok(id) => id,
+                                Err(e) => {
+                                    eprintln!("Error adding region: {}", e);
+                                    return;
+                                }
+                            };
                         }
                     }
+                    emit_state(mixer, node_positions, track_colors, app);
+
+                    // Set audio source
+                    let source = match AudioSource::from_path(&path, track_index) {
+                        Ok(source) => Some(source),
+                        Err(e) => {
+                            eprintln!("Error loading audio source: {}", e);
+                            None
+                        }
+                    };
+                    let tempo = mixer.tempo;
+                    if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+                        if let Some(buffer_track) = track.as_any_mut().downcast_mut::<BufferTrack>()
+                        {
+                            if let Some(region) = buffer_track.get_region_mut(region_id) {
+                                if let Some(region) =
+                                    region.as_any_mut().downcast_mut::<BufferRegion>()
+                                {
+                                    region.set_audio_source(source, tempo);
+                                }
+                            }
+                        }
+                    }
+                }
+                _ => {
+                    eprintln!("Invalid data for BufferRegion.");
+                    return;
                 }
             }
         }
 
-        RegionType::NoteRegion() => {
-            eprintln!("Note regions are not supported yet.");
-            return;
+        RegionType::NoteRegion => {
+            // Create a new note region
+            if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+                if let Some(note_track) = track.as_any_mut().downcast_mut::<NoteTrack>() {
+                    let region = NoteRegion::new(
+                        region_data.name.clone(),
+                        region_data.start_time,
+                        region_data.duration,
+                    );
+                    match note_track.add_region(
+                        Box::new(region.clone()),
+                        region_data.start_time,
+                        region_data.duration,
+                    ) {
+                        Ok(_) => (),
+                        Err(e) => {
+                            eprintln!("Error adding note region: {}", e);
+                            return;
+                        }
+                    }
+                }
+            }
+            emit_state(mixer, node_positions, track_colors, app);
         }
     }
     emit_state(mixer, node_positions, track_colors, app);

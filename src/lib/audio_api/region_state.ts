@@ -28,3 +28,19 @@ export type RegionState = {
     /** The data of the region. */
     data: RegionDataState;
 }
+
+export enum RegionType {
+    BufferRegion = "BufferRegion",
+    NoteRegion = "NoteRegion",
+}
+
+export function getRegionTypeString(regionType: RegionType): string {
+    switch (regionType) {
+        case RegionType.BufferRegion:
+            return "Buffer Region";
+        case RegionType.NoteRegion:
+            return "Note Region";
+        default:
+            return "Unknown Region Type";
+    }
+}

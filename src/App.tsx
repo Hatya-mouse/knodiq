@@ -26,6 +26,8 @@ import { openWindow } from "@features/window/window";
 import "./App.css";
 import PlaybackControlButton from "./components/controls/PlaybackControlButton";
 import { LucidePause, LucidePlay, LucideSkipBack, LucideSkipForward } from "lucide-react";
+import { TrackType } from "./lib/audio_api/track_state";
+import { RegionType } from "./lib/audio_api/region_state";
 
 export default function App() {
     const [isPlaying, setIsPlaying] = useState(false);
@@ -33,6 +35,7 @@ export default function App() {
     const [currentBeats, setCurrentBeats] = useState<number>(0);
     const [selectedTrackId, setSelectedTrackId] = useState<number | undefined>(undefined);
     const [selectedNode, setSelectedNode] = useState<string | undefined>(undefined);
+    const [selectedRegionId, setSelectedRegionId] = useState<number | undefined>(undefined);
 
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -106,30 +109,48 @@ export default function App() {
     };
 
     const handleAddRegion = async (trackId: number, name: string, startTime: number, duration: number) => {
-        // Open a file dialog to select an audio file
-        const selected = await open({
-            filters: [{
-                name: "audio",
-                extensions: ["wav", "mp3", "ogg"],
-            }]
-        });
+        const track_type = mixerState?.tracks.find(track => track.id === trackId)?.track_type;
 
-        // Get the opened file path
-        if (typeof selected == "string") {
-            // Get the file name from the path
-            // Windows paths may contain backslashes, so we use split("/") to ensure we get the last part of the path
-            var fileName = selected.split("/").pop() || "Unknown File";
-            fileName = fileName.split("\\").pop() || "Unknown File";
+        if (track_type === TrackType.BufferTrack) {
+            // Open a file dialog to select an audio file
+            const selected = await open({
+                filters: [{
+                    name: "audio",
+                    extensions: ["wav", "mp3", "ogg"],
+                }]
+            });
 
+            // Get the opened file path
+            if (typeof selected == "string") {
+                // Get the file name from the path
+                // Windows paths may contain backslashes, so we use split("/") to ensure we get the last part of the path
+                var fileName = selected.split("/").pop() || "Unknown File";
+                fileName = fileName.split("\\").pop() || "Unknown File";
+
+                invoke("add_region", {
+                    regionData: {
+                        name: name,
+                        start_time: startTime,
+                        duration: duration,
+                        samples_per_beat: 22550,
+                        region_type: RegionType.BufferRegion,
+                        data: {
+                            BufferRegion: [selected, 0],
+                        },
+                    },
+                    trackId,
+                });
+            }
+        } else if (track_type === TrackType.NoteTrack) {
+            // For NoteTrack, we can create a new region without a file
             invoke("add_region", {
                 regionData: {
                     name: name,
                     start_time: startTime,
                     duration: duration,
                     samples_per_beat: 22550,
-                    region_type: {
-                        BufferRegion: [selected, 0],
-                    },
+                    region_type: RegionType.NoteRegion,
+                    data: "NoteRegion",
                 },
                 trackId,
             });
@@ -200,6 +221,27 @@ export default function App() {
         setSelectedNode(nodeId);
     };
 
+    const handleSelectTrack = (trackId: number) => {
+        setSelectedTrackId(trackId);
+        setSelectedRegionId(undefined);
+        setSelectedNode(undefined);
+    };
+
+    const handleAddNote = (trackId: number, note: { pitch: number, startTime: number, duration: number }) => {
+        // TODO: Implement add note functionality
+        console.log("Add note:", trackId, note);
+    };
+
+    const handleRemoveNote = (trackId: number, noteId: string) => {
+        // TODO: Implement remove note functionality
+        console.log("Remove note:", trackId, noteId);
+    };
+
+    const handleUpdateNote = (trackId: number, noteId: string, note: { pitch: number, startTime: number, duration: number }) => {
+        // TODO: Implement update note functionality
+        console.log("Update note:", trackId, noteId, note);
+    };
+
     const seek = async (beats: number) => {
         setCurrentBeats(beats);
         pauseAudio();
@@ -242,9 +284,10 @@ export default function App() {
                 selectedTrackId: selectedTrackId,
                 onAddTrack: handleAddTrack,
                 onRemoveTrack: handleRemoveTrack,
-                onSelectTrack: (id: number) => setSelectedTrackId(id),
+                onSelectTrack: handleSelectTrack,
                 onAddRegion: handleAddRegion,
                 onMoveRegion: handleMoveRegion,
+                onSelectRegion: (_, regionId) => setSelectedRegionId(regionId),
                 seek: seek,
             },
 
@@ -265,6 +308,15 @@ export default function App() {
                 selectedTrackId: selectedTrackId,
                 selectedNodeId: selectedNode,
                 onSetShaderCode: handleSetShaderCode,
+            },
+
+            pianoRollData: {
+                mixerState: mixerState || undefined,
+                selectedTrackId: selectedTrackId,
+                selectedRegionId: selectedRegionId,
+                onAddNote: handleAddNote,
+                onRemoveNote: handleRemoveNote,
+                onUpdateNote: handleUpdateNote,
             },
         }} />
     </div>;

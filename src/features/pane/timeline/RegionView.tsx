@@ -22,17 +22,22 @@ export default function RegionView({
     beatWidth,
     className = "",
     onMoveRegion,
+    onSelectRegion,
 }: {
     region: RegionState,
     beatWidth: number,
     className?: string,
     onMoveRegion?: (id: number, newBeats: number) => void,
+    onSelectRegion?: (id: number) => void,
 }) {
     const [dragging, setDragging] = useState(false);
     const [dragStartX, setDragStartX] = useState<number | undefined>(undefined);
     const [uiRegionX, setUIRegionX] = useState<number | undefined>(undefined);
 
     const handleMouseDown = (e: React.MouseEvent) => {
+        // Select region when clicking
+        onSelectRegion?.(region.id);
+
         setDragging(true);
         setDragStartX(e.clientX);
         document.body.style.userSelect = "none";

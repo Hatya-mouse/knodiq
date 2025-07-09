@@ -25,6 +25,7 @@ import PaneDragZone from "./PaneDragZone";
 import { PaneContext } from "../../lib/type/PaneContext";
 import GraphEditor from "@/features/pane/graph_editor/GraphEditor";
 import NodeInspector from "@/features/pane/node_inspector/NodeInspector";
+import PianoRoll from "@/features/pane/piano_roll/PianoRoll";
 
 const MIN_SIZE = 150; // Minimum size for a pane to allow splitting
 const MERGE_SIZE = 50; // Size below which panes will merge
@@ -182,7 +183,16 @@ export default function PaneComponent({
                             selectedTrackId={editorData.nodeInspectorData.selectedTrackId}
                             selectedNodeId={editorData.nodeInspectorData.selectedNodeId}
                             onSetShaderCode={editorData.nodeInspectorData.onSetShaderCode}
-                        /> : null
+                        /> : paneNode.contentType === PaneContentType.PianoRoll && editorData.pianoRollData ?
+                            <PianoRoll
+                                onPaneSelect={handlePaneSelect}
+                                mixerState={editorData.pianoRollData.mixerState}
+                                selectedTrackId={editorData.pianoRollData.selectedTrackId}
+                                selectedRegionId={editorData.pianoRollData.selectedRegionId}
+                                onAddNote={editorData.pianoRollData.onAddNote}
+                                onRemoveNote={editorData.pianoRollData.onRemoveNote}
+                                onUpdateNote={editorData.pianoRollData.onUpdateNote}
+                            /> : null
             }
         </>
     ) : null;

@@ -26,6 +26,7 @@ export interface EditorData {
         onSelectTrack?: (trackId: number) => void,
         onAddRegion?: (trackId: number, name: string, startTime: number, duration: number) => void,
         onMoveRegion?: (trackId: number, regionId: number, newBeats: number) => void,
+        onSelectRegion?: (trackId: number, regionId: number) => void,
         seek?: (beats: number) => void,
     },
 
@@ -47,4 +48,13 @@ export interface EditorData {
         selectedNodeId?: string,
         onSetShaderCode?: (trackId: number, nodeId: string, code: string) => void,
     },
+
+    pianoRollData?: {
+        mixerState?: MixerState,
+        selectedTrackId?: number,
+        selectedRegionId?: number,
+        onAddNote?: (trackId: number, note: { pitch: number, startTime: number, duration: number }) => void,
+        onRemoveNote?: (trackId: number, noteId: string) => void,
+        onUpdateNote?: (trackId: number, noteId: string, note: { pitch: number, startTime: number, duration: number }) => void,
+    }
 }

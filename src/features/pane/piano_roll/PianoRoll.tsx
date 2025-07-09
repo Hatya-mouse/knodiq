@@ -15,47 +15,67 @@
 //
 
 import PaneHeader from "@/components/pane/PaneHeader";
-import { TrackState } from "@/lib/audio_api/track_state";
+import { MixerState } from "@/lib/audio_api/mixer_state";
 import { PaneContentType } from "@/lib/type/PaneNode";
 import { useState } from "react";
 
 export default function PianoRoll({
-    trackState,
     onPaneSelect = () => { },
+    mixerState,
+    selectedTrackId,
+    selectedRegionId,
+    onAddNote = () => { },
+    onRemoveNote = () => { },
+    onUpdateNote = () => { },
 }: {
-    trackState: TrackState
     onPaneSelect?: (pane: PaneContentType) => void
+    mixerState?: MixerState,
+    selectedTrackId?: number,
+    selectedRegionId?: number,
+    onAddNote?: (trackId: number, note: { pitch: number, startTime: number, duration: number }) => void,
+    onRemoveNote?: (trackId: number, noteId: string) => void,
+    onUpdateNote?: (trackId: number, noteId: string, note: { pitch: number, startTime: number, duration: number }) => void,
 }) {
     const [beatWidth, _] = useState(10);
     // const [contentWidth, setContentWidth] = useState(0);
 
-    let regions = trackState.regions;
+    const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        if (!mixerState || selectedTrackId === undefined || selectedRegionId === undefined) return;
+
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const beats = Math.floor(x / beatWidth);
+        const startTime = beats * 0.25; // Assuming each beat is 0.25 seconds
+        const duration = 1; // Default duration of 1 second
+
+        onAddNote(selectedTrackId, { pitch: 60, startTime, duration }); // Default pitch of 60 (Middle C)
+    }
+
+    const selectedTrack = mixerState?.tracks.find(track => track.id === selectedTrackId);
+    const selectedRegion = selectedTrack?.regions.find(region => region.id === selectedRegionId);
 
     return (
-        <div>
+        <div className="flex flex-col w-full h-full overflow-hidden">
             {/* Header */}
             <PaneHeader
                 selectedPane={PaneContentType.PianoRoll}
                 onPaneSelect={onPaneSelect}
             />
-            {regions.map((region) => (
-                <div key={region.id} style={{
-                    position: "relative",
-                    borderColor: "var(--border-color)",
-                    borderRadius: "1px",
-                    borderStyle: "solid",
-                    marginBottom: "10px",
-                    backgroundColor: trackState.color,
-                    left: `${region.start_time * beatWidth}px`,
-                }}>
-                    {region.data.NoteRegion.map((note) => (
-                        <div key={note.id} style={{
-                            left: `${(note.start_time - region.start_time) * beatWidth}px`,
-                            width: `${note.duration * beatWidth}px`
-                        }} />
-                    ))}
-                </div>
-            ))}
+
+            {/* Piano Roll Content */}
+            <div
+                className="bg-[var(--bg-tertiary)] h-full w-full overflow-x-scroll overflow-y-auto"
+                onDoubleClick={handleDoubleClick}
+            >
+                {selectedRegion?.data.NoteRegion.map(note => (
+                    <div key={note.id} style={{
+                        left: `${(note.start_time - selectedRegion.start_time) * beatWidth}px`,
+                        top: `${(127 - note.pitch) * 10}px`,
+                        width: `${note.duration * beatWidth}px`,
+                        height: '10px',
+                    }} />
+                ))}
+            </div>
         </div>
     );
 }

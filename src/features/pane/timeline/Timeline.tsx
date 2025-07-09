@@ -35,6 +35,7 @@ export default function Timeline({
     onSelectTrack,
     onAddRegion,
     onMoveRegion,
+    onSelectRegion,
     seek,
 }: {
     onPaneSelect?: (pane: PaneContentType) => void,
@@ -46,6 +47,7 @@ export default function Timeline({
     onSelectTrack?: (trackId: number) => void,
     onAddRegion?: (trackId: number, name: string, startTime: number, duration: number) => void,
     onMoveRegion?: (trackId: number, regionId: number, newBeats: number) => void,
+    onSelectRegion?: (trackId: number, regionId: number) => void,
     seek?: (beats: number) => void,
 }) {
     const [trackHeight, _] = useState(60);
@@ -173,6 +175,7 @@ export default function Timeline({
                             track={track}
                             onMoveRegion={onMoveRegion}
                             onAddRegion={onAddRegion}
+                            onSelectRegion={onSelectRegion}
                         />
                     ))}
 

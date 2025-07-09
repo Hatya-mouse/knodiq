@@ -50,9 +50,9 @@ pub fn run() {
             track::track::add_track,
             track::track::remove_track,
             track::track::set_track_color,
-            region::region_data::add_region,
-            region::region_data::remove_region,
-            region::region_data::move_region,
+            region::region::add_region,
+            region::region::remove_region,
+            region::region::move_region,
             window::open_track_config_window,
         ])
         .run(tauri::generate_context!())

@@ -2180,8 +2180,8 @@ dependencies = [
 
 [[package]]
 name = "knodiq_audio_shader"
-version = "0.3.2"
-source = "git+https://github.com/Hatya-mouse/knodiq_audio_shader#7600ecab645f909f3bc09f049e5d1ace6c56dba0"
+version = "0.3.3"
+source = "git+https://github.com/Hatya-mouse/knodiq_audio_shader#eb4d194765fe62e0e5cdc9d6a7dd9208bbc34007"
 dependencies = [
  "knodiq_engine",
  "rand 0.9.1",

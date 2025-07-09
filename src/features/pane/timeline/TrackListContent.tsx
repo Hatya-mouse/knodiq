@@ -25,6 +25,7 @@ export default function TrackListContent({
     className = "",
     onAddRegion,
     onMoveRegion,
+    onSelectRegion,
 }: {
     track: TrackState,
     beatWidth: number,
@@ -33,9 +34,14 @@ export default function TrackListContent({
     className?: string,
     onAddRegion?: (trackId: number, name: string, startTime: number, duration: number) => void,
     onMoveRegion?: (trackId: number, regionId: number, newBeats: number) => void,
+    onSelectRegion?: (trackId: number, regionId: number) => void,
 }) {
     const moveRegion = (id: number, newBeats: number) => {
         if (onMoveRegion) onMoveRegion(track.id, id, newBeats);
+    };
+
+    const selectRegion = (id: number) => {
+        if (onSelectRegion) onSelectRegion(track.id, id);
     };
 
     const handleAddRegion = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -43,7 +49,7 @@ export default function TrackListContent({
             const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
             const x = e.clientX - rect.left;
             const beats = Math.floor(x / beatWidth);
-            onAddRegion(track.id, "New Region", beats, 4);
+            onAddRegion(track.id, "New Region", beats, 10);
         }
     };
 
@@ -62,6 +68,7 @@ export default function TrackListContent({
                     key={i}
                     beatWidth={beatWidth}
                     onMoveRegion={moveRegion}
+                    onSelectRegion={selectRegion}
                 />
             )}
         </div>

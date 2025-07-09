@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-pub mod region_data;
+pub mod region;
 pub mod region_op;
 
 pub use region_op::RegionOperation;
