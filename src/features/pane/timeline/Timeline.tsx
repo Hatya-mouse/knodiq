@@ -114,7 +114,7 @@ export default function Timeline({
             />
 
             <HSplitView className="w-full flex-1" doesStrech={true} left={(
-                <div>
+                <div className="h-full bg-[var(--bg-primary)]">
                     {/* Track list */}
                     <button
                         className="text-[var(--text)] bottom-border w-full h-8 cursor-pointer track-list-item"

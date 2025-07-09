@@ -14,10 +14,8 @@
 // limitations under the License.
 //
 
-use crate::api::graph::NodeType;
-use crate::api::mixing::{MixerCommand, MixerResult, RegionData, RegionType};
-use crate::api::{AppState, MixerState};
-use crate::track::TrackType;
+use crate::api::mixing::{MixerCommand, MixerResult};
+use crate::api::{AppState, MixerState, NodeType, RegionData, RegionType, TrackType};
 use knodiq_audio_shader::AudioShaderNode;
 use knodiq_engine::graph::built_in::EmptyNode;
 use knodiq_engine::mixing::region::BufferRegion;
@@ -25,11 +23,7 @@ use knodiq_engine::mixing::track::BufferTrack;
 use knodiq_engine::{AudioSource, Mixer, Node, NodeId, Track};
 use knodiq_note::{NoteInputNode, NoteTrack};
 use std::collections::HashMap;
-use std::sync::{
-    Arc, Mutex,
-    atomic::{AtomicBool, Ordering},
-    mpsc,
-};
+use std::sync::{Mutex, mpsc};
 use std::thread;
 use tauri::{AppHandle, Emitter, State};
 
@@ -37,7 +31,6 @@ pub fn start_mixer_thread(state: State<Mutex<AppState>>, app: AppHandle) {
     // Create a channel to communicate with the mixer
     let (command_sender, command_receiver) = mpsc::channel();
     let (result_sender, result_receiver) = mpsc::channel();
-    let running = Arc::new(AtomicBool::new(true));
 
     // Set the sender in the app state
     let mut state = state.lock().unwrap();
@@ -45,7 +38,6 @@ pub fn start_mixer_thread(state: State<Mutex<AppState>>, app: AppHandle) {
     state.mixer_result_receiver = Some(result_receiver);
 
     // Create a new thread for the mixer
-    let running_clone = Arc::clone(&running);
     let app_handle = app.clone();
 
     std::thread::spawn(move || {
@@ -57,21 +49,14 @@ pub fn start_mixer_thread(state: State<Mutex<AppState>>, app: AppHandle) {
         let mut node_positions: HashMap<u32, HashMap<NodeId, (f32, f32)>> = HashMap::new();
         let mut track_colors: HashMap<u32, String> = HashMap::new();
 
-        while running_clone.load(Ordering::SeqCst) {
-            process_mixer(
-                &mut mixer,
-                &mut node_positions,
-                &mut track_colors,
-                &command_receiver,
-                &result_sender,
-                &app_handle,
-            );
-        }
-    });
-
-    // Quitting the app will stop the mixer thread
-    std::thread::spawn(move || {
-        running.store(false, Ordering::SeqCst);
+        process_mixer(
+            &mut mixer,
+            &mut node_positions,
+            &mut track_colors,
+            &command_receiver,
+            &result_sender,
+            &app_handle,
+        );
     });
 }
 
@@ -86,235 +71,241 @@ fn process_mixer(
     println!("Mixer thread started.");
 
     // Check if the mixer needs to mix
-    // Mixing is needed if any changes have been made to the mixer)
     let mut needs_mix = false;
 
-    while let Ok(command) = receiver.recv() {
-        match command {
-            MixerCommand::Mix(at, callback) => {
-                let mut mixer_clone = mixer.clone();
-                thread::spawn(move || {
-                    match mixer_clone.prepare() {
-                        Ok(_) => {}
-                        Err(e) => {
-                            eprintln!("Error preparing mixer: {}", e);
-                            return;
+    loop {
+        match receiver.recv() {
+            Ok(command) => match command {
+                MixerCommand::Mix(at, callback) => {
+                    let mut mixer_clone = mixer.clone();
+                    thread::spawn(move || {
+                        match mixer_clone.prepare() {
+                            Ok(_) => {}
+                            Err(e) => {
+                                eprintln!("Error preparing mixer: {}", e);
+                                return;
+                            }
                         }
-                    }
-                    println!("Mixing starting at: {}", at);
-                    mixer_clone.mix(at, callback);
-                });
-            }
-
-            MixerCommand::AddTrack(track_data) => {
-                let mut track = match track_data.track_type {
-                    TrackType::BufferTrack => Box::new(BufferTrack::new(
-                        track_data.name.as_str(),
-                        track_data.channels,
-                    )) as Box<dyn Track>,
-                    TrackType::NoteTrack => Box::new(NoteTrack::new(
-                        track_data.name.as_str(),
-                        track_data.channels,
-                    )) as Box<dyn Track>,
-                };
-
-                // Connect the input and output nodes of the track
-                let input_node = track.graph().get_input_node_id();
-                let output_node = track.graph().get_output_node_id();
-
-                track.graph_mut().connect(
-                    input_node,
-                    "audio".to_string(),
-                    output_node,
-                    "audio".to_string(),
-                );
-
-                // Add the track to the mixer
-                mixer.add_track(track);
-
-                emit_state(mixer, node_positions, track_colors, app);
-                needs_mix = true;
-            }
-
-            MixerCommand::RemoveTrack(track_id) => {
-                // Remove the track from the mixer
-                mixer.remove_track(track_id);
-                emit_state(mixer, node_positions, track_colors, app);
-                needs_mix = true;
-            }
-
-            MixerCommand::SetTrackColor(track_id, color) => {
-                track_colors.insert(track_id, color);
-                emit_state(mixer, node_positions, track_colors, app);
-            }
-
-            MixerCommand::AddRegion(track_id, region_data) => {
-                handle_add_region(
-                    mixer,
-                    node_positions,
-                    track_colors,
-                    track_id,
-                    region_data,
-                    app,
-                );
-            }
-
-            MixerCommand::RemoveRegion(track_id, region_id) => {
-                // Remove the region from the specified track
-                if let Some(track) = mixer.get_track_by_id_mut(track_id) {
-                    track.remove_region(region_id);
-                } else {
-                    eprintln!("Track with ID {} not found.", track_id);
-                }
-                emit_state(mixer, node_positions, track_colors, app);
-                needs_mix = true;
-            }
-
-            MixerCommand::ApplyRegionOp(track_id, region_id, operation) => {
-                // Apply the operation to the specified region in the track
-                if let Some(track) = mixer.get_track_by_id_mut(track_id) {
-                    if let Some(region) = track.get_region_mut(region_id) {
-                        operation.apply(region);
-                    } else {
-                        eprintln!(
-                            "Region with ID {} not found in track {}.",
-                            region_id, track_id
-                        );
-                    }
-                } else {
-                    eprintln!("Track with ID {} not found.", track_id);
-                }
-                emit_state(mixer, node_positions, track_colors, app);
-                needs_mix = true;
-            }
-
-            MixerCommand::ConnectGraph(track_id, from, from_param, to, to_param) => {
-                // Connect the two nodes in the graph
-                if let Some(track) = mixer.get_track_by_id_mut(track_id) {
-                    track.graph_mut().connect(from, from_param, to, to_param);
-                } else {
-                    eprintln!("Track with ID {} not found.", track_id);
-                }
-                emit_state(mixer, node_positions, track_colors, app);
-                needs_mix = true;
-            }
-
-            MixerCommand::DisconnectGraph(track_id, from, from_param, to, to_param) => {
-                // Disconnect the two nodes in the graph
-                if let Some(track) = mixer.get_track_by_id_mut(track_id) {
-                    track.graph_mut().disconnect(from, from_param, to, to_param);
-                } else {
-                    eprintln!("Track with ID {} not found.", track_id);
-                }
-                emit_state(mixer, node_positions, track_colors, app);
-                needs_mix = true;
-            }
-
-            MixerCommand::AddNode(track_id, node_data, position) => {
-                // Create a new node based on the provided data
-                let node: Box<dyn Node> = match node_data {
-                    NodeType::EmptyNode => Box::new(EmptyNode::new()),
-                    NodeType::AudioShaderNode => Box::new(AudioShaderNode::new()),
-                    NodeType::NoteInputNode => Box::new(NoteInputNode::new()),
-                };
-
-                if let Some(track) = mixer.get_track_by_id_mut(track_id) {
-                    node_positions
-                        .entry(track_id)
-                        .or_default()
-                        .insert(node.get_id(), position);
-
-                    track.graph_mut().add_node(node);
-                } else {
-                    eprintln!("Track with ID {} not found.", track_id);
+                        println!("Mixing starting at: {}", at);
+                        mixer_clone.mix(at, callback);
+                    });
                 }
 
-                emit_state(mixer, node_positions, track_colors, app);
-                needs_mix = true;
-            }
+                MixerCommand::AddTrack(track_data) => {
+                    let mut track = match track_data.track_type {
+                        TrackType::BufferTrack => Box::new(BufferTrack::new(
+                            track_data.name.as_str(),
+                            track_data.channels,
+                        )) as Box<dyn Track>,
+                        TrackType::NoteTrack => Box::new(NoteTrack::new(
+                            track_data.name.as_str(),
+                            track_data.channels,
+                        )) as Box<dyn Track>,
+                    };
 
-            MixerCommand::RemoveNode(track_id, node_id) => {
-                if let Some(track) = mixer.get_track_by_id_mut(track_id) {
-                    track.graph_mut().remove_node(node_id);
-                    node_positions.entry(track_id).or_default().remove(&node_id);
-                } else {
-                    eprintln!("Track with ID {} not found.", track_id);
-                }
-                emit_state(mixer, node_positions, track_colors, app);
-                needs_mix = true;
-            }
-
-            MixerCommand::MoveNode(track_id, node_id, position) => {
-                node_positions
-                    .entry(track_id)
-                    .or_default()
-                    .insert(node_id, position);
-                emit_state(mixer, node_positions, track_colors, app);
-            }
-
-            MixerCommand::SetInputProperties(track_id, node_id, key, value) => {
-                if let Some(track) = mixer.get_track_by_id_mut(track_id) {
-                    if let Some(node) = track.graph_mut().get_node_mut(node_id) {
-                        node.set_input(key.as_str(), value);
-                    } else {
-                        eprintln!("Node with ID {} not found in track {}.", node_id, track_id);
-                    }
-                } else {
-                    eprintln!("Track with ID {} not found.", track_id);
-                }
-                emit_state(mixer, node_positions, track_colors, app);
-            }
-
-            MixerCommand::GetInputNode(track_id) => {
-                // Get the input nodes of the track
-                if let Some(track) = mixer.get_track_by_id_mut(track_id) {
-                    let input_node = &track.graph().get_input_node_id();
-                    let _ = result_sender.send(MixerResult::InputNode(input_node.clone()));
-                } else {
-                    eprintln!("Track with ID {} not found.", track_id);
-                }
-            }
-
-            MixerCommand::GetOutputNode(track_id) => {
-                // Get the output node of the track
-                if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+                    // Connect the input and output nodes of the track
+                    let input_node = track.graph().get_input_node_id();
                     let output_node = track.graph().get_output_node_id();
-                    let _ = result_sender.send(MixerResult::OutputNode(output_node));
-                } else {
-                    eprintln!("Track with ID {} not found.", track_id);
-                }
-            }
 
-            MixerCommand::SetAudioShader(track_id, node_id, shader) => {
-                if let Some(track) = mixer.get_track_by_id_mut(track_id) {
-                    if let Some(node) = track.graph_mut().get_node_mut(node_id) {
-                        if let Some(audio_shader_node) =
-                            node.as_any_mut().downcast_mut::<AudioShaderNode>()
-                        {
-                            let errors = match audio_shader_node.set_shader(shader) {
-                                Ok(_) => vec![],
-                                Err(e) => e,
-                            };
-                            let _ = result_sender.send(MixerResult::AudioShaderErrors(errors));
+                    track.graph_mut().connect(
+                        input_node,
+                        "audio".to_string(),
+                        output_node,
+                        "audio".to_string(),
+                    );
+
+                    // Add the track to the mixer
+                    mixer.add_track(track);
+
+                    emit_state(mixer, node_positions, track_colors, app);
+                    needs_mix = true;
+                }
+
+                MixerCommand::RemoveTrack(track_id) => {
+                    // Remove the track from the mixer
+                    mixer.remove_track(track_id);
+                    emit_state(mixer, node_positions, track_colors, app);
+                    needs_mix = true;
+                }
+
+                MixerCommand::SetTrackColor(track_id, color) => {
+                    track_colors.insert(track_id, color);
+                    emit_state(mixer, node_positions, track_colors, app);
+                }
+
+                MixerCommand::AddRegion(track_id, region_data) => {
+                    handle_add_region(
+                        mixer,
+                        node_positions,
+                        track_colors,
+                        track_id,
+                        region_data,
+                        app,
+                    );
+                }
+
+                MixerCommand::RemoveRegion(track_id, region_id) => {
+                    // Remove the region from the specified track
+                    if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+                        track.remove_region(region_id);
+                    } else {
+                        eprintln!("Track with ID {} not found.", track_id);
+                    }
+                    emit_state(mixer, node_positions, track_colors, app);
+                    needs_mix = true;
+                }
+
+                MixerCommand::ApplyRegionOp(track_id, region_id, operation) => {
+                    // Apply the operation to the specified region in the track
+                    if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+                        if let Some(region) = track.get_region_mut(region_id) {
+                            operation.apply(region);
                         } else {
                             eprintln!(
-                                "Node with ID {} is not an AudioShaderNode in track {}.",
-                                node_id, track_id
+                                "Region with ID {} not found in track {}.",
+                                region_id, track_id
                             );
                         }
                     } else {
-                        eprintln!("Node with ID {} not found in track {}.", node_id, track_id);
+                        eprintln!("Track with ID {} not found.", track_id);
                     }
-                } else {
-                    eprintln!("Track with ID {} not found.", track_id);
+                    emit_state(mixer, node_positions, track_colors, app);
+                    needs_mix = true;
                 }
 
-                emit_state(mixer, node_positions, track_colors, app);
-            }
+                MixerCommand::ConnectGraph(track_id, from, from_param, to, to_param) => {
+                    // Connect the two nodes in the graph
+                    if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+                        track.graph_mut().connect(from, from_param, to, to_param);
+                    } else {
+                        eprintln!("Track with ID {} not found.", track_id);
+                    }
+                    emit_state(mixer, node_positions, track_colors, app);
+                    needs_mix = true;
+                }
 
-            MixerCommand::DoesNeedMix => {
-                // Check if the mixer needs to mix again
-                let _ = result_sender.send(MixerResult::NeedsMix(needs_mix));
+                MixerCommand::DisconnectGraph(track_id, from, from_param, to, to_param) => {
+                    // Disconnect the two nodes in the graph
+                    if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+                        track.graph_mut().disconnect(from, from_param, to, to_param);
+                    } else {
+                        eprintln!("Track with ID {} not found.", track_id);
+                    }
+                    emit_state(mixer, node_positions, track_colors, app);
+                    needs_mix = true;
+                }
+
+                MixerCommand::AddNode(track_id, node_data, position) => {
+                    // Create a new node based on the provided data
+                    let node: Box<dyn Node> = match node_data {
+                        NodeType::EmptyNode => Box::new(EmptyNode::new()),
+                        NodeType::AudioShaderNode => Box::new(AudioShaderNode::new()),
+                        NodeType::NoteInputNode => Box::new(NoteInputNode::new()),
+                    };
+
+                    if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+                        node_positions
+                            .entry(track_id)
+                            .or_default()
+                            .insert(node.get_id(), position);
+
+                        track.graph_mut().add_node(node);
+                    } else {
+                        eprintln!("Track with ID {} not found.", track_id);
+                    }
+
+                    emit_state(mixer, node_positions, track_colors, app);
+                    needs_mix = true;
+                }
+
+                MixerCommand::RemoveNode(track_id, node_id) => {
+                    if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+                        track.graph_mut().remove_node(node_id);
+                        node_positions.entry(track_id).or_default().remove(&node_id);
+                    } else {
+                        eprintln!("Track with ID {} not found.", track_id);
+                    }
+                    emit_state(mixer, node_positions, track_colors, app);
+                    needs_mix = true;
+                }
+
+                MixerCommand::MoveNode(track_id, node_id, position) => {
+                    node_positions
+                        .entry(track_id)
+                        .or_default()
+                        .insert(node_id, position);
+                    emit_state(mixer, node_positions, track_colors, app);
+                }
+
+                MixerCommand::SetInputProperties(track_id, node_id, key, value) => {
+                    if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+                        if let Some(node) = track.graph_mut().get_node_mut(node_id) {
+                            node.set_input(key.as_str(), value);
+                        } else {
+                            eprintln!("Node with ID {} not found in track {}.", node_id, track_id);
+                        }
+                    } else {
+                        eprintln!("Track with ID {} not found.", track_id);
+                    }
+                    emit_state(mixer, node_positions, track_colors, app);
+                }
+
+                MixerCommand::GetInputNode(track_id) => {
+                    // Get the input nodes of the track
+                    if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+                        let input_node = &track.graph().get_input_node_id();
+                        let _ = result_sender.send(MixerResult::InputNode(input_node.clone()));
+                    } else {
+                        eprintln!("Track with ID {} not found.", track_id);
+                    }
+                }
+
+                MixerCommand::GetOutputNode(track_id) => {
+                    // Get the output node of the track
+                    if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+                        let output_node = track.graph().get_output_node_id();
+                        let _ = result_sender.send(MixerResult::OutputNode(output_node));
+                    } else {
+                        eprintln!("Track with ID {} not found.", track_id);
+                    }
+                }
+
+                MixerCommand::SetAudioShader(track_id, node_id, shader) => {
+                    if let Some(track) = mixer.get_track_by_id_mut(track_id) {
+                        if let Some(node) = track.graph_mut().get_node_mut(node_id) {
+                            if let Some(audio_shader_node) =
+                                node.as_any_mut().downcast_mut::<AudioShaderNode>()
+                            {
+                                let errors = match audio_shader_node.set_shader(shader) {
+                                    Ok(_) => vec![],
+                                    Err(e) => e,
+                                };
+                                let _ = result_sender.send(MixerResult::AudioShaderErrors(errors));
+                            } else {
+                                eprintln!(
+                                    "Node with ID {} is not an AudioShaderNode in track {}.",
+                                    node_id, track_id
+                                );
+                            }
+                        } else {
+                            eprintln!("Node with ID {} not found in track {}.", node_id, track_id);
+                        }
+                    } else {
+                        eprintln!("Track with ID {} not found.", track_id);
+                    }
+
+                    emit_state(mixer, node_positions, track_colors, app);
+                }
+
+                MixerCommand::DoesNeedMix => {
+                    // Check if the mixer needs to mix again
+                    let _ = result_sender.send(MixerResult::NeedsMix(needs_mix));
+                }
+            },
+            Err(_) => {
+                // If the receiver is disconnected, exit the loop
+                println!("Mixer command receiver disconnected.");
+                break;
             }
         }
     }

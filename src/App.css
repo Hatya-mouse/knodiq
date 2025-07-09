@@ -24,9 +24,9 @@
 
     --region-border-radius: 4px;
 
-    --bg-primary: oklch(0.9828 0.0085 247.91);
-    --bg-secondary: oklch(94.538% 0.0117 264.578 / 0.7);
-    --bg-tertiary: oklch(87.658% 0.01714 271.227 / 0.7);
+    --bg-primary: oklch(96.209% 0.00977 253.02);
+    --bg-secondary: oklch(88.09% 0.01656 262.806 / 0.7);
+    --bg-tertiary: oklch(80.362% 0.01824 264.507 / 0.7);
 
     --button-default: oklch(50% 0.00006 271.152);
     --button-hover: oklch(40% 0 0);
@@ -36,9 +36,10 @@
     --text-inverted: oklch(1 0 0);
 
     --accent-color: oklch(0.5639 0.2756 300.17);
-    --accent-color-transparent: oklch(0.5639 0.2756 300.17 / 50%);
+    --accent-color-transparent: oklch(0.5639 0.2756 300.17 / 40%);
 
-    --destructive-color: oklch(0.5866 0.2061 26.36 / 70%);
+    --destructive-color: oklch(0.5866 0.2061 26.36);
+    --destructive-color-transparent: oklch(0.5866 0.2061 26.36 / 40%);
 }
 
 @font-face {
@@ -79,44 +80,4 @@ body #root {
     /* IE/Edge */
     scrollbar-width: none;
     /* Firefox */
-}
-
-.basic-button {
-    padding: 4px 8px 4px 8px;
-    border-radius: var(--border-radius);
-    transition: all 0.3s ease-in-out;
-    transition: filter 0.1s ease-in-out;
-    color: var(--text);
-    cursor: pointer;
-    background-color: rgba(150, 150, 150, 0.2);
-}
-
-.basic-button.icon {
-    padding: 6px;
-    aspect-ratio: 1 / 1 !important;
-    align-items: center;
-    justify-content: center;
-    display: flex;
-}
-
-.basic-button.highlighted {
-    background-color: rgba(0, 130, 220, 0.7);
-}
-
-.basic-button.destructive {
-    background-color: var(--destructive-color);
-    color: var(--text-inverted);
-}
-
-.basic-button:hover {
-    filter: brightness(0.8);
-}
-
-.basic-button:active {
-    filter: brightness(0.5);
-}
-
-.basic-button:disabled {
-    cursor: default;
-    filter: opacity(0.5);
 }

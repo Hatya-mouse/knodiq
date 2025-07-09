@@ -91,7 +91,7 @@ export default function NodeBox({
                 left: nodeState.position[0],
                 top: nodeState.position[1]
             }}
-            onClick={handleBoxClick}
+            onMouseDown={handleBoxClick}
         >
             {/* Header */}
             <div

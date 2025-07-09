@@ -14,11 +14,23 @@
 // limitations under the License.
 //
 
+use knodiq_engine::Beats;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub enum NodeType {
-    AudioShaderNode,
-    EmptyNode,
-    NoteInputNode,
+#[derive(Serialize, Deserialize)]
+pub enum RegionType {
+    /// A region that contains audio data.
+    /// String is the path to the audio file, and usize is the track index.
+    BufferRegion(String, usize),
+    /// A region that contains midi data.
+    NoteRegion(),
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct RegionData {
+    pub name: String,
+    pub start_time: Beats,
+    pub duration: Beats,
+    pub samples_per_beat: f32,
+    pub region_type: RegionType,
 }

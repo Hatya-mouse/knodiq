@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-use crate::api::{RegionState, mixing::TrackType, state::GraphState};
+use crate::api::{RegionState, TrackType, state::GraphState};
 use knodiq_engine::{NodeId, Track};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -41,6 +41,7 @@ impl TrackState {
         let channels = track.channels();
         let track_type = match track.track_type().as_str() {
             "BufferTrack" => TrackType::BufferTrack,
+            "NoteTrack" => TrackType::NoteTrack,
             _ => panic!("Unexpected track type"),
         };
         let regions = track

@@ -19,6 +19,7 @@ mod api;
 use api::AppState;
 use api::graph;
 use api::mixing::{region, track};
+use api::window;
 use api::{playback, setup};
 
 use std::sync::Mutex;
@@ -52,6 +53,7 @@ pub fn run() {
             region::region_data::add_region,
             region::region_data::remove_region,
             region::region_data::move_region,
+            window::open_track_config_window,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

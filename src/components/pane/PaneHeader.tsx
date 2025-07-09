@@ -16,8 +16,9 @@
 
 import { ChevronDown } from "lucide-react";
 import { PaneContentType } from "../../lib/type/PaneNode";
-import DropdownMenu from "../button/DropdownMenu";
+import DropdownMenu from "../controls/DropdownMenu";
 import { useEffect, useRef, useState } from "react";
+import BasicButton from "../controls/BasicButton";
 
 export default function PaneHeader({
     selectedPane,
@@ -53,18 +54,17 @@ export default function PaneHeader({
 
         }}>
             <div className="flex flex-col gap-0" ref={dropdownRef}>
-                <button
-                    className="text-sm font-medium max-w-fit px-1 rounded flex-1 flex select-none hover:bg-[var(--bg-tertiary)] transition cursor-pointer"
+                <BasicButton
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                 >
                     {selectedPane?.toString() || "Select a pane"}
                     <ChevronDown height={20} width={20} />
-                </button>
+                </BasicButton>
 
                 <DropdownMenu
                     options={Object.values(PaneContentType).map((pane) => ({
                         label: pane.toString(),
-                        value: pane,
+                        key: pane,
                     }))}
                     isOpen={isMenuOpen}
                     onSelect={(value) => {

@@ -17,5 +17,4 @@
 pub mod region_data;
 pub mod region_op;
 
-pub use region_data::{RegionData, RegionType};
 pub use region_op::RegionOperation;

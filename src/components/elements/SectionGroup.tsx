@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-export default function InspectorGroup({
+export default function SectionGroup({
     className = "",
     title = "",
     children = null,
@@ -26,7 +26,7 @@ export default function InspectorGroup({
     return (
         <div className={`flex flex-col ${className}`}>
             <div
-                className="px-2 py-1 text-sm font-medium bg-[var(--bg-tertiary)] "
+                className="px-2 py-0.5 text-sm font-semibold bg-[var(--bg-tertiary)] "
                 style={{
                     borderBottomColor: 'var(--border-color)',
                     borderBottomWidth: '1px',
@@ -36,7 +36,7 @@ export default function InspectorGroup({
             </div>
 
             <div
-                className="px-2 py-1 bg-[var(--bg-secondary)] flex-1"
+                className="px-2 py-1.5 bg-[var(--bg-secondary)] flex-1"
                 style={{
                     borderBottomColor: 'var(--border-color)',
                     borderBottomWidth: '1px',

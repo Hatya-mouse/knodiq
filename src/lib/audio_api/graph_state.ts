@@ -57,12 +57,23 @@ export type GraphState = {
     output_node: string;
 }
 
-export function getNodeTypes(): Array<string> {
-    return [
-        "AudioShaderNode",
-        "EmptyNode",
-        "NoteInputNode"
-    ];
+export enum NodeType {
+    AudioShaderNode = "AudioShaderNode",
+    EmptyNode = "EmptyNode",
+    NoteInputNode = "NoteInputNode"
+}
+
+export function getNodeTypeString(nodeType: NodeType): string {
+    switch (nodeType) {
+        case NodeType.AudioShaderNode:
+            return "AudioShader Node";
+        case NodeType.EmptyNode:
+            return "Empty Node";
+        case NodeType.NoteInputNode:
+            return "Note Input Node";
+        default:
+            return "Unknown Node Type";
+    }
 }
 
 export type NodeData = {

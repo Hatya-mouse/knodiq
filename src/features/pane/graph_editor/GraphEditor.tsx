@@ -20,9 +20,10 @@ import { LucidePlus } from "lucide-react";
 import PaneHeader from "@/components/pane/PaneHeader";
 import { PaneContentType } from "@/lib/type/PaneNode";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { getNodeTypes, NodeState } from "@/lib/audio_api/graph_state";
+import { NodeType, NodeState, getNodeTypeString } from "@/lib/audio_api/graph_state";
 import NodeConnector from "./NodeConnector";
-import DropdownMenu from "@/components/button/DropdownMenu";
+import DropdownMenu from "@/components/controls/DropdownMenu";
+import BasicButton from "@/components/controls/BasicButton";
 
 export default function GraphEditor({
     onPaneSelect = () => { },
@@ -173,21 +174,20 @@ export default function GraphEditor({
                 controls={
                     <div className="flex flex-col gap-0">
                         <div className="flex items-center">
-                            <button
-                                className="flex justify-center items-center rounded h-5 w-5 hover:bg-[var(--bg-tertiary)] transition cursor-pointer"
+                            <BasicButton
                                 onClick={() => {
                                     setIsAddMenuOpen(!isAddMenuOpen);
                                 }}
                             >
-                                <LucidePlus size={16} />
-                            </button>
+                                <LucidePlus className="flex" size={18} />
+                            </BasicButton>
 
                         </div>
 
                         <DropdownMenu
-                            options={getNodeTypes().map((nodeType) => ({
-                                label: nodeType,
-                                value: nodeType,
+                            options={(Object.values(NodeType) as NodeType[]).map((nodeType) => ({
+                                label: getNodeTypeString(nodeType),
+                                key: nodeType,
                             }))}
                             isOpen={isAddMenuOpen}
                             onSelect={(value) => {
@@ -205,6 +205,16 @@ export default function GraphEditor({
 
             {/* Node Editor */}
             <div ref={editorRef} className="w-full h-full p-2 bg-[var(--bg-tertiary)] relative flex-1 overflow-scroll">
+                {/* Grid Background */}
+                <svg className="absolute top-0 left-0 w-full h-full pointer-events-none" style={{ overflow: 'visible' }}>
+                    <defs>
+                        <pattern id="grid-dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <circle cx="15" cy="15" r="1.5" fill="rgba(100, 100, 100, 0.2)" />
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid-dots)" />
+                </svg>
+
                 <svg className="absolute top-0 left-0 w-full h-full pointer-events-none" style={{ overflow: 'visible' }}>
                     {selectedTrack?.graph.connections.map((conn, index) => {
                         const fromId = `conn-${conn.from}-output-${conn.from_param}`;

@@ -90,10 +90,7 @@ pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>) {
                 // Send the mixed sample to the audio player
                 match sample_sender.send(sample) {
                     Ok(_) => true,
-                    Err(_) => {
-                        eprintln!("Paused.");
-                        false
-                    }
+                    Err(_) => false,
                 }
             }),
         );

@@ -14,33 +14,10 @@
 // limitations under the License.
 //
 
-use crate::api::AppState;
 use crate::api::mixing::{MixerCommand, send_mixer_command};
-use serde::{Deserialize, Serialize};
+use crate::api::{AppState, TrackData};
 use std::sync::Mutex;
 use tauri::{State, command};
-
-#[derive(Serialize, Deserialize)]
-pub enum TrackType {
-    BufferTrack,
-    NoteTrack,
-}
-
-impl Clone for TrackType {
-    fn clone(&self) -> Self {
-        match self {
-            TrackType::BufferTrack => TrackType::BufferTrack,
-            TrackType::NoteTrack => TrackType::NoteTrack,
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct TrackData {
-    pub name: String,
-    pub channels: usize,
-    pub track_type: TrackType,
-}
 
 #[command]
 pub fn add_track(track_data: TrackData, state: State<'_, Mutex<AppState>>) {

@@ -22,7 +22,10 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { MixerState } from "@lib/audio_api/mixer_state";
 import WindowHeader from "@/features/window_header/WindowHeader";
 import PaneViewRoot from "./components/pane/PaneViewRoot";
+import { openWindow } from "@features/window/window";
 import "./App.css";
+import PlaybackControlButton from "./components/controls/PlaybackControlButton";
+import { LucidePause, LucidePlay, LucideSkipBack, LucideSkipForward } from "lucide-react";
 
 export default function App() {
     const [isPlaying, setIsPlaying] = useState(false);
@@ -31,7 +34,7 @@ export default function App() {
     const [selectedTrackId, setSelectedTrackId] = useState<number | undefined>(undefined);
     const [selectedNode, setSelectedNode] = useState<string | undefined>(undefined);
 
-    const intervalRef = useRef<number | null>(null);
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     useEffect(() => {
         listen<MixerState>("mixer_state", (event) => {
@@ -64,25 +67,35 @@ export default function App() {
     }, [isPlaying, mixerState?.bpm]);
 
     /// Called when the file selection button is pressed.
-    const handleAddTrack = () => {
-        invoke("add_track", {
-            trackData: {
-                name: "TRACK!!!!!",
-                channels: 2,
-                track_type: "BufferTrack"
-            }
+    const handleAddTrack = async () => {
+        openWindow({
+            id: "track_config",
+            url: "/window/track_config.html",
+            title: "Track Configuration",
+            x: 400,
+            y: 200,
+            width: 700,
+            height: 300,
         });
-    }
+    };
 
-    const handlePlayAudio = () => {
+    const handlePlayPauseAudio = () => {
+        if (isPlaying) {
+            pauseAudio();
+        } else {
+            playAudio();
+        }
+    };
+
+    const playAudio = () => {
         invoke("play_audio", { at: currentBeats });
         setIsPlaying(true);
-    }
+    };
 
-    const handlePauseAudio = () => {
+    const pauseAudio = () => {
         invoke("pause_audio");
         setIsPlaying(false);
-    }
+    };
 
     const handleRemoveTrack = (index: number) => {
         invoke("remove_track", { trackId: index });
@@ -90,7 +103,7 @@ export default function App() {
         if (selectedTrackId === index) {
             setSelectedTrackId(undefined);
         }
-    }
+    };
 
     const handleAddRegion = async (trackId: number, name: string, startTime: number, duration: number) => {
         // Open a file dialog to select an audio file
@@ -181,25 +194,46 @@ export default function App() {
             shader: code
         });
         console.log("Errors: ", errors);
-    }
+    };
 
     const handleSelectNode = (_trackId: number, nodeId: string) => {
         setSelectedNode(nodeId);
-    }
+    };
 
     const seek = async (beats: number) => {
         setCurrentBeats(beats);
-        handlePauseAudio();
+        pauseAudio();
     };
 
     return <div className="App w-screen h-screen flex flex-col font-(family-name:--base-font)">
-        <WindowHeader
-            isPlaying={isPlaying}
-            onPlay={handlePlayAudio}
-            onPause={handlePauseAudio}
-            onSkipBack={() => seek(0)}
-            onSkipForward={() => seek(mixerState?.duration || 0)}
-        />
+        <WindowHeader>
+            <div className="flex overflow-hidden mx-2 my-1.5 bg-[var(--bg-tertiary)] rounded-[var(--border-radius)]">
+                <PlaybackControlButton
+                    icon={<LucideSkipBack size={16} />}
+                    onClick={() => seek(0)}
+                    defaultBg="bg-[var(--bg-tertiary)]"
+                    hoverBg="hover:brightness-[90%]"
+                    activeBg="active:brightness-[80%]"
+                    className="px-2"
+                />
+                <PlaybackControlButton
+                    icon={isPlaying ? <LucidePause size={16} /> : <LucidePlay size={16} />}
+                    onClick={handlePlayPauseAudio}
+                    defaultBg="bg-[var(--bg-tertiary)]"
+                    hoverBg="hover:bg-[var(--accent-color)]"
+                    activeBg="active:brightness-[90%]"
+                    className="px-2"
+                />
+                <PlaybackControlButton
+                    icon={<LucideSkipForward size={16} />}
+                    onClick={() => seek(mixerState?.duration || 0)}
+                    defaultBg="bg-[var(--bg-tertiary)]"
+                    hoverBg="hover:brightness-[90%]"
+                    activeBg="active:brightness-[80%]"
+                    className="px-2"
+                />
+            </div>
+        </WindowHeader>
 
         <PaneViewRoot editorData={{
             timelineData: {

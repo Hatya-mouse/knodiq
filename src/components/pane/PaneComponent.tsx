@@ -211,11 +211,11 @@ export default function PaneComponent({
                     <HSplitView
                         className="h-full w-full"
                         left={<>
-                            <div className="absolute w-full h-full z-10 pointer-events-none transition-colors duration-150" style={{ backgroundColor: mergingChild === paneNode.children[1].id ? 'var(--destructive-color)' : 'transparent' }} />
+                            <div className="absolute w-full h-full z-10 pointer-events-none transition-colors duration-150" style={{ backgroundColor: mergingChild === paneNode.children[1].id ? 'var(--destructive-color-transparent)' : 'transparent' }} />
                             <PaneComponent key={paneNode.children[0].id} paneNode={paneNode.children[0]} editorData={editorData} />
                         </>}
                         right={<>
-                            <div className="absolute w-full h-full z-10 pointer-events-none transition-colors duration-150" style={{ backgroundColor: mergingChild === paneNode.children[0].id ? 'var(--destructive-color)' : 'transparent' }} />
+                            <div className="absolute w-full h-full z-10 pointer-events-none transition-colors duration-150" style={{ backgroundColor: mergingChild === paneNode.children[0].id ? 'var(--destructive-color-transparent)' : 'transparent' }} />
                             <PaneComponent key={paneNode.children[1].id} paneNode={paneNode.children[1]} editorData={editorData} />
                         </>}
                         leftWidth={paneNode.size * paneWidth}
@@ -226,11 +226,11 @@ export default function PaneComponent({
                     <VSplitView
                         className="h-full w-full"
                         top={<>
-                            <div className="absolute w-full h-full z-10 pointer-events-none transition-colors duration-150" style={{ backgroundColor: mergingChild === paneNode.children[1].id ? 'var(--destructive-color)' : 'transparent' }} />
+                            <div className="absolute w-full h-full z-10 pointer-events-none transition-colors duration-150" style={{ backgroundColor: mergingChild === paneNode.children[1].id ? 'var(--destructive-color-transparent)' : 'transparent' }} />
                             <PaneComponent key={paneNode.children[0].id} paneNode={paneNode.children[0]} editorData={editorData} />
                         </>}
                         bottom={<>
-                            <div className="absolute w-full h-full z-10 pointer-events-none transition-colors duration-150" style={{ backgroundColor: mergingChild === paneNode.children[0].id ? 'var(--destructive-color)' : 'transparent' }} />
+                            <div className="absolute w-full h-full z-10 pointer-events-none transition-colors duration-150" style={{ backgroundColor: mergingChild === paneNode.children[0].id ? 'var(--destructive-color-transparent)' : 'transparent' }} />
                             <PaneComponent key={paneNode.children[1].id} paneNode={paneNode.children[1]} editorData={editorData} />
                         </>}
                         topHeight={paneNode.size * paneHeight}

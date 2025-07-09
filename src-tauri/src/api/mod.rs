@@ -15,11 +15,14 @@
 //
 
 pub mod app_state;
+pub mod data;
 pub mod graph;
 pub mod mixing;
 pub mod playback;
 pub mod setup;
 pub mod state;
+pub mod window;
 
 pub use app_state::AppState;
+pub use data::{NodeType, RegionData, RegionType, TrackData, TrackType};
 pub use state::{MixerState, RegionState, TrackState};

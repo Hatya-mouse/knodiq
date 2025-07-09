@@ -14,31 +14,12 @@
 // limitations under the License.
 //
 
-use crate::api::AppState;
 use crate::api::mixing::region::RegionOperation;
 use crate::api::mixing::{MixerCommand, send_mixer_command};
+use crate::api::{AppState, RegionData};
 use knodiq_engine::audio_utils::Beats;
-use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
 use tauri::{State, command};
-
-#[derive(Serialize, Deserialize)]
-pub enum RegionType {
-    /// A region that contains audio data.
-    /// String is the path to the audio file, and usize is the track index.
-    BufferRegion(String, usize),
-    /// A region that contains midi data.
-    NoteRegion(),
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct RegionData {
-    pub name: String,
-    pub start_time: Beats,
-    pub duration: Beats,
-    pub samples_per_beat: f32,
-    pub region_type: RegionType,
-}
 
 #[command]
 pub fn add_region(region_data: RegionData, track_id: u32, state: State<'_, Mutex<AppState>>) {

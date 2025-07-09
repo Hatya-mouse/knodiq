@@ -25,11 +25,27 @@ export type TrackState = {
     /** Number of channels in the track. */
     channels: number;
     /** The type of the track. This is used to determine how to process the track. */
-    track_type: string;
+    track_type: TrackType;
     /** The regions in the track. */
     regions: RegionState[];
     /** Color of the track. */
     color: string;
     /** The graph structure of the track. */
     graph: GraphState;
+}
+
+export enum TrackType {
+    BufferTrack = "BufferTrack",
+    NoteTrack = "NoteTrack",
+}
+
+export function getTrackTypeString(trackType: TrackType): string {
+    switch (trackType) {
+        case TrackType.BufferTrack:
+            return "Buffer Track";
+        case TrackType.NoteTrack:
+            return "Note Track";
+        default:
+            return "Unknown Track Type";
+    }
 }

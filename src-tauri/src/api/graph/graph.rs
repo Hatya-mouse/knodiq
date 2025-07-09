@@ -16,7 +16,7 @@
 
 use crate::api::{
     AppState,
-    graph::NodeType,
+    data::NodeType,
     mixing::{MixerCommand, MixerResult, send_mixer_command},
 };
 use knodiq_engine::{NodeId, Value};

@@ -14,5 +14,26 @@
 // limitations under the License.
 //
 
-pub mod graph;
-pub mod node;
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+pub enum TrackType {
+    BufferTrack = 0,
+    NoteTrack = 1,
+}
+
+impl Clone for TrackType {
+    fn clone(&self) -> Self {
+        match self {
+            TrackType::BufferTrack => TrackType::BufferTrack,
+            TrackType::NoteTrack => TrackType::NoteTrack,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct TrackData {
+    pub name: String,
+    pub channels: usize,
+    pub track_type: TrackType,
+}

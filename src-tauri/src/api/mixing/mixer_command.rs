@@ -14,10 +14,8 @@
 // limitations under the License.
 //
 
-use crate::api::AppState;
-use crate::api::graph::NodeType;
 use crate::api::mixing::region::RegionOperation;
-use crate::api::mixing::{RegionData, TrackData};
+use crate::api::{AppState, NodeType, RegionData, TrackData};
 use knodiq_engine::audio_utils::Beats;
 use knodiq_engine::{NodeId, Sample, Value};
 use std::sync::{Mutex, MutexGuard};
@@ -87,7 +85,7 @@ pub enum MixerCommand {
 
     /// Add a node to a track.
     /// - track_id: `u32`
-    /// - node_data: `NodeData`
+    /// - node_type: `NodeType`
     /// - position: `(f32, f32)` (x, y)
     AddNode(u32, NodeType, (f32, f32)),
 

@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import BasicButton, { ButtonType } from "@/components/controls/BasicButton";
 import { TrackState } from "@/lib/audio_api/track_state";
 import { Trash2 } from "lucide-react";
 
@@ -51,9 +52,9 @@ export default function TrackListItem({
                         }
                     }}
                 />
-                <button className="basic-button icon destructive" onClick={handleRemoveTrack}>
+                <BasicButton type={ButtonType.Destructive} onClick={handleRemoveTrack}>
                     <Trash2 size={16} />
-                </button>
+                </BasicButton>
             </div>
         </div>
     );

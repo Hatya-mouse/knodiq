@@ -14,5 +14,10 @@
 // limitations under the License.
 //
 
-pub mod graph;
-pub mod node;
+pub mod node_type;
+pub mod region_data;
+pub mod track_data;
+
+pub use node_type::NodeType;
+pub use region_data::{RegionData, RegionType};
+pub use track_data::{TrackData, TrackType};

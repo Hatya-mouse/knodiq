@@ -14,5 +14,17 @@
 // limitations under the License.
 //
 
-pub mod graph;
-pub mod node;
+use tauri::{AppHandle, WebviewUrl, WebviewWindowBuilder, command};
+
+#[command]
+pub async fn open_track_config_window(app: AppHandle) -> Result<(), String> {
+    WebviewWindowBuilder::new(
+        &app,
+        "track_config",
+        WebviewUrl::App("window/track_config.html".into()),
+    )
+    .title("Track Configuration")
+    .build()
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}

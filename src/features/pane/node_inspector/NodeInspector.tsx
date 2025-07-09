@@ -18,7 +18,7 @@ import PaneHeader from "@/components/pane/PaneHeader";
 import { MixerState } from "@/lib/audio_api/mixer_state";
 import { PaneContentType } from "@/lib/type/PaneNode";
 import { useEffect, useState, useRef } from "react";
-import InspectorGroup from "./InspectorGroup";
+import SectionGroup from "@/components/elements/SectionGroup";
 
 export default function NodeInspector({
     onPaneSelect = () => { },
@@ -64,7 +64,7 @@ export default function NodeInspector({
             />
 
             <div className="grow flex flex-col overflow-x-hidden overflow-y-auto">
-                <InspectorGroup
+                <SectionGroup
                     title="Inputs"
                     children={!node?.is_input_node ? node?.inputs?.map((input, index) => (
                         <div key={index} className="block text-sm font-medium text-gray-700">
@@ -73,7 +73,7 @@ export default function NodeInspector({
                     )) : null}
                 />
 
-                <InspectorGroup
+                <SectionGroup
                     title="Outputs"
                     children={!node?.is_output_node ? node?.outputs?.map((output, index) => (
                         <div key={index} className="block text-sm font-medium text-gray-700">
@@ -83,7 +83,7 @@ export default function NodeInspector({
                 />
 
                 {node?.data?.AudioShaderNode !== undefined &&
-                    <InspectorGroup
+                    <SectionGroup
                         title="AudioShader"
                         children={
                             <div

@@ -14,5 +14,12 @@
 // limitations under the License.
 //
 
-pub mod graph;
-pub mod node;
+import React from "react";
+import ReactDOM from "react-dom/client";
+import TrackCreationWindow from "./TrackCreationWindow";
+
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+    <React.StrictMode>
+        <TrackCreationWindow />
+    </React.StrictMode>,
+);

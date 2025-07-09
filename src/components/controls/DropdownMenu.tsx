@@ -21,7 +21,7 @@ export default function DropdownMenu({
     className = '',
     align = 'left',
 }: {
-    options?: { label: string, value: any }[],
+    options?: { label: string, key: any }[],
     isOpen?: boolean,
     onSelect?: (value: any) => void,
     className?: string,
@@ -42,9 +42,9 @@ export default function DropdownMenu({
             >
                 {options.map((option) => (
                     <li
-                        key={option.value}
+                        key={option.key}
                         className="px-1 py-0.5 hover:bg-[var(--bg-secondary)] rounded cursor-pointer text-nowrap text-left text-sm"
-                        onClick={() => onSelect(option.value)}
+                        onClick={() => onSelect(option.key)}
                     >
                         {option.label}
                     </li>

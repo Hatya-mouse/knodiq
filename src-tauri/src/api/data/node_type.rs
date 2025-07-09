@@ -14,5 +14,11 @@
 // limitations under the License.
 //
 
-pub mod graph;
-pub mod node;
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub enum NodeType {
+    AudioShaderNode = 0,
+    EmptyNode = 1,
+    NoteInputNode = 2,
+}
