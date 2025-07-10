@@ -3,7 +3,6 @@ import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import tailwindcss from '@tailwindcss/vite'
 
-// @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vitejs.dev/config/
@@ -34,8 +33,8 @@ export default defineConfig(async () => ({
   build: {
     rollupOptions: {
       input: {
-        index: "./index.html",
-        track_config: "./window/track_config.html",
+        index: "./static/index.html",
+        track_config: "./static/track_config.html",
       }
     }
   }

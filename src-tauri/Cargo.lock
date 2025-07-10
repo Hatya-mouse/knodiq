@@ -2202,8 +2202,8 @@ dependencies = [
 
 [[package]]
 name = "knodiq_note"
-version = "0.1.10"
-source = "git+https://github.com/Hatya-mouse/knodiq_note#be0f5a6d1e5da1de25318e4870e7bca53d1b6717"
+version = "0.1.11"
+source = "git+https://github.com/Hatya-mouse/knodiq_note#16e7efeeef882d69f09bdf48f2c8f9afb55efd88"
 dependencies = [
  "knodiq_engine",
 ]

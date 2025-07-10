@@ -73,7 +73,7 @@ export default function App() {
     const handleAddTrack = async () => {
         openWindow({
             id: "track_config",
-            url: "/window/track_config.html",
+            url: "/static/track_config.html",
             title: "Track Configuration",
             x: 400,
             y: 200,

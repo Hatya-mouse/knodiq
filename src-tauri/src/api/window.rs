@@ -21,7 +21,7 @@ pub async fn open_track_config_window(app: AppHandle) -> Result<(), String> {
     WebviewWindowBuilder::new(
         &app,
         "track_config",
-        WebviewUrl::App("window/track_config.html".into()),
+        WebviewUrl::App("/static/track_config.html".into()),
     )
     .title("Track Configuration")
     .build()
