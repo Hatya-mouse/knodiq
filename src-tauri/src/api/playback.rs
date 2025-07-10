@@ -25,9 +25,6 @@ use tauri::{State, command};
 pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>) {
     let mut locked_state = state.lock().unwrap();
 
-    // Clear the old audio player if it exists
-    locked_state.clear_audio_player();
-
     // Set playing state to true
     locked_state.set_playing(true);
 
