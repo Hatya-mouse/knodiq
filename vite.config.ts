@@ -33,7 +33,7 @@ export default defineConfig(async () => ({
   build: {
     rollupOptions: {
       input: {
-        index: "./static/index.html",
+        index: "./index.html",
         track_config: "./static/track_config.html",
       }
     }

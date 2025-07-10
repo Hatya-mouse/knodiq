@@ -16,7 +16,11 @@
 
 use super::mixing::{MixerCommand, MixerResult};
 use knodiq_engine::{AudioPlayer, AudioSource};
-use std::sync::mpsc;
+use std::sync::{
+    Arc,
+    atomic::{AtomicBool, Ordering},
+    mpsc,
+};
 
 pub struct AppState {
     /// Mixer mspc sender to communicate with the mixer.
@@ -27,6 +31,8 @@ pub struct AppState {
     pub audio_player: Option<AudioPlayer>,
     /// Cached mixed buffers to avoid unnecessary mixing.
     pub mixer_result_cache: Option<AudioSource>,
+    /// Playback state shared between threads.
+    pub is_playing: Arc<AtomicBool>,
 }
 
 impl AppState {
@@ -36,6 +42,7 @@ impl AppState {
             mixer_result_receiver: None,
             audio_player: None,
             mixer_result_cache: None,
+            is_playing: Arc::new(AtomicBool::new(false)),
         }
     }
 
@@ -49,6 +56,18 @@ impl AppState {
 
     pub fn clear_audio_player(&mut self) {
         self.audio_player = None;
+    }
+
+    pub fn set_playing(&self, playing: bool) {
+        self.is_playing.store(playing, Ordering::Relaxed);
+    }
+
+    pub fn is_playing(&self) -> bool {
+        self.is_playing.load(Ordering::Relaxed)
+    }
+
+    pub fn get_playing_state_arc(&self) -> Arc<AtomicBool> {
+        Arc::clone(&self.is_playing)
     }
 
     // pub fn set_mixer_result_cache(&mut self, cache: AudioSource) {
