@@ -78,7 +78,7 @@ export default function RegionView({
 
     return (
         <div
-            className={`flex h-full default-border bg-amber-500 cursor-grab active:cursor-grabbing ${className}`}
+            className={`flex h-full absolute default-border bg-amber-500 cursor-grab active:cursor-grabbing ${className}`}
             style={{
                 marginLeft: uiRegionX ?? region.start_time * beatWidth,
                 width: region.duration * beatWidth,

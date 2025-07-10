@@ -50,7 +50,7 @@ export default function Timeline({
     onSelectRegion?: (trackId: number, regionId: number) => void,
     seek?: (beats: number) => void,
 }) {
-    const [trackHeight, _] = useState(60);
+    const [trackHeight, _] = useState(40);
     const [beatWidth, setBeatWidth] = useState(10);
     const [contentWidth, setContentWidth] = useState(0);
     const [splitLeftWidth, setSplitLeftWidth] = useState(200);

@@ -53,6 +53,12 @@ pub fn run() {
             region::region::add_region,
             region::region::remove_region,
             region::region::move_region,
+            region::region::set_duration,
+            region::region::set_region_name,
+            region::region::scale_region,
+            region::region::add_note_to_region,
+            region::region::remove_note_from_region,
+            region::region::modify_note_in_region,
             window::open_track_config_window,
         ])
         .run(tauri::generate_context!())

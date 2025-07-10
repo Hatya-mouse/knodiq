@@ -14,12 +14,12 @@
 // limitations under the License.
 //
 
-pub mod node_type;
-pub mod note_data;
-pub mod region_data;
-pub mod track_data;
+use serde::{Deserialize, Serialize};
 
-pub use node_type::NodeType;
-pub use note_data::NoteData;
-pub use region_data::{RegionData, RegionType};
-pub use track_data::{TrackData, TrackType};
+#[derive(Serialize, Deserialize)]
+pub struct NoteData {
+    pub pitch: u8,
+    pub velocity: u8,
+    pub start_beat: f32,
+    pub duration: f32,
+}

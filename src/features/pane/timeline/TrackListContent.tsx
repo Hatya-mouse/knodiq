@@ -55,7 +55,7 @@ export default function TrackListContent({
 
     return (
         <div
-            className={`bottom-border pr-16 py-2 flex items-center relative ${className}`}
+            className={`bottom-border pr-16 flex items-center relative ${className}`}
             style={{
                 width: width,
                 height: height,

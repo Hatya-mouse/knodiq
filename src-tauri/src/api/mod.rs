@@ -24,5 +24,5 @@ pub mod state;
 pub mod window;
 
 pub use app_state::AppState;
-pub use data::{NodeType, RegionData, RegionType, TrackData, TrackType};
+pub use data::{NodeType, NoteData, RegionData, RegionType, TrackData, TrackType};
 pub use state::{MixerState, RegionState, TrackState};

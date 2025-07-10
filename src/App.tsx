@@ -228,18 +228,40 @@ export default function App() {
     };
 
     const handleAddNote = (trackId: number, note: { pitch: number, startTime: number, duration: number }) => {
-        // TODO: Implement add note functionality
-        console.log("Add note:", trackId, note);
+        console.log("Adding note:", note);
+
+        invoke("add_note_to_region", {
+            trackId: trackId,
+            regionId: selectedRegionId,
+            noteData: {
+                pitch: note.pitch,
+                velocity: 100,
+                start_beat: note.startTime,
+                duration: note.duration
+            }
+        })
     };
 
     const handleRemoveNote = (trackId: number, noteId: string) => {
-        // TODO: Implement remove note functionality
-        console.log("Remove note:", trackId, noteId);
+        invoke("remove_note_from_region", {
+            trackId: trackId,
+            regionId: selectedRegionId,
+            noteId: noteId
+        });
     };
 
     const handleUpdateNote = (trackId: number, noteId: string, note: { pitch: number, startTime: number, duration: number }) => {
-        // TODO: Implement update note functionality
-        console.log("Update note:", trackId, noteId, note);
+        invoke("modify_note_in_region", {
+            trackId: trackId,
+            regionId: selectedRegionId,
+            noteData: {
+                id: noteId,
+                pitch: note.pitch,
+                velocity: 100, // Assuming a default velocity
+                start_beat: note.startTime,
+                duration: note.duration
+            }
+        });
     };
 
     const seek = async (beats: number) => {

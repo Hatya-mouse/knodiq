@@ -36,6 +36,8 @@ pub enum RegionOperation {
         start_beat: Beats,
         duration: Beats,
     },
+    /// Remove a note from a `NoteRegion`.
+    RemoveNote { id: u32 },
     /// Modify a note in a `NoteRegion`.
     ModifyNote {
         id: u32,
@@ -64,6 +66,13 @@ impl RegionOperation {
                     note_region.add_note(*pitch, *velocity, *start_beat, *duration);
                 } else {
                     eprintln!("Cannot add note to a non-note region");
+                }
+            }
+            RegionOperation::RemoveNote { id } => {
+                if let Some(note_region) = region.as_any_mut().downcast_mut::<NoteRegion>() {
+                    note_region.remove_note(*id);
+                } else {
+                    eprintln!("Cannot remove note from a non-note region");
                 }
             }
             RegionOperation::ModifyNote {
@@ -108,6 +117,7 @@ impl Clone for RegionOperation {
                 start_beat: *start_beat,
                 duration: *duration,
             },
+            RegionOperation::RemoveNote { id } => RegionOperation::RemoveNote { id: *id },
             RegionOperation::ModifyNote {
                 id,
                 pitch,

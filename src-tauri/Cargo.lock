@@ -2190,8 +2190,8 @@ dependencies = [
 
 [[package]]
 name = "knodiq_engine"
-version = "0.3.2"
-source = "git+https://github.com/Hatya-mouse/knodiq_engine#af22204ac8355c3a21c5b255f98e0c53986a71c9"
+version = "0.3.4"
+source = "git+https://github.com/Hatya-mouse/knodiq_engine#3271b2070713872415f86c26b1823ffb0e77f37a"
 dependencies = [
  "cpal",
  "rubato",
@@ -2202,8 +2202,8 @@ dependencies = [
 
 [[package]]
 name = "knodiq_note"
-version = "0.1.8"
-source = "git+https://github.com/Hatya-mouse/knodiq_note#5c45b9ff1155ff8cf53cdb1950ed479cd2ff3215"
+version = "0.1.9"
+source = "git+https://github.com/Hatya-mouse/knodiq_note#d121cd4b5e36ae70596d25b6cea268b40b3b390d"
 dependencies = [
  "knodiq_engine",
 ]

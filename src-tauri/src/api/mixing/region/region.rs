@@ -16,7 +16,7 @@
 
 use crate::api::mixing::region::RegionOperation;
 use crate::api::mixing::{MixerCommand, send_mixer_command};
-use crate::api::{AppState, RegionData};
+use crate::api::{AppState, NoteData, RegionData};
 use knodiq_engine::audio_utils::Beats;
 use std::sync::Mutex;
 use tauri::{State, command};
@@ -39,5 +39,83 @@ pub fn move_region(
     state: State<'_, Mutex<AppState>>,
 ) {
     let op = RegionOperation::SetStartTime(new_beats);
+    send_mixer_command(MixerCommand::ApplyRegionOp(track_id, region_id, op), &state);
+}
+
+#[command]
+pub fn set_duration(
+    track_id: u32,
+    region_id: u32,
+    new_duration: Beats,
+    state: State<'_, Mutex<AppState>>,
+) {
+    let op = RegionOperation::SetDuration(new_duration);
+    send_mixer_command(MixerCommand::ApplyRegionOp(track_id, region_id, op), &state);
+}
+
+#[command]
+pub fn set_region_name(
+    track_id: u32,
+    region_id: u32,
+    new_name: String,
+    state: State<'_, Mutex<AppState>>,
+) {
+    let op = RegionOperation::SetName(new_name);
+    send_mixer_command(MixerCommand::ApplyRegionOp(track_id, region_id, op), &state);
+}
+
+#[command]
+pub fn scale_region(
+    track_id: u32,
+    region_id: u32,
+    scale_factor: f32,
+    state: State<'_, Mutex<AppState>>,
+) {
+    let op = RegionOperation::Scale(scale_factor);
+    send_mixer_command(MixerCommand::ApplyRegionOp(track_id, region_id, op), &state);
+}
+
+#[command]
+pub fn add_note_to_region(
+    track_id: u32,
+    region_id: u32,
+    note_data: NoteData,
+    state: State<'_, Mutex<AppState>>,
+) {
+    let op = RegionOperation::AddNote {
+        pitch: note_data.pitch,
+        velocity: note_data.velocity,
+        start_beat: note_data.start_beat,
+        duration: note_data.duration,
+    };
+    send_mixer_command(MixerCommand::ApplyRegionOp(track_id, region_id, op), &state);
+}
+
+#[command]
+pub fn remove_note_from_region(
+    track_id: u32,
+    region_id: u32,
+    note_id: u32,
+    state: State<'_, Mutex<AppState>>,
+) {
+    let op = RegionOperation::RemoveNote { id: note_id };
+    send_mixer_command(MixerCommand::ApplyRegionOp(track_id, region_id, op), &state);
+}
+
+#[command]
+pub fn modify_note_in_region(
+    track_id: u32,
+    region_id: u32,
+    note_id: u32,
+    note_data: NoteData,
+    state: State<'_, Mutex<AppState>>,
+) {
+    let op = RegionOperation::ModifyNote {
+        id: note_id,
+        pitch: note_data.pitch,
+        velocity: note_data.velocity,
+        start_beat: note_data.start_beat,
+        duration: note_data.duration,
+    };
     send_mixer_command(MixerCommand::ApplyRegionOp(track_id, region_id, op), &state);
 }
