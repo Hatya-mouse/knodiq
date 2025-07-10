@@ -115,9 +115,15 @@ pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>) {
         let cached_source = locked_state.mixer_result_cache.as_ref().unwrap();
         let channels_number = cached_source.channels;
         let samples_number = cached_source.samples();
+        let is_playing_arc = locked_state.get_playing_state_arc();
 
         // Iterate through the cached mixed buffers and send samples to the audio player
         for sample_index in 0..samples_number {
+            // Check if still playing before sending more samples
+            if !is_playing_arc.load(Ordering::Relaxed) {
+                break; // Stop sending samples
+            }
+
             for channel in 0..channels_number {
                 let sample = cached_source.data[channel][sample_index];
                 // Send the sample to the audio player
@@ -135,6 +141,11 @@ pub fn pause_audio(state: State<'_, Mutex<AppState>>) {
 
     // Set playing state to false to stop mixing
     state.set_playing(false);
+
+    // Send stop mixing command to ensure mixer thread stops immediately
+    if let Some(sender) = &state.mixer_command_sender {
+        let _ = sender.send(MixerCommand::StopMixing);
+    }
 
     if let Some(audio_player) = state.get_audio_player() {
         audio_player
