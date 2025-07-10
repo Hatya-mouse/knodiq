@@ -15,7 +15,8 @@
 //
 
 use crate::api::data::region_data::RegionDataContainer;
-use crate::api::mixing::{MixerCommand, MixerResult};
+use crate::api::mixing::mixing_thread::start_mixing_thread;
+use crate::api::mixing::{MixerCommand, MixerResult, MixingThreadCommand};
 use crate::api::{AppState, MixerState, NodeType, RegionData, RegionType, TrackType};
 use knodiq_audio_shader::AudioShaderNode;
 use knodiq_engine::graph::built_in::EmptyNode;
@@ -25,7 +26,6 @@ use knodiq_engine::{AudioSource, Mixer, Node, NodeId, Track};
 use knodiq_note::{NoteInputNode, NoteRegion, NoteTrack};
 use std::collections::HashMap;
 use std::sync::{Mutex, mpsc};
-use std::thread;
 use tauri::{AppHandle, Emitter, State};
 
 pub fn start_mixer_thread(state: State<Mutex<AppState>>, app: AppHandle) {
@@ -74,22 +74,24 @@ fn process_mixer(
     // Check if the mixer needs to mix
     let mut needs_mix = false;
 
+    let (mixing_sender, mixing_receiver) = mpsc::channel();
+    start_mixing_thread(mixing_receiver);
+
     loop {
         match receiver.recv() {
             Ok(command) => match command {
                 MixerCommand::Mix(at, callback) => {
-                    let mut mixer_clone = mixer.clone();
-                    thread::spawn(move || {
-                        match mixer_clone.prepare() {
-                            Ok(_) => {}
-                            Err(e) => {
-                                eprintln!("Error preparing mixer: {}", e);
-                                return;
-                            }
-                        }
-                        println!("Mixing starting at: {}", at);
-                        mixer_clone.mix(at, callback);
-                    });
+                    let mixer_clone = mixer.clone();
+                    let _ = mixing_sender.send(MixingThreadCommand::StartMixing(
+                        mixer_clone,
+                        at,
+                        Box::new(callback),
+                    ));
+                }
+
+                MixerCommand::StopMixing => {
+                    let _ = mixing_sender.send(MixingThreadCommand::StopMixing);
+                    needs_mix = false;
                 }
 
                 MixerCommand::AddTrack(track_data) => {

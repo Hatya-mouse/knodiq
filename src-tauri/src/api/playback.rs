@@ -15,10 +15,10 @@
 //
 
 use super::mixing::{MixerResult, mixer_command::send_mixer_command_locked};
-use crate::api::AppState;
 use crate::api::mixing::MixerCommand;
+use crate::api::{AppState, mixing::send_mixer_command};
 use knodiq_engine::{AudioPlayer, audio_utils::Beats};
-use std::sync::{Mutex, atomic::Ordering};
+use std::sync::Mutex;
 use tauri::{State, command};
 
 #[command]
@@ -27,9 +27,6 @@ pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>) {
 
     // Clear the old audio player if it exists
     locked_state.clear_audio_player();
-
-    // Set playing state to true
-    locked_state.set_playing(true);
 
     let sample_rate = 48000;
     let channels = 2;
@@ -86,23 +83,12 @@ pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>) {
 
         // let app_handle = app.clone();
 
-        // Get a clone of the playing state Arc to share with the callback
-        let is_playing_arc = locked_state.get_playing_state_arc();
-
         // If mixing is needed, send the mix command to the mixer
         let mix_command = MixerCommand::Mix(
             at,
             Box::new(move |sample, _current_beats| {
-                // Check if still playing before sending sample
-                if !is_playing_arc.load(Ordering::Relaxed) {
-                    return false; // Stop mixing
-                }
-
                 // Send the mixed sample to the audio player
-                match sample_sender.send(sample) {
-                    Ok(_) => true,
-                    Err(_) => false,
-                }
+                let _ = sample_sender.send(sample);
             }),
         );
 
@@ -131,12 +117,10 @@ pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>) {
 
 #[command]
 pub fn pause_audio(state: State<'_, Mutex<AppState>>) {
-    let mut state = state.lock().unwrap();
+    send_mixer_command(MixerCommand::StopMixing, &state);
 
-    // Set playing state to false to stop mixing
-    state.set_playing(false);
-
-    if let Some(audio_player) = state.get_audio_player() {
+    let mut locked_state = state.lock().unwrap();
+    if let Some(audio_player) = locked_state.get_audio_player() {
         audio_player
             .pause()
             .unwrap_or_else(|e| eprintln!("Error pausing audio player: {}", e));

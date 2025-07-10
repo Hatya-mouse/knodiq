@@ -16,7 +16,8 @@
 
 pub mod mixer;
 pub mod mixer_command;
+pub mod mixing_thread;
 pub mod region;
 pub mod track;
 
-pub use mixer_command::{MixerCommand, MixerResult, send_mixer_command};
+pub use mixer_command::{MixerCommand, MixerResult, MixingThreadCommand, send_mixer_command};
