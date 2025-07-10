@@ -161,6 +161,7 @@ export default function PaneComponent({
                     onSelectTrack={editorData.timelineData.onSelectTrack}
                     onAddRegion={editorData.timelineData.onAddRegion}
                     onMoveRegion={editorData.timelineData.onMoveRegion}
+                    onSelectRegion={editorData.timelineData.onSelectRegion}
                     seek={editorData.timelineData.seek}
                 />
                 : paneNode.contentType === PaneContentType.GraphEditor && editorData.graphEditorData ?

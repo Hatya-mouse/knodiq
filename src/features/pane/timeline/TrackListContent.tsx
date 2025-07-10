@@ -55,10 +55,11 @@ export default function TrackListContent({
 
     return (
         <div
-            className={`bottom-border pr-16 flex items-center relative ${className}`}
+            className={`pr-16 flex items-center relative ${className}`}
             style={{
                 width: width,
                 height: height,
+                borderBottom: "1px solid var(--border-color)",
             }}
             onDoubleClick={handleAddRegion}
         >

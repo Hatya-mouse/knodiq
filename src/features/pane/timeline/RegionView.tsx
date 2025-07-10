@@ -18,15 +18,17 @@ import { RegionState } from "@lib/audio_api/region_state";
 import { useEffect, useState } from "react";
 
 export default function RegionView({
+    className = "",
     region,
     beatWidth,
-    className = "",
+    isSelected = false,
     onMoveRegion,
     onSelectRegion,
 }: {
+    className?: string,
     region: RegionState,
     beatWidth: number,
-    className?: string,
+    isSelected?: boolean,
     onMoveRegion?: (id: number, newBeats: number) => void,
     onSelectRegion?: (id: number) => void,
 }) {
@@ -78,8 +80,9 @@ export default function RegionView({
 
     return (
         <div
-            className={`flex h-full absolute default-border bg-amber-500 cursor-grab active:cursor-grabbing ${className}`}
+            className={`flex h-full absolute bg-amber-500 cursor-grab active:cursor-grabbing ${className}`}
             style={{
+                border: "1px solid var(--border-color)",
                 marginLeft: uiRegionX ?? region.start_time * beatWidth,
                 width: region.duration * beatWidth,
             }}

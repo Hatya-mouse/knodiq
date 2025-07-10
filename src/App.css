@@ -55,22 +55,6 @@ body #root {
     overflow: hidden;
 }
 
-.default-border {
-    border-color: var(--border-color);
-    border-width: 1px;
-    border-style: solid;
-}
-
-.bottom-border {
-    border-bottom: var(--border-color);
-    border-bottom-width: 1px;
-    border-bottom-style: solid;
-}
-
-.border-rounded {
-    border-radius: var(--border-radius);
-}
-
 .scrollbar-hidden::-webkit-scrollbar {
     display: none;
 }

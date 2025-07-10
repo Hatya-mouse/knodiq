@@ -42,7 +42,9 @@ export default function WindowHeader({
     }, []);
 
     return (
-        <div data-tauri-drag-region className={`bottom-border flex justify-between align-middle bg-[var(--bg-tertiary)] ${className}`}>
+        <div data-tauri-drag-region className={`flex justify-between align-middle bg-[var(--bg-tertiary)] ${className}`} style={{
+            borderBottom: '1px solid var(--border-color)',
+        }}>
             {children}
 
             {isWindows && (

@@ -39,8 +39,11 @@ export default function TrackListItem({
 
     return (
         <div
-            className="text-[var(--text)] flex flex-row justify-between items-center gap-1 bottom-border px-3 py-2"
-            style={{ height: height, overflow: "hidden" }}
+            className="text-[var(--text)] flex flex-row justify-between items-center gap-1 px-3 py-2"
+            style={{
+                height: height, overflow: "hidden",
+                borderBottom: "1px solid var(--border-color)",
+            }}
         >
             <h3 className="text-ellipsis whitespace-nowrap overflow-hidden text-sm">{track.name}</h3>
             <div className="flex flex-row items-center gap-2">

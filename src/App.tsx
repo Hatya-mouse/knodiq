@@ -228,8 +228,6 @@ export default function App() {
     };
 
     const handleAddNote = (trackId: number, note: { pitch: number, startTime: number, duration: number }) => {
-        console.log("Adding note:", note);
-
         invoke("add_note_to_region", {
             trackId: trackId,
             regionId: selectedRegionId,
@@ -309,7 +307,10 @@ export default function App() {
                 onSelectTrack: handleSelectTrack,
                 onAddRegion: handleAddRegion,
                 onMoveRegion: handleMoveRegion,
-                onSelectRegion: (_, regionId) => setSelectedRegionId(regionId),
+                onSelectRegion: (_, regionId) => {
+                    console.log("Selected region:", regionId);
+                    setSelectedRegionId(regionId)
+                },
                 seek: seek,
             },
 

@@ -68,12 +68,17 @@ export default function PianoRoll({
                 onDoubleClick={handleDoubleClick}
             >
                 {selectedRegion?.data.NoteRegion.map(note => (
-                    <div key={note.id} style={{
-                        left: `${(note.start_time - selectedRegion.start_time) * beatWidth}px`,
-                        top: `${(127 - note.pitch) * 10}px`,
-                        width: `${note.duration * beatWidth}px`,
-                        height: '10px',
-                    }} />
+                    <div
+                        key={note.id}
+                        className="absoulute"
+                        style={{
+                            backgroundColor: `hsl(${note.pitch * 2}, 100%, 50%)`,
+                            left: `${(note.start_time - selectedRegion.start_time) * beatWidth}px`,
+                            top: `${(127 - note.pitch) * 10}px`,
+                            width: `${note.duration * beatWidth}px`,
+                            height: '10px',
+                        }}
+                    />
                 ))}
             </div>
         </div>

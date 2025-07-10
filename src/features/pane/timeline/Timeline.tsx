@@ -119,7 +119,10 @@ export default function Timeline({
                 <div className="h-full bg-[var(--bg-primary)]">
                     {/* Track list */}
                     <button
-                        className="text-[var(--text)] bottom-border w-full h-8 cursor-pointer track-list-item"
+                        className="text-[var(--text)] w-full h-8 cursor-pointer track-list-item"
+                        style={{
+                            borderBottom: "1px solid var(--border-color)",
+                        }}
                         onClick={onAddTrack}
                     >
                         Add Track
@@ -145,8 +148,12 @@ export default function Timeline({
                 >
                     {/* Top time markers */}
                     <div
-                        className="top-0 left-0 w-full h-8 flex select-none bottom-border"
-                        style={{ width: contentWidth || "100%" }}
+                        className="top-0 left-0 w-full h-8 flex select-none"
+                        style={{
+                            width: contentWidth || "100%",
+                            borderBottom: "1px solid var(--border-color)",
+                        }}
+
                         onClick={timeMarkerClicked}
                     >
                         {Array.from({ length: Math.ceil((mixerState?.duration ?? 0) / 4) }).map((_, index) => (
