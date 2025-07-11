@@ -124,9 +124,6 @@ pub enum MixerCommand {
 
     /// Check if the mixer needs to mix.
     DoesNeedMix,
-
-    /// Stop any active mixing process.
-    StopMixing,
 }
 
 pub enum MixerResult {
