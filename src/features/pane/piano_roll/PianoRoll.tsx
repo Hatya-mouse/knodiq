@@ -70,13 +70,13 @@ export default function PianoRoll({
                 {selectedRegion?.data.NoteRegion.map(note => (
                     <div
                         key={note.id}
-                        className="absoulute"
+                        className="absolute"
                         style={{
                             backgroundColor: `hsl(${note.pitch * 2}, 100%, 50%)`,
                             left: `${(note.start_time - selectedRegion.start_time) * beatWidth}px`,
-                            top: `${(127 - note.pitch) * 10}px`,
+                            top: `${(127 - note.pitch) * 5}px`,
                             width: `${note.duration * beatWidth}px`,
-                            height: '10px',
+                            height: '5px',
                         }}
                     />
                 ))}

@@ -26,6 +26,7 @@ use knodiq_engine::{AudioSource, Mixer, Node, NodeId, Track};
 use knodiq_note::{NoteInputNode, NoteRegion, NoteTrack};
 use std::collections::HashMap;
 use std::sync::{Mutex, mpsc};
+use std::thread;
 use tauri::{AppHandle, Emitter, State};
 
 pub fn start_mixer_thread(state: State<Mutex<AppState>>, app: AppHandle) {
@@ -41,24 +42,32 @@ pub fn start_mixer_thread(state: State<Mutex<AppState>>, app: AppHandle) {
     // Create a new thread for the mixer
     let app_handle = app.clone();
 
-    std::thread::spawn(move || {
-        let tempo = 120.0;
-        let sample_rate = 48000;
-        let channels = 2;
-        let mut mixer = Mixer::new(tempo, sample_rate, channels);
+    match thread::Builder::new()
+        .name("mixer_thread".into())
+        .spawn(move || {
+            let tempo = 120.0;
+            let sample_rate = 48000;
+            let channels = 2;
+            let mut mixer = Mixer::new(tempo, sample_rate, channels);
 
-        let mut node_positions: HashMap<u32, HashMap<NodeId, (f32, f32)>> = HashMap::new();
-        let mut track_colors: HashMap<u32, String> = HashMap::new();
+            let mut node_positions: HashMap<u32, HashMap<NodeId, (f32, f32)>> = HashMap::new();
+            let mut track_colors: HashMap<u32, String> = HashMap::new();
 
-        process_mixer(
-            &mut mixer,
-            &mut node_positions,
-            &mut track_colors,
-            &command_receiver,
-            &result_sender,
-            &app_handle,
-        );
-    });
+            process_mixer(
+                &mut mixer,
+                &mut node_positions,
+                &mut track_colors,
+                &command_receiver,
+                &result_sender,
+                &app_handle,
+            );
+        }) {
+        Ok(_) => println!("Mixer thread started successfully."),
+        Err(e) => {
+            eprintln!("Failed to start mixer thread: {}", e);
+            return;
+        }
+    }
 }
 
 fn process_mixer(
@@ -75,7 +84,13 @@ fn process_mixer(
     let mut needs_mix = false;
 
     let (mixing_sender, mixing_receiver) = mpsc::channel();
-    start_mixing_thread(mixing_receiver);
+    match start_mixing_thread(mixing_receiver) {
+        Ok(_) => println!("Mixing thread started successfully."),
+        Err(e) => {
+            eprintln!("Failed to start mixing thread: {}", e);
+            return;
+        }
+    }
 
     loop {
         match receiver.recv() {

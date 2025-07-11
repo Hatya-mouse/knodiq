@@ -15,57 +15,65 @@
 //
 
 use crate::api::mixing::MixingThreadCommand;
-use std::sync::{
-    Arc,
-    atomic::{AtomicBool, Ordering},
-    mpsc::Receiver,
+use std::{
+    sync::{
+        Arc,
+        atomic::{AtomicBool, Ordering},
+        mpsc::Receiver,
+    },
+    thread,
 };
 
-pub fn start_mixing_thread(mixing_command_receiver: Receiver<MixingThreadCommand>) {
-    std::thread::spawn(move || {
-        let should_stop_mixing = Arc::new(AtomicBool::new(false));
+pub fn start_mixing_thread(
+    mixing_command_receiver: Receiver<MixingThreadCommand>,
+) -> Result<(), std::io::Error> {
+    thread::Builder::new()
+        .name("mixing_thread".into())
+        .spawn(move || {
+            let should_stop_mixing = Arc::new(AtomicBool::new(false));
 
-        loop {
-            match mixing_command_receiver.recv() {
-                Ok(command) => {
-                    // Handle the command from the mixer
-                    match command {
-                        MixingThreadCommand::StartMixing(mut mixer, start_beat, callback) => {
-                            // Reset stop flag for new mixing
-                            should_stop_mixing.store(false, Ordering::Release);
+            loop {
+                match mixing_command_receiver.recv() {
+                    Ok(command) => {
+                        // Handle the command from the mixer
+                        match command {
+                            MixingThreadCommand::StartMixing(mut mixer, start_beat, callback) => {
+                                // Reset stop flag for new mixing
+                                should_stop_mixing.store(false, Ordering::Release);
 
-                            let should_stop_mixing_clone = Arc::clone(&should_stop_mixing);
+                                let should_stop_mixing_clone = Arc::clone(&should_stop_mixing);
 
-                            let mix_callback = Box::new(move |sample, current_beat| {
-                                // Check stop flag
-                                if should_stop_mixing_clone.load(Ordering::Relaxed) {
-                                    return false;
-                                }
+                                let mix_callback = Box::new(move |sample, current_beat| {
+                                    // Check stop flag
+                                    if should_stop_mixing_clone.load(Ordering::Relaxed) {
+                                        return false;
+                                    }
 
-                                // Call original callback with correct parameters
-                                callback(sample, current_beat);
-                                true
-                            });
+                                    // Call original callback with correct parameters
+                                    callback(sample, current_beat);
+                                    true
+                                });
 
-                            match mixer.prepare() {
-                                Ok(()) => {
-                                    mixer.mix(start_beat, mix_callback);
-                                }
-                                Err(e) => {
-                                    eprintln!("Error preparing mixer: {}", e);
+                                match mixer.prepare() {
+                                    Ok(()) => {
+                                        mixer.mix(start_beat, mix_callback);
+                                    }
+                                    Err(e) => {
+                                        eprintln!("Error preparing mixer: {}", e);
+                                    }
                                 }
                             }
-                        }
-                        MixingThreadCommand::StopMixing => {
-                            should_stop_mixing.store(true, Ordering::Release);
+                            MixingThreadCommand::StopMixing => {
+                                should_stop_mixing.store(true, Ordering::Release);
+                            }
                         }
                     }
-                }
-                Err(e) => {
-                    eprintln!("Error receiving mixing command: {}", e);
-                    break;
+                    Err(e) => {
+                        eprintln!("Error receiving mixing command: {}", e);
+                        break;
+                    }
                 }
             }
-        }
-    });
+        })
+        .map(|_| ())
 }
