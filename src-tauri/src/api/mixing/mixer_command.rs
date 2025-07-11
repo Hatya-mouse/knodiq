@@ -17,14 +17,17 @@
 use crate::api::mixing::region::RegionOperation;
 use crate::api::{AppState, NodeType, RegionData, TrackData};
 use knodiq_engine::audio_utils::Beats;
-use knodiq_engine::{NodeId, Sample, Value};
+use knodiq_engine::{Mixer, NodeId, Sample, Value};
 use std::sync::{Mutex, MutexGuard};
 use tauri::State;
 
 pub enum MixerCommand {
     /// Command to set the sample callback function for the mixer.
-    /// - callback: `Box<dyn Fn(Sample, Beats) -> bool + Send>`
-    Mix(Beats, Box<dyn Fn(Sample, Beats) -> bool + Send>),
+    /// - callback: `Box<dyn Fn(Sample, Beats) + Send>`
+    Mix(Beats, Box<dyn Fn(Sample, Beats) + Send>),
+
+    /// Stop the current mixing process.
+    StopMixing,
 
     /// Add a track to the mixer.
     /// - track_data: `TrackData`
@@ -135,6 +138,15 @@ pub enum MixerResult {
     NeedsMix(bool),
     /// Result of the `SetAudioShader` command.
     AudioShaderErrors(Vec<String>),
+}
+
+pub enum MixingThreadCommand {
+    /// Command to mix audio.
+    /// - `start_beat`: The beat at which to start mixing.
+    /// - `callback`: A callback function that takes a sample and the current beat.
+    StartMixing(Mixer, Beats, Box<dyn Fn(Sample, Beats) + Send>),
+    /// Stop any active mixing process.
+    StopMixing,
 }
 
 pub fn send_mixer_command(command: MixerCommand, state: &State<'_, Mutex<AppState>>) {

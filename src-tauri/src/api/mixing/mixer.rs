@@ -15,7 +15,8 @@
 //
 
 use crate::api::data::region_data::RegionDataContainer;
-use crate::api::mixing::{MixerCommand, MixerResult};
+use crate::api::mixing::mixing_thread::start_mixing_thread;
+use crate::api::mixing::{MixerCommand, MixerResult, MixingThreadCommand};
 use crate::api::{AppState, MixerState, NodeType, RegionData, RegionType, TrackType};
 use knodiq_audio_shader::AudioShaderNode;
 use knodiq_engine::graph::built_in::EmptyNode;
@@ -24,12 +25,7 @@ use knodiq_engine::mixing::track::BufferTrack;
 use knodiq_engine::{AudioSource, Mixer, Node, NodeId, Track};
 use knodiq_note::{NoteInputNode, NoteRegion, NoteTrack};
 use std::collections::HashMap;
-use std::sync::{
-    Arc, Mutex,
-    atomic::{AtomicBool, Ordering},
-    mpsc,
-};
-use std::time::{Duration, Instant};
+use std::sync::{Mutex, mpsc};
 use tauri::{AppHandle, Emitter, State};
 
 pub fn start_mixer_thread(state: State<Mutex<AppState>>, app: AppHandle) {
@@ -78,65 +74,24 @@ fn process_mixer(
     // Check if the mixer needs to mix
     let mut needs_mix = false;
 
-    // State emit throttling
-    let mut last_emit_time = Instant::now();
-    let emit_throttle_duration = Duration::from_millis(100); // Limit emits to once per 100ms
-
-    // Track active mixing thread
-    let mut active_mixing_thread: Option<std::thread::JoinHandle<()>> = None;
-    let mixing_should_stop = Arc::new(AtomicBool::new(false));
-
-    // Non-blocking receive timeout
-    let receive_timeout = Duration::from_millis(10);
+    let (mixing_sender, mixing_receiver) = mpsc::channel();
+    start_mixing_thread(mixing_receiver);
 
     loop {
-        // Clean up finished mixing thread
-        if let Some(handle) = active_mixing_thread.take() {
-            if handle.is_finished() {
-                let _ = handle.join();
-                println!("Mixing thread completed and cleaned up");
-            } else {
-                active_mixing_thread = Some(handle);
-            }
-        }
-
-        match receiver.recv_timeout(receive_timeout) {
+        match receiver.recv() {
             Ok(command) => match command {
                 MixerCommand::Mix(at, callback) => {
-                    // Stop any existing mixing
-                    mixing_should_stop.store(true, Ordering::Relaxed);
-                    if let Some(handle) = active_mixing_thread.take() {
-                        let _ = handle.join(); // Wait for previous mixing to stop
-                    }
+                    let mixer_clone = mixer.clone();
+                    let _ = mixing_sender.send(MixingThreadCommand::StartMixing(
+                        mixer_clone,
+                        at,
+                        Box::new(callback),
+                    ));
+                }
 
-                    match mixer.prepare() {
-                        Ok(_) => {
-                            // Reset stop flag
-                            mixing_should_stop.store(false, Ordering::Relaxed);
-                            let should_stop = Arc::clone(&mixing_should_stop);
-
-                            println!("Starting mixing thread at: {}", at);
-
-                            // Create a wrapper callback that checks for stop signal
-                            let stop_checking_callback = move |sample, current_beats| {
-                                if should_stop.load(Ordering::Relaxed) {
-                                    println!("Mixing stopped by signal");
-                                    return false;
-                                }
-                                callback(sample, current_beats)
-                            };
-
-                            // Start mixing in current thread but with non-blocking callback
-                            mixer.mix(at, Box::new(stop_checking_callback));
-                            println!("Mixing completed");
-
-                            needs_mix = false;
-                        }
-                        Err(e) => {
-                            eprintln!("Error preparing mixer: {}", e);
-                            continue;
-                        }
-                    }
+                MixerCommand::StopMixing => {
+                    let _ = mixing_sender.send(MixingThreadCommand::StopMixing);
+                    needs_mix = false;
                 }
 
                 MixerCommand::AddTrack(track_data) => {
@@ -165,41 +120,20 @@ fn process_mixer(
                     // Add the track to the mixer
                     mixer.add_track(track);
 
-                    emit_state_throttled(
-                        mixer,
-                        node_positions,
-                        track_colors,
-                        app,
-                        &mut last_emit_time,
-                        emit_throttle_duration,
-                    );
+                    emit_state(mixer, node_positions, track_colors, app);
                     needs_mix = true;
                 }
 
                 MixerCommand::RemoveTrack(track_id) => {
                     // Remove the track from the mixer
                     mixer.remove_track(track_id);
-                    emit_state_throttled(
-                        mixer,
-                        node_positions,
-                        track_colors,
-                        app,
-                        &mut last_emit_time,
-                        emit_throttle_duration,
-                    );
+                    emit_state(mixer, node_positions, track_colors, app);
                     needs_mix = true;
                 }
 
                 MixerCommand::SetTrackColor(track_id, color) => {
                     track_colors.insert(track_id, color);
-                    emit_state_throttled(
-                        mixer,
-                        node_positions,
-                        track_colors,
-                        app,
-                        &mut last_emit_time,
-                        emit_throttle_duration,
-                    );
+                    emit_state(mixer, node_positions, track_colors, app);
                 }
 
                 MixerCommand::AddRegion(track_id, region_data) => {
@@ -370,47 +304,13 @@ fn process_mixer(
                     // Check if the mixer needs to mix again
                     let _ = result_sender.send(MixerResult::NeedsMix(needs_mix));
                 }
-
-                MixerCommand::StopMixing => {
-                    // Stop any active mixing
-                    mixing_should_stop.store(true, Ordering::Relaxed);
-                    if let Some(handle) = active_mixing_thread.take() {
-                        println!("Stopping active mixing thread...");
-                        let _ = handle.join();
-                        println!("Mixing thread stopped");
-                    }
-                }
             },
-            Err(mpsc::RecvTimeoutError::Timeout) => {
-                // Timeout occurred, continue the loop to check for finished threads
-                continue;
-            }
-            Err(mpsc::RecvTimeoutError::Disconnected) => {
-                // If the receiver is disconnected, stop mixing and exit the loop
-                mixing_should_stop.store(true, Ordering::Relaxed);
-                if let Some(handle) = active_mixing_thread.take() {
-                    println!("Waiting for mixing thread to finish before shutdown...");
-                    let _ = handle.join();
-                }
+            Err(_) => {
+                // If the receiver is disconnected, exit the loop
                 println!("Mixer command receiver disconnected.");
                 break;
             }
         }
-    }
-}
-
-fn emit_state_throttled(
-    mixer: &mut Mixer,
-    node_positions: &HashMap<u32, HashMap<NodeId, (f32, f32)>>,
-    track_colors: &HashMap<u32, String>,
-    app: &AppHandle,
-    last_emit_time: &mut Instant,
-    throttle_duration: Duration,
-) {
-    let now = Instant::now();
-    if now.duration_since(*last_emit_time) >= throttle_duration {
-        emit_state(mixer, node_positions, track_colors, app);
-        *last_emit_time = now;
     }
 }
 

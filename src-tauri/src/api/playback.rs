@@ -18,15 +18,15 @@ use super::mixing::{MixerResult, mixer_command::send_mixer_command_locked};
 use crate::api::AppState;
 use crate::api::mixing::MixerCommand;
 use knodiq_engine::{AudioPlayer, audio_utils::Beats};
-use std::sync::{Mutex, atomic::Ordering};
+use std::sync::Mutex;
 use tauri::{State, command};
 
 #[command]
 pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>) {
     let mut locked_state = state.lock().unwrap();
 
-    // Set playing state to true
-    locked_state.set_playing(true);
+    // Clear the old audio player if it exists
+    locked_state.clear_audio_player();
 
     let sample_rate = 48000;
     let channels = 2;
@@ -83,23 +83,12 @@ pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>) {
 
         // let app_handle = app.clone();
 
-        // Get a clone of the playing state Arc to share with the callback
-        let is_playing_arc = locked_state.get_playing_state_arc();
-
         // If mixing is needed, send the mix command to the mixer
         let mix_command = MixerCommand::Mix(
             at,
             Box::new(move |sample, _current_beats| {
-                // Check if still playing before sending sample
-                if !is_playing_arc.load(Ordering::Relaxed) {
-                    return false; // Stop mixing
-                }
-
                 // Send the mixed sample to the audio player
-                match sample_sender.send(sample) {
-                    Ok(_) => true,
-                    Err(_) => false,
-                }
+                let _ = sample_sender.send(sample);
             }),
         );
 
@@ -112,15 +101,9 @@ pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>) {
         let cached_source = locked_state.mixer_result_cache.as_ref().unwrap();
         let channels_number = cached_source.channels;
         let samples_number = cached_source.samples();
-        let is_playing_arc = locked_state.get_playing_state_arc();
 
         // Iterate through the cached mixed buffers and send samples to the audio player
         for sample_index in 0..samples_number {
-            // Check if still playing before sending more samples
-            if !is_playing_arc.load(Ordering::Relaxed) {
-                break; // Stop sending samples
-            }
-
             for channel in 0..channels_number {
                 let sample = cached_source.data[channel][sample_index];
                 // Send the sample to the audio player
@@ -134,21 +117,14 @@ pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>) {
 
 #[command]
 pub fn pause_audio(state: State<'_, Mutex<AppState>>) {
-    let mut state = state.lock().unwrap();
-
-    // Set playing state to false to stop mixing
-    state.set_playing(false);
-
-    // Send stop mixing command to ensure mixer thread stops immediately
-    if let Some(sender) = &state.mixer_command_sender {
-        let _ = sender.send(MixerCommand::StopMixing);
-    }
-
-    if let Some(audio_player) = state.get_audio_player() {
+    let mut locked_state = state.lock().unwrap();
+    if let Some(audio_player) = locked_state.get_audio_player() {
         audio_player
             .pause()
             .unwrap_or_else(|e| eprintln!("Error pausing audio player: {}", e));
-    } else {
-        eprintln!("Audio player not initialized.");
     }
+
+    locked_state.clear_audio_player();
+
+    send_mixer_command_locked(MixerCommand::StopMixing, &locked_state);
 }
