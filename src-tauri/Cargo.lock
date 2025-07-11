@@ -1076,7 +1076,7 @@ dependencies = [
  "cc",
  "memchr",
  "rustc_version",
- "toml 0.9.0",
+ "toml 0.9.1",
  "vswhom",
  "winreg",
 ]
@@ -2190,8 +2190,8 @@ dependencies = [
 
 [[package]]
 name = "knodiq_engine"
-version = "0.3.5-dev1"
-source = "git+https://github.com/Hatya-mouse/knodiq_engine#6282b6ed727190375ce1bc880a08af9e86b03b62"
+version = "0.3.6"
+source = "git+https://github.com/Hatya-mouse/knodiq_engine#d36584bde27d60edc09678e801d0f4cc15e78f73"
 dependencies = [
  "cpal",
  "rubato",
@@ -2202,8 +2202,8 @@ dependencies = [
 
 [[package]]
 name = "knodiq_note"
-version = "0.1.16"
-source = "git+https://github.com/Hatya-mouse/knodiq_note#b7f8e52f13f99ecf1b91a926d782124c2f800670"
+version = "0.1.17"
+source = "git+https://github.com/Hatya-mouse/knodiq_note#251defd20a7a753599f1937563b351c900b1c561"
 dependencies = [
  "knodiq_engine",
 ]
@@ -4930,9 +4930,9 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.9.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f271e09bde39ab52250160a67e88577e0559ad77e9085de6e9051a2c4353f8f8"
+checksum = "0207d6ed1852c2a124c1fbec61621acb8330d2bf969a5d0643131e9affd985a5"
 dependencies = [
  "indexmap 2.10.0",
  "serde",

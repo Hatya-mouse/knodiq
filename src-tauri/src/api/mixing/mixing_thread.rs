@@ -31,19 +31,30 @@ pub fn start_mixing_thread(mixing_command_receiver: Receiver<MixingThreadCommand
                     // Handle the command from the mixer
                     match command {
                         MixingThreadCommand::StartMixing(mut mixer, start_beat, callback) => {
-                            if should_stop_mixing.load(Ordering::Acquire) {
-                                should_stop_mixing.store(true, Ordering::Release);
-                            }
+                            // Reset stop flag for new mixing
+                            should_stop_mixing.store(false, Ordering::Release);
 
                             let should_stop_mixing_clone = Arc::clone(&should_stop_mixing);
-                            let callback = Box::new(move |sample, _playhead_time| {
-                                // Call the provided callback with the sample and start_beat
-                                callback(sample, start_beat);
 
-                                !should_stop_mixing_clone.load(Ordering::Relaxed)
+                            let mix_callback = Box::new(move |sample, current_beat| {
+                                // Check stop flag
+                                if should_stop_mixing_clone.load(Ordering::Relaxed) {
+                                    return false;
+                                }
+
+                                // Call original callback with correct parameters
+                                callback(sample, current_beat);
+                                true
                             });
 
-                            mixer.mix(start_beat, callback);
+                            match mixer.prepare() {
+                                Ok(()) => {
+                                    mixer.mix(start_beat, mix_callback);
+                                }
+                                Err(e) => {
+                                    eprintln!("Error preparing mixer: {}", e);
+                                }
+                            }
                         }
                         MixingThreadCommand::StopMixing => {
                             should_stop_mixing.store(true, Ordering::Release);

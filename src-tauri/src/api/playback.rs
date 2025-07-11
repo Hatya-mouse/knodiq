@@ -15,8 +15,8 @@
 //
 
 use super::mixing::{MixerResult, mixer_command::send_mixer_command_locked};
+use crate::api::AppState;
 use crate::api::mixing::MixerCommand;
-use crate::api::{AppState, mixing::send_mixer_command};
 use knodiq_engine::{AudioPlayer, audio_utils::Beats};
 use std::sync::Mutex;
 use tauri::{State, command};
@@ -117,14 +117,14 @@ pub fn play_audio(at: Beats, state: State<'_, Mutex<AppState>>) {
 
 #[command]
 pub fn pause_audio(state: State<'_, Mutex<AppState>>) {
-    send_mixer_command(MixerCommand::StopMixing, &state);
-
     let mut locked_state = state.lock().unwrap();
     if let Some(audio_player) = locked_state.get_audio_player() {
         audio_player
             .pause()
             .unwrap_or_else(|e| eprintln!("Error pausing audio player: {}", e));
-    } else {
-        eprintln!("Audio player not initialized.");
     }
+
+    locked_state.clear_audio_player();
+
+    send_mixer_command_locked(MixerCommand::StopMixing, &locked_state);
 }
