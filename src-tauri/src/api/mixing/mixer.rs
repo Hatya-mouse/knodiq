@@ -18,14 +18,14 @@ use crate::api::data::region_data::RegionDataContainer;
 use crate::api::mixing::mixing_thread::start_mixing_thread;
 use crate::api::mixing::{MixerCommand, MixerResult, MixingThreadCommand};
 use crate::api::{AppState, MixerState, NodeType, RegionData, RegionType, TrackType};
-use knodiq_audio_shader::AudioShaderNode;
+use kash::AudioShaderNode;
 use knodiq_engine::graph::built_in::EmptyNode;
 use knodiq_engine::mixing::region::BufferRegion;
 use knodiq_engine::mixing::track::BufferTrack;
 use knodiq_engine::{AudioSource, Mixer, Node, NodeId, Track};
 use knodiq_note::{NoteInputNode, NoteRegion, NoteTrack};
 use std::collections::HashMap;
-use std::sync::{Mutex, mpsc};
+use std::sync::{mpsc, Mutex};
 use std::thread;
 use tauri::{AppHandle, Emitter, State};
 

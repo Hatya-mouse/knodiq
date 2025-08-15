@@ -2170,7 +2170,7 @@ dependencies = [
 name = "knodiq"
 version = "0.1.0"
 dependencies = [
- "knodiq_audio_shader",
+ "kash",
  "knodiq_engine",
  "knodiq_note",
  "serde",
@@ -2185,9 +2185,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "knodiq_audio_shader"
+name = "kash"
 version = "0.3.9"
-source = "git+https://github.com/Hatya-mouse/knodiq_audio_shader#fdd4373e7ebd5009fb3fafc17df3e82d6ab70301"
+source = "git+https://github.com/Hatya-mouse/kash#fdd4373e7ebd5009fb3fafc17df3e82d6ab70301"
 dependencies = [
  "knodiq_engine",
  "rand 0.9.2",

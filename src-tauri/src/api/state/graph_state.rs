@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-use knodiq_audio_shader::AudioShaderNode;
+use kash::AudioShaderNode;
 use knodiq_engine::{Connector, Graph, Node, NodeId};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
